@@ -1,3 +1,5 @@
+// a better confidence metric also accounts for agreement between levels?
+
 #pragma once
 
 #include "ofMain.h"
@@ -12,6 +14,9 @@ public:
 
 	ofDirectory dirHorizontalNormal, dirHorizontalInverse;
 	ofDirectory dirVerticalNormal, dirVerticalInverse;
-	int n, camWidth, camHeight, proWidth, proHeight;
-	cv::Mat confidence, binaryCodedHorizontal, binaryCodedVertical;
+	vector<ofFile> hnFiles, hiFiles, vnFiles, viFiles;
+	int horizontalBits, verticalBits, camWidth, camHeight, proWidth, proHeight;
+	cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical;
+	
+	cv::Mat proMap, proConfidence;
 };
