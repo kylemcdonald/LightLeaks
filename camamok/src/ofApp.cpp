@@ -56,7 +56,8 @@ void ofApp::setup() {
 	range = MAX(MAX(diagonal.x, diagonal.y), diagonal.z);
 	cout << "Using min " << min << " max " << max << " and range " << range << endl;
 	
-	referenceImage.loadImage("referenceImage.png");
+	referenceImage.loadImage("referenceImage.jpg");
+	ofSetWindowShape(referenceImage.getWidth(), referenceImage.getHeight());
 	
 	ofFbo::Settings settings;
 	settings.width = referenceImage.getWidth();
@@ -316,8 +317,8 @@ void ofApp::saveCalibration() {
 
 void ofApp::saveXyzMap() {
 	ofFloatPixels pix;
-	pix.mirror(true, false);
 	fbo.readToPixels(pix);
+	pix.mirror(true, false);
 	ofSaveImage(pix, "xyzMap.exr");
 }
 
