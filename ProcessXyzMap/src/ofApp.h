@@ -14,4 +14,8 @@ public:
 	
 	ofFloatImage xyzMap;
 	ofAutoShader shader;
+    
+    ofImage img;
+    
+    bool room;
 };
