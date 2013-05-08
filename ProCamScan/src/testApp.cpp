@@ -13,7 +13,7 @@ bool natural(const ofFile& a, const ofFile& b) {
 	}
 }
 
-void processGraycodeLevel(int i, int n, int dimensions, string normalPath, string inversePath, Mat& confidence, Mat& binaryCoded) {
+void processGraycodeLevel(int i, int n, int dimensions, string normalPath, string inversePath, Mat cameraMask, Mat& confidence, Mat& binaryCoded) {
 	ofLogVerbose() << "loading " << normalPath <<  " + " << inversePath << " " << i << " of " << n;
 	ofImage imageNormal, imageInverse;
 	imageNormal.loadImage(normalPath);
@@ -22,6 +22,8 @@ void processGraycodeLevel(int i, int n, int dimensions, string normalPath, strin
 	cv::Mat imageNormalGray, imageInverseGray;
 	convertColor(imageNormal, imageNormalGray, CV_RGB2GRAY);
 	convertColor(imageInverse, imageInverseGray, CV_RGB2GRAY);
+	imageNormalGray &= cameraMask;
+	imageInverseGray &= cameraMask;
 	float totalVariation = 0;
 	for(int j = 0; j < n; j++) {
 		totalVariation += 1 << (n - j - 1);
@@ -66,6 +68,9 @@ void testApp::setup() {
 	horizontalBits = dirHorizontalNormal.size();
 	verticalBits = dirVerticalNormal.size();
 	
+	cameraMask.loadImage(path + "cameraMask.png");
+	cameraMask.setImageType(OF_IMAGE_GRAYSCALE);
+	
 	ofImage prototype;
 	prototype.loadImage(path + "horizontal/normal/0.jpg");
 	camWidth = prototype.getWidth(), camHeight = prototype.getHeight();
@@ -74,11 +79,13 @@ void testApp::setup() {
 	binaryCodedHorizontal = Mat::zeros(camHeight, camWidth, CV_16UC1);
 	binaryCodedVertical = Mat::zeros(camHeight, camWidth, CV_16UC1);
 	
+	Mat cameraMaskMat = toCv(cameraMask);
+	
 	for(int i = 0; i < horizontalBits; i++) {
-		processGraycodeLevel(i, horizontalBits, 2, hnFiles[i].path(), hiFiles[i].path(), camConfidence, binaryCodedHorizontal);
+		processGraycodeLevel(i, horizontalBits, 2, hnFiles[i].path(), hiFiles[i].path(), cameraMaskMat, camConfidence, binaryCodedHorizontal);
 	}
 	for(int i = 0; i < verticalBits; i++) {
-		processGraycodeLevel(i, verticalBits, 2, vnFiles[i].path(), viFiles[i].path(), camConfidence, binaryCodedVertical);
+		processGraycodeLevel(i, verticalBits, 2, vnFiles[i].path(), viFiles[i].path(), cameraMaskMat, camConfidence, binaryCodedVertical);
 	}
 	grayToBinary(binaryCodedHorizontal, horizontalBits);
 	grayToBinary(binaryCodedVertical, verticalBits);

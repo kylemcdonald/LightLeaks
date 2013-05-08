@@ -89,5 +89,6 @@ public:
 	const static int tw = 1024 * 3;
 	const static int th = 768;
 	
+	ofImage mask;
 	EdsdkOsc camera;
 };

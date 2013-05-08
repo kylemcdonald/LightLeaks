@@ -8,6 +8,7 @@ void testApp::setup() {
 	oscIn.setup(9000);
 	oscOut.setup("disco.local", 9001);
 	capturing = false;
+	camera.setup();
 }
 
 void testApp::update() {

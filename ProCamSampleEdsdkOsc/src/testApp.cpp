@@ -58,6 +58,8 @@ void testApp::setup() {
 	ofSetVerticalSync(true);
 	ofHideCursor();
 	//ofSetDataPathRoot("../../../../../SharedData/skull/");
+	mask.loadImage("mask.png");
+	ofEnableAlphaBlending();
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	camera.setup();
 	generate();
@@ -81,6 +83,7 @@ void testApp::update() {
 void testApp::draw() {
 	ofBackground(0);
 	generator.get(pattern).draw(projector * tw, 0);
+	mask.draw(0, 0);
 	if(!capturing) {
 		ofPushMatrix();
 		ofScale(.25, .25);
