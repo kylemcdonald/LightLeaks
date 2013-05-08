@@ -14,7 +14,7 @@
 		2023ef517ed2d8b397511d4bf2052690 /* Helpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = b9076967f8c54a04362c04aa9e3bb906 /* Helpers.cpp */; };
 		250a95ba26587be85db0a353e6e1dea2 /* ofxCvColorImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ce9c7160245b19131dae61282ee6cb53 /* ofxCvColorImage.cpp */; };
 		2797BB641738A5C1001F78FB /* ofxProCamToolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2797BB621738A5C1001F78FB /* ofxProCamToolkit.cpp */; };
-		27B1EB8E1738A54B004BC322 /* ofApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27B1EB8C1738A54B004BC322 /* ofApp.cpp */; };
+		27CFA3A417397D3100B7D01D /* testApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27CFA3A217397D3100B7D01D /* testApp.cpp */; };
 		2b11014060cfa00ea494fbc6fbb71886 /* guiTypeTextDropDown.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4f64d7dd70c6b5b1fc395ded45f21650 /* guiTypeTextDropDown.cpp */; };
 		314d78311d80062369e1827b37eb323a /* guiTypeChartPlotter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3d66885fa7c19b7830ee08edd67006c6 /* guiTypeChartPlotter.cpp */; };
 		3b8120368b4fccd80883baf3128d1467 /* ofxAssimpAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36068d6c1d6d412786a5c4c1868cfb5e /* ofxAssimpAnimation.cpp */; };
@@ -141,8 +141,8 @@
 		2797BB611738A5C1001F78FB /* LineArt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LineArt.h; path = ../../../ProCamToolkit/SharedCode/LineArt.h; sourceTree = "<group>"; };
 		2797BB621738A5C1001F78FB /* ofxProCamToolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxProCamToolkit.cpp; path = ../../../ProCamToolkit/SharedCode/ofxProCamToolkit.cpp; sourceTree = "<group>"; };
 		2797BB631738A5C1001F78FB /* ofxProCamToolkit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxProCamToolkit.h; path = ../../../ProCamToolkit/SharedCode/ofxProCamToolkit.h; sourceTree = "<group>"; };
-		27B1EB8C1738A54B004BC322 /* ofApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofApp.cpp; sourceTree = "<group>"; };
-		27B1EB8D1738A54B004BC322 /* ofApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofApp.h; sourceTree = "<group>"; };
+		27CFA3A217397D3100B7D01D /* testApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testApp.cpp; sourceTree = "<group>"; };
+		27CFA3A317397D3100B7D01D /* testApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testApp.h; sourceTree = "<group>"; };
 		28904a3f685cce2d22b588e9936f112b /* aiVector2D.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = aiVector2D.h; path = ../../../addons/ofxAssimpModelLoader/libs/assimp/include/aiVector2D.h; sourceTree = SOURCE_ROOT; };
 		29897723d8c99bc3f4c66556d572e651 /* guiTypeFileLister.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = guiTypeFileLister.h; path = ../../../addons/ofxControlPanel/src/guiTypeFileLister.h; sourceTree = SOURCE_ROOT; };
 		2b40eda85beb63e46785bc299a638898 /* tinyxml.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = tinyxml.cpp; path = ../../../addons/ofxXmlSettings/libs/tinyxml.cpp; sourceTree = SOURCE_ROOT; };
@@ -806,10 +806,10 @@
 			isa = PBXGroup;
 			children = (
 				2797BB611738A5C1001F78FB /* LineArt.h */,
+				27CFA3A217397D3100B7D01D /* testApp.cpp */,
+				27CFA3A317397D3100B7D01D /* testApp.h */,
 				2797BB621738A5C1001F78FB /* ofxProCamToolkit.cpp */,
 				2797BB631738A5C1001F78FB /* ofxProCamToolkit.h */,
-				27B1EB8C1738A54B004BC322 /* ofApp.cpp */,
-				27B1EB8D1738A54B004BC322 /* ofApp.h */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 			);
 			path = src;
@@ -1194,8 +1194,8 @@
 				10b69de456aed1288fc9316b62b715d7 /* Tracker.cpp in Sources */,
 				a6668c5b1272d7fcd5b5a16fd76b2bf8 /* Utilities.cpp in Sources */,
 				dbcb84a37f9aecc254870d79a0a7486e /* Wrappers.cpp in Sources */,
-				27B1EB8E1738A54B004BC322 /* ofApp.cpp in Sources */,
 				2797BB641738A5C1001F78FB /* ofxProCamToolkit.cpp in Sources */,
+				27CFA3A417397D3100B7D01D /* testApp.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

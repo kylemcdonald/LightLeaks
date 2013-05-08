@@ -29,6 +29,10 @@ void ofApp::setup() {
 	zero = min;
 	ofVec3f diagonal = max - min;
 	range = MAX(MAX(diagonal.x, diagonal.y), diagonal.z);
+	center = (min + max) / 2;
+	cout << "center: " << center << endl;
+	cout << "range: " << range << endl;
+	cout << "center normalized: " << (center / range) << endl;
 	
 	referenceImage.loadImage("referenceImage.png");
 	

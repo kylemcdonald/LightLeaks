@@ -16,7 +16,7 @@ public:
 	ofEasyCam cam;
 	ofShader shader;
 	float range;
-	ofVec3f zero;
+	ofVec3f zero, center;
 	ofFbo fbo;
 	ofImage referenceImage;
 };
