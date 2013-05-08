@@ -46,7 +46,7 @@ void testApp::setup() {
 	ofSetFrameRate(120);
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	
-	string path = "qsf8/";
+	string path = "scan/";
 	//int proWidth = 1024, proHeight = 768;
 	//int proWidth = 3 * 512, proHeight = 256;
 	int proWidth = 1024*3, proHeight = 768;
