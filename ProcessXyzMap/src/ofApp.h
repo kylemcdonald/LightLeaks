@@ -18,4 +18,6 @@ public:
     ofImage img;
     
     bool room;
+    
+    ofFbo wallFbo;
 };

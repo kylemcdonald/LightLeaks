@@ -5,6 +5,7 @@
  uniform sampler2DRect xyzMap;
  uniform float elapsedTime;
  uniform sampler2DRect texture;
+ uniform vec2 textureSize;
 
  varying vec3 normal;
  varying float randomOffset;
@@ -215,132 +216,134 @@ float animate01(float stage){
 	return a;
 }
 
+vec2 rotate(vec2 position, float amount) {
+	mat2 rotation = mat2(
+        vec2( cos(amount),  sin(amount)),
+        vec2(-sin(amount),  cos(amount))
+    );
+    return rotation * position;
+}
+
 void main() {
 	vec4 curSample = texture2DRect(xyzMap, gl_TexCoord[0].st);
 	vec3 position = curSample.xyz;
 	float present = curSample.a;
 
+	/*if(present == 0.) {
+		gl_FragColor = vec4(0.);
+		return;
+	}*/
+
+	float stages = 10.;
+	float stage = 0+mod(elapsedTime * .05, stages);
 
 	gl_FragColor = vec4(0);
-	if(position.z > 0){
+	if(position.z > 0 || (stage <= 9 && stage > 8)){
 
-		float stages = 1.;
-		float stage = 14;//+mod(elapsedTime * .1, stages);
-
+		
 		if(stage <= 1.) {
 
 			// diagonal stripes
 			float speed = .01;
 			const float scale = .1 ;
-			//float a = animate01(stage)*0.1;
-			float a = scale/2.;
+			float a = (1.-animate01(stage))*0.2;
+			//float a = scale/2.;
 
-			gl_FragColor = (mod((position.x + position.y + position.z) + (elapsedTime * speed), scale) > a) ?
+			vec2 rotated = rotate(position.xy, elapsedTime);
+			gl_FragColor = (mod((rotated.x*mod(stage,1)+ rotated.y + position.z) + (elapsedTime * speed), scale) > a) ?
 			on : off;
 
 
 
 		} else if(stage <= 2.) {
-			// crazy color bounce
-			float a = animate00(stage);
-			gl_FragColor = vec4(mod(elapsedTime+ a*10. + position, 1.0) *a , 1.);
-		} else if(stage <= 3.) {
 			// fast rising stripes
 			//if(normal.z == 0.) {
-			float a = animate01(stage);
+			float a = 1.-mod(stage,1);
 			float speed = .01;
-			float scale = 0.1;
-			gl_FragColor = 
-			(mod((-position.z) + (speed), scale) < (a*scale / 1.)) ?
-			on : off;
 
-			/*} else {
-				gl_FragColor = off;
-				}*/
-		} else if(stage <= 5.) {
+			float height = center.z * 2.;
+
+			gl_FragColor = (((1-position.z * (position.x) * 1./height) < ( a ))) ? on : off;
+
+		} else if(stage <= 3.) {
 			// crazy triangles, grid lines
-			float speed = .2;
-			float scale = .5;
-			float cutoff = .9;
+			if(position.z > center.z*1.9 && position.y < 1){
+			float speed = .05;
+			float scale = .05;
+			float cutoff = 1.-animate00(stage)*0.2;
 			vec3 cur = mod(position + speed * elapsedTime, scale) / scale;
 			cur *= 1. - abs(normal);
-			if(stage < 4.) {
+			/*if(stage < 2.) {
 				gl_FragColor = ((cur.x + cur.y + cur.z) < cutoff) ? off : on;
-			} else {
-				gl_FragColor = (max(max(cur.x, cur.y), cur.z) < cutoff) ? off : on;
-			}
-		} else if(stage <= 6.) {
-			// moving outlines 
-			const float speed = 10.;
-			const float scale = 6.;
-			float localTime = 5. * randomOffset + elapsedTime;
-			gl_FragColor = 
-			(mod((-position.x - position.y + position.z) + (localTime * speed), scale) > scale / 2.) ?
-			on : off;
-		} else if(stage <= 7.) {
-			// spinning (outline or face) 
+			} else {*/
+			gl_FragColor = (max(max(cur.x, cur.y), cur.z) < cutoff) ? off : on;
+		}
+			//}
+		
+		} else if(stage <= 4.) {
+			// one line thorugh the room
+			// TODO: different angles 
 			vec2 divider = vec2(cos(elapsedTime*2.), sin(elapsedTime*2.));
 			float side = (position.x * divider.y) - (position.y * divider.x);
 
-			gl_FragColor = abs(side) < .01 + 0.01 * sin(elapsedTime * 1.) ? on : off;
-		} else if(stage <= 8.){
+			gl_FragColor = abs(side) < .01 + 0.1 * sin(elapsedTime * 2.) ? on : off;
+		} else if(stage <= 5.){
 				vec2 normPosition = (position.xz + position.yx) / 100.;
 				float b = 0.3*(sin(elapsedTime*3.0+30.0*position.y)+1.);
 				//gl_FragColor = vec4(vec3(b), 1.);
 
 				//Color
-				vec3 color = colorTemp(4000. + (1-b+0.3) * 5000.,1.);
+				vec3 color = colorTemp(4000. + (1-b+0.3) * 5000.,1.0);
 
-				gl_FragColor = vec4(color*b, 1.);
-		} else if(stage <= 9.){
-				float t = sin(elapsedTime)*.2;
+				gl_FragColor = vec4(color*b*animate00(stage), 1.);
+		} /*else if(stage <= 6.){
+			//Tilting room
+
+				float t = sin(elapsedTime)*.1;
 				vec2 fromCenter = center.yz - position.yz;
 				vec2 rot = vec2(sin(t), cos(t));
 
-				float b = sin(100.*dot(rot, fromCenter));
-			/*float angle = mod(elapsedTime, TWO_PI);
-
-			float b = mod( angle - atan(fromCenter.x / fromCenter.y)  , TWO_PI);
-			if(b > TWO_PI){
-				b -= TWO_PI;
-			}
-			float c = abs(b / TWO_PI );
-			*/
+				float b = sin(50.*dot(rot, fromCenter));
+			
 			//float c = 0.5*(sin(b+elapsedTime)+1.);
-				gl_FragColor = vec4(vec3(b), 1.);		
-		} else if(stage <= 10.){
+				gl_FragColor = vec4(vec3(b)*animate00(stage), 1.);		
+		} else if(stage <= 6.){
 				float t = elapsedTime;
 				vec2 fromCenter = center.yx - position.yx;
 				vec2 rot = vec2(sin(t), cos(t));
 
 				float r = (1.+sin(4.*dot(rot, fromCenter)))*0.5;
 				
-				vec3 color = colorTemp(4000. + r * 5000.,1.);
+				vec3 color = colorTemp(animate00(stage)*4000. +2000. + r * 5000.,1.);
 
-				gl_FragColor = vec4(color, 1.);		
+				gl_FragColor = vec4(color*animate00(stage), 1.);		
 
-		} else if(stage <= 11.){
+		} */else if(stage <= 6.){
 				float t = elapsedTime;
 				vec2 fromCenter = center.yx - position.yx;
 				vec2 rot = vec2(sin(t), cos(t));
 
-				float r = sin(2.*dot(rot, fromCenter));
-				float g = sin(4.*dot(rot, fromCenter));
-				float b = sin(6.*dot(rot, fromCenter));
+				float r = sin(2.*dot(rot, fromCenter))*animate00(stage);
+				float g = sin(4.*dot(rot, fromCenter))*animate00(stage);
+				float b = sin(6.*dot(rot, fromCenter))*animate00(stage);
 
 
 				gl_FragColor = vec4(r,g,b, 1.);		
-		} else if(stage <= 12.){
-				vec3 fromCenter = center.xyz - position.xyz;
-				float b = sin(20.*mod(length(fromCenter)+(0.2*sin(elapsedTime*5.)), 10.));
+		} else if(stage <= 7.){
+				//Spheres
+				vec3 c = center;
+				c.x += 0.05;
+				c.y -= 0.02;
+				vec3 fromCenter = c.xyz - position.xyz;
+				float b = sin(500.*mod(length(fromCenter)+(0.02*sin(elapsedTime*1.)), 10.));
 
 				gl_FragColor = vec4(vec3(b), 1.);
 
-		} else if(stage <= 13.) {
+		} /*else if(stage <= 13.) {
 				vec2 normPosition = (position.xz + position.yx) / 100.;
 				float b = quasi(elapsedTime*0.04, (normPosition)*200.);
 				gl_FragColor = vec4(vec3(b), 1.);
-		} else if(stage <= 14){ 
+		} *//*else if(stage <= 8){ 
 			// Text on end wall
 			if(position.y == center.y * 2.){
 				vec2 samplePos = position.xz;
@@ -353,21 +356,47 @@ void main() {
 				gl_FragColor = curSample;
 			}
 
-		}
-		else if(stage <= 15){ 
+		}*/
+		else if(stage <= 8){ 
 			// Text on ceilling
-			if(position.y == center.y * 2.){
-				vec2 samplePos = position.xz;
-				samplePos.x -= sin(elapsedTime)* 0.02;
-				samplePos.y -= 0.05;
-				samplePos *= 2.;
-				samplePos *= 1024.;
+			//if(position.y == center.y * 2.){
+				vec2 samplePos = position.yx - center.yx;
+				samplePos.y *= -1;
+				samplePos *= textureSize.x * mod(elapsedTime, 20);
+				samplePos += textureSize / 2;
+				//sampl
 				vec4 curSample = texture2DRect(texture, samplePos);
 
 				gl_FragColor = curSample;
-			}
+				//gl_FragColor = vec4(position.x*2, position.y, position.z*3, 1);
+			//}
 
 		}
+		else if(stage <= 9) {
+			if(gl_TexCoord[0].x < 1024.) {
+				gl_FragColor = vec4(1., 0., 0., 1.);
+			} else if(gl_TexCoord[0].x < 2048.) {
+				gl_FragColor = vec4(0., 1., 0., 1.);
+			} else {
+				gl_FragColor= vec4(0., 0., 1., 1.);
+			}
+		}
+		else if(stage <= 10) {
+			float spacing = sin(elapsedTime) * .8 + 1;
+			vec2 offset = rotate(vec2(1, 0), .6 * elapsedTime);
+			float result = length(mod(position.xy + offset, spacing) * 2 - spacing / 2);
+			gl_FragColor = (result < spacing / 2) ? on : off;
+		}
+
+		/*else if(stage <= 4.) {
+			// moving outlines 
+			const float speed = 10.;
+			const float scale = 6.;
+			float localTime = 5. * randomOffset + elapsedTime;
+			gl_FragColor = 
+			(mod((-position.x - position.y + position.z) + (localTime * speed), scale) > scale / 2.) ?
+			on : off;
+		} */
 	}
 }
 
