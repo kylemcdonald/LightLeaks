@@ -13,7 +13,7 @@ bool natural(const ofFile& a, const ofFile& b) {
 	}
 }
 
-void processGraycodeLevel(int i, int n, int dimensions, string normalPath, string inversePath, Mat cameraMask, Mat& confidence, Mat& binaryCoded) {
+void processGraycodeLevel(int i, int n, int dimensions, string normalPath, string inversePath, Mat cameraMask, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat) {
 	ofLogVerbose() << "loading " << normalPath <<  " + " << inversePath << " " << i << " of " << n;
 	ofImage imageNormal, imageInverse;
 	imageNormal.loadImage(normalPath);
@@ -24,6 +24,15 @@ void processGraycodeLevel(int i, int n, int dimensions, string normalPath, strin
 	convertColor(imageInverse, imageInverseGray, CV_RGB2GRAY);
 	imageNormalGray &= cameraMask;
 	imageInverseGray &= cameraMask;
+	if(i == 0) {
+		minMat = min(imageNormalGray, imageInverseGray);
+		maxMat = max(imageNormalGray, imageInverseGray);
+	} else {
+		min(minMat, imageNormalGray, minMat);
+		min(minMat, imageInverseGray, minMat);
+		max(maxMat, imageNormalGray, maxMat);
+		max(maxMat, imageInverseGray, maxMat);
+	}
 	float totalVariation = 0;
 	for(int j = 0; j < n; j++) {
 		totalVariation += 1 << (n - j - 1);
@@ -80,12 +89,14 @@ void testApp::setup() {
 	binaryCodedVertical = Mat::zeros(camHeight, camWidth, CV_16UC1);
 	
 	Mat cameraMaskMat = toCv(cameraMask);
+	//imitate(minImage, cameraMask);
+	//imitate(maxImage, cameraMask);
 	
 	for(int i = 0; i < horizontalBits; i++) {
-		processGraycodeLevel(i, horizontalBits, 2, hnFiles[i].path(), hiFiles[i].path(), cameraMaskMat, camConfidence, binaryCodedHorizontal);
+		processGraycodeLevel(i, horizontalBits, 2, hnFiles[i].path(), hiFiles[i].path(), cameraMaskMat, camConfidence, binaryCodedHorizontal, minImage, maxImage);
 	}
 	for(int i = 0; i < verticalBits; i++) {
-		processGraycodeLevel(i, verticalBits, 2, vnFiles[i].path(), viFiles[i].path(), cameraMaskMat, camConfidence, binaryCodedVertical);
+		processGraycodeLevel(i, verticalBits, 2, vnFiles[i].path(), viFiles[i].path(), cameraMaskMat, camConfidence, binaryCodedVertical, minImage, maxImage);
 	}
 	grayToBinary(binaryCodedHorizontal, horizontalBits);
 	grayToBinary(binaryCodedVertical, verticalBits);
@@ -111,23 +122,20 @@ void testApp::setup() {
 		}
 	}
 	
+	ofLogVerbose() << "saving min and max";
+	saveImage(minImage, "minImage.png");
+	saveImage(maxImage, "maxImage.png");
+	
 	ofLogVerbose() << "saving proConfidence";
-	ofFloatPixels proConfidencePixels;
-	toOf(proConfidence, proConfidencePixels);
-	ofSaveImage(proConfidencePixels, "proConfidence.exr");
+	saveImage(proConfidence, "proConfidence.exr");
 	
 	ofLogVerbose() << "saving proMap";
-	ofShortPixels proMapPixels;
-	toOf(proMap, proMapPixels);
-	ofSaveImage(proMapPixels, "proMap.png");
+	saveImage(proMap, "proMap.png");
 	
 	ofLogVerbose() << "saving camConfidence";
-	ofFloatPixels camConfidencePixels;
-	toOf(camConfidence, camConfidencePixels);
-	ofSaveImage(camConfidencePixels, "camConfidence.exr");
+	saveImage(camConfidence, "camConfidence.exr");
 	
-	ofLogVerbose() << "merging binaryCoded";
-	ofShortPixels binaryCodedPixels;
+	ofLogVerbose() << "saving binaryCoded";
 	Mat binaryCoded, emptyChannel;
 	emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);
 	vector<Mat> channels;
@@ -135,9 +143,7 @@ void testApp::setup() {
 	channels.push_back(binaryCodedHorizontal);
 	channels.push_back(emptyChannel);
 	merge(channels, binaryCoded);
-	toOf(binaryCoded, binaryCodedPixels);
-	ofLogVerbose() << "saving binaryCoded";
-	ofSaveImage(binaryCodedPixels, "binaryCoded.png");
+	saveImage(binaryCoded, "binaryCoded.png");
 }
 
 void testApp::update() {

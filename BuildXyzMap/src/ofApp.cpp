@@ -31,8 +31,8 @@ void ofApp::setup() {
 	ofDirectory dir;
 	dir.listDir(".");
 	for(int i = 0; i < dir.size(); i++) {
-		if(dir.getFile(i).isDirectory()) {
-			string path = dir.getPath(i);
+		string path = dir.getPath(i);
+		if(dir.getFile(i).isDirectory() && path[0] != '-') {
 			ofLogVerbose() << "processing " << path;
 			ofFloatImage xyzMap, proConfidence;
 			ofShortImage proMap;
