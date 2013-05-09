@@ -234,12 +234,33 @@ void main() {
 		return;
 	}*/
 
-	float stages = 10.;
+	float stages = 11.;
 	float stage = 0+mod(elapsedTime * .05, stages);
 
 	gl_FragColor = vec4(0);
-	if(position.z > 0 || (stage <= 9 && stage > 8)){
 
+	/*{
+		//if(present == 0 || position.z < 0.01) return;
+		float speed = 0.35;
+		int i = int(gl_TexCoord[0].x/1024);
+		gl_FragColor = (mod(elapsedTime+i*speed/3.,speed) > speed*0.66666) ? on : off;
+		return;
+	}*/
+	/*{
+		vec2 offset = vec2(0.2, -0.1);
+		vec2 tc = position.xy + offset;
+  		vec2 p = -1.0 + 2.0 * tc;
+  		float len = length(p);
+  		
+  		vec2 uv = tc + (p/len)*cos(len*12.0- elapsedTime *4.0)*0.02 - offset;
+  		vec3 col = texture2DRect(texture,vec2(0,0)+uv*1024.).xyz;
+  		gl_FragColor = vec4(col,1.0);
+
+
+		return;
+	}*/
+
+	if(position.z > 0 || (stage <= 9 && stage > 8)  || (stage <= 11 && stage > 10)){
 		
 		if(stage <= 1.) {
 
@@ -386,6 +407,19 @@ void main() {
 			vec2 offset = rotate(vec2(1, 0), .6 * elapsedTime);
 			float result = length(mod(position.xy + offset, spacing) * 2 - spacing / 2);
 			gl_FragColor = (result < spacing / 2) ? on : off;
+		} else if(stage <= 11){
+			float i = mod(stage,1);
+
+			vec2 screenSpace = gl_TexCoord[0].xy - vec2(512,400);
+			screenSpace /= 2000.;
+			vec2 worldSpace = position.xy;
+			worldSpace -= center.xy;
+			vec2 mixedSpace = mix(screenSpace, worldSpace, i);
+			if(length(mixedSpace) < .1) {
+				gl_FragColor =  on;
+				if(present == 0)
+					gl_FragColor = vec4(vec3(1-i), 1);
+			}
 		}
 
 		/*else if(stage <= 4.) {
