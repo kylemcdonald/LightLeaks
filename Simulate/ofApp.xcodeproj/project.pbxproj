@@ -13,7 +13,6 @@
 		1d5f3298c2fa073628012944b1efde88 /* ofxCvContourFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = c76de5c29bdbd2caa1dd0021a7376220 /* ofxCvContourFinder.cpp */; };
 		2023ef517ed2d8b397511d4bf2052690 /* Helpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = b9076967f8c54a04362c04aa9e3bb906 /* Helpers.cpp */; };
 		250a95ba26587be85db0a353e6e1dea2 /* ofxCvColorImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ce9c7160245b19131dae61282ee6cb53 /* ofxCvColorImage.cpp */; };
-		2700D3F7173D3EDC00825305 /* LightLeaksUtilities.h in Sources */ = {isa = PBXBuildFile; fileRef = 2700D3F6173D3EDC00825305 /* LightLeaksUtilities.h */; };
 		27B6E145173BAFDE00E0A22C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27B6E142173BAFDE00E0A22C /* main.cpp */; };
 		27B6E146173BAFDE00E0A22C /* ofApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27B6E143173BAFDE00E0A22C /* ofApp.cpp */; };
 		2b11014060cfa00ea494fbc6fbb71886 /* guiTypeTextDropDown.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4f64d7dd70c6b5b1fc395ded45f21650 /* guiTypeTextDropDown.cpp */; };
@@ -138,7 +137,6 @@
 		1e95efd35ed9c5d97f2f015ed292592d /* timer.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = timer.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/timer.h; sourceTree = SOURCE_ROOT; };
 		1eaed5cffef5186b868078917fbc5992 /* aiAssert.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = aiAssert.h; path = ../../../addons/ofxAssimpModelLoader/libs/assimp/include/aiAssert.h; sourceTree = SOURCE_ROOT; };
 		25f371915e6771cea7595d51145f19cc /* guiTypeText.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = guiTypeText.cpp; path = ../../../addons/ofxControlPanel/src/guiTypeText.cpp; sourceTree = SOURCE_ROOT; };
-		2700D3F6173D3EDC00825305 /* LightLeaksUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LightLeaksUtilities.h; path = ../../SharedCode/LightLeaksUtilities.h; sourceTree = "<group>"; };
 		27B6E142173BAFDE00E0A22C /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		27B6E143173BAFDE00E0A22C /* ofApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofApp.cpp; sourceTree = "<group>"; };
 		27B6E144173BAFDE00E0A22C /* ofApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofApp.h; sourceTree = "<group>"; };
@@ -803,7 +801,6 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				2700D3F6173D3EDC00825305 /* LightLeaksUtilities.h */,
 				27B6E142173BAFDE00E0A22C /* main.cpp */,
 				27B6E143173BAFDE00E0A22C /* ofApp.cpp */,
 				27B6E144173BAFDE00E0A22C /* ofApp.h */,
@@ -1191,7 +1188,6 @@
 				dbcb84a37f9aecc254870d79a0a7486e /* Wrappers.cpp in Sources */,
 				27B6E145173BAFDE00E0A22C /* main.cpp in Sources */,
 				27B6E146173BAFDE00E0A22C /* ofApp.cpp in Sources */,
-				2700D3F7173D3EDC00825305 /* LightLeaksUtilities.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

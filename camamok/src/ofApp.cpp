@@ -49,6 +49,7 @@ void ofApp::setup() {
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	
 	xyzShader.load("xyz.vs", "xyz.fs");
+	normalShader.load("normal.vs", "normal.fs");
 	ofVec3f min, max;
 	getBoundingBox(objectMesh, min, max);
 	zero = min;
@@ -57,6 +58,7 @@ void ofApp::setup() {
 	cout << "Using min " << min << " max " << max << " and range " << range << endl;
 	
 	referenceImage.loadImage("referenceImage.jpg");
+	referenceImage.resize(referenceImage.getWidth() / 4, referenceImage.getHeight() / 4);
 	ofSetWindowShape(referenceImage.getWidth(), referenceImage.getHeight());
 	
 	ofFbo::Settings settings;
@@ -64,7 +66,8 @@ void ofApp::setup() {
 	settings.height = referenceImage.getHeight();
 	settings.useDepth = true;
 	settings.internalformat = GL_RGBA32F_ARB;
-	fbo.allocate(settings);
+	fboPositions.allocate(settings);
+	fboNormals.allocate(settings);
 }
 
 void ofApp::update() {
@@ -317,9 +320,12 @@ void ofApp::saveCalibration() {
 
 void ofApp::saveXyzMap() {
 	ofFloatPixels pix;
-	fbo.readToPixels(pix);
+	fboPositions.readToPixels(pix);
 	pix.mirror(true, false);
 	ofSaveImage(pix, "xyzMap.exr");
+	fboNormals.readToPixels(pix);
+	pix.mirror(true, false);
+	ofSaveImage(pix, "normalMap.exr");
 }
 
 void ofApp::setupControlPanel() {
@@ -422,6 +428,7 @@ void ofApp::updateRenderMode() {
 }
 
 void ofApp::drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg, ofColor fg) {
+	ofPushStyle();
 	glPushAttrib(GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
 	//glEnable(GL_DEPTH_TEST);
@@ -429,12 +436,14 @@ void ofApp::drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor
 	ofSetColor(color);
 	float w = ofGetWidth();
 	float h = ofGetHeight();
-	ofSetLineWidth(1.5);
+	ofSetLineWidth(0);
+	ofNoFill();
 	ofLine(position - ofVec2f(w,0), position + ofVec2f(w,0));
 	ofLine(position - ofVec2f(0,h), position + ofVec2f(0,h));
 	ofCircle(position, geti("selectedPointSize"));
 	drawHighlightString(ofToString(label), position + tooltipOffset, bg, fg);
 	glPopAttrib();
+	ofPopStyle();
 }
 	
 void ofApp::drawSelectionMode() {
@@ -498,7 +507,7 @@ void ofApp::drawOverlay() {
 	ofPopStyle();
 	
 	if(ofGetKeyPressed('`')) {
-		fbo.begin();
+		fboPositions.begin();
 		ofClear(0);
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glPushMatrix();
@@ -524,13 +533,40 @@ void ofApp::drawOverlay() {
 		glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
 		glPopAttrib();
-		fbo.end();
+		fboPositions.end();
+		
+		fboNormals.begin();
+		ofClear(0);
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		glPushMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		
+		if(calibrationReady) {
+			intrinsics.loadProjectionMatrix(10, 2000);
+			applyMatrix(modelMatrix);
+			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+			normalShader.begin();
+			objectMesh.drawFaces();
+			normalShader.end();
+		}
+		
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopAttrib();
+		fboNormals.end();
 		
 		ofSetColor(255);
 		ofPushMatrix();
-		ofTranslate(0, fbo.getHeight());
+		ofTranslate(0, fboPositions.getHeight());
 		ofScale(1, -1);
-		fbo.draw(0, 0);
+		fboPositions.draw(0, 0);
+		fboNormals.draw(fboPositions.getWidth() / 2, 0);
 		ofPopMatrix();
 	}
 }
