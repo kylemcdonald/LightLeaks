@@ -8,6 +8,7 @@ void testApp::setup() {
 	oscIn.setup(9000);
 	oscOut.setup("disco.local", 9001);
 	capturing = false;
+	manual = false;
 	camera.setup();
 }
 
@@ -35,9 +36,14 @@ void testApp::update() {
 	}
 	
 	if(camera.isPhotoNew()) {
-		ofxOscMessage msgOut;
-		msgOut.setAddress("/newPhoto");
-		oscOut.sendMessage(msgOut);
+		if(manual) {
+			camera.savePhoto("out.jpg");
+			manual = false;
+		} else {
+			ofxOscMessage msgOut;
+			msgOut.setAddress("/newPhoto");
+			oscOut.sendMessage(msgOut);
+		}
 	}
 	
 	ofxOscMessage msgOut;
@@ -58,4 +64,11 @@ void testApp::draw() {
 	}
 	ofDrawBitmapStringHighlight("savePath: " + savePath, 10, 20);
 	ofDrawBitmapStringHighlight("capturing: " + ofToString(capturing), 10, 40);
+}
+
+void testApp::keyPressed(int key) {
+	if(key == ' ') {
+		camera.takePhoto();
+		manual = true;
+	}
 }

@@ -18,6 +18,7 @@ string curDirectory;
 long bufferTime = 100;
 bool needToCapture = false;
 long captureTime = 0;
+bool referenceImage = false;
 
 void testApp::generate() {
 	generator.setSize(testApp::tw, testApp::th);
@@ -70,12 +71,16 @@ void testApp::update() {
 		camera.update();
 	}
 	if(camera.isPhotoNew()) {
-		camera.savePhoto(curDirectory + ofToString(pattern) + ".jpg");
-		if(nextState()) {
-			captureTime = ofGetElapsedTimeMillis();
-			needToCapture = true;
+		if(referenceImage) {
+			camera.savePhoto("referenceImage.jpg");
 		} else {
-			capturing = false;
+			camera.savePhoto(curDirectory + ofToString(pattern) + ".jpg");
+			if(nextState()) {
+				captureTime = ofGetElapsedTimeMillis();
+				needToCapture = true;
+			} else {
+				capturing = false;
+			}
 		}
 	}
 }
@@ -100,6 +105,10 @@ void testApp::keyPressed(int key) {
 	if(key == ' ') {
 		camera.takePhoto();
 		capturing = true;
+	}
+	if(key == 'r') {
+		camera.takePhoto();
+		referenceImage = true;
 	}
 	if(key == 'f') {
 		ofToggleFullscreen();

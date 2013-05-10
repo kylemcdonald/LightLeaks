@@ -11,10 +11,13 @@ public:
 	void update();
 	void draw();
 	
+	void keyPressed(int key);
+	
 	ofxEdsdk::Camera camera;
 	ofxOscReceiver oscIn;
 	ofxOscSender oscOut;
 	
 	string savePath;
 	bool capturing;
+	bool manual;
 };
