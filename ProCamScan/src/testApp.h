@@ -18,4 +18,6 @@ public:
 	int horizontalBits, verticalBits, camWidth, camHeight, proWidth, proHeight;
 	cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical, minImage, maxImage;
 	ofImage cameraMask;
+
+	cv::Mat proConfidence, proMap, mean, stddev, count;
 };

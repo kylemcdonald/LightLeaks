@@ -6,16 +6,13 @@ using namespace ofxCv;
 using namespace cv;
 
 void buildProMap(int proWidth, int proHeight,
-								 ofShortPixels& binaryCodedPix,
-								 ofFloatPixels& camConfidencePix,
+								 const Mat& binaryCoded,
+								 const Mat& camConfidence,
 								 Mat& proConfidence,
 								 Mat& proMap,
 								 Mat& mean,
 								 Mat& stddev,
-								 Mat& count) {
-	Mat binaryCoded = toCv(binaryCodedPix);
-	Mat camConfidence = toCv(camConfidencePix);
-	
+								 Mat& count) {	
 	int camWidth = camConfidence.cols, camHeight = camConfidence.rows;
 	vector< vector< vector<Vec3w> > > mapping(proHeight, vector< vector<Vec3w> >(proWidth));
 	

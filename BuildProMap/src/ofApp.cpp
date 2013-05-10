@@ -15,10 +15,12 @@ void ofApp::setup() {
 	
 	ofLoadImage(binaryCodedPix, "binaryCoded.png");
 	ofLoadImage(camConfidencePix, "camConfidence.exr");
+	Mat binaryCoded = toCv(binaryCodedPix);
+	Mat camConfidence = toCv(camConfidencePix);
 	
 	buildProMap(proWidth, proHeight,
-							binaryCodedPix,
-							camConfidencePix,
+							binaryCoded,
+							camConfidence,
 							proConfidence,
 							proMap,
 							mean,

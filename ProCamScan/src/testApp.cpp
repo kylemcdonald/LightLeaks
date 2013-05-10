@@ -1,5 +1,7 @@
 #include "testApp.h"
 
+#include "LightLeaksUtilities.h"
+
 using namespace ofxCv;
 using namespace cv;
 
@@ -112,6 +114,21 @@ void testApp::setup() {
 	channels.push_back(emptyChannel);
 	merge(channels, binaryCoded);
 	saveImage(binaryCoded, "binaryCoded.png");
+	
+	buildProMap(proWidth, proHeight,
+							binaryCoded,
+							camConfidence,
+							proConfidence,
+							proMap,
+							mean,
+							stddev,
+							count);
+	
+	saveImage(proConfidence, "proConfidence.exr");
+	saveImage(proMap, "proMap.png");
+	saveImage(mean, "mean.png");
+	saveImage(stddev, "stddev.exr");
+	saveImage(count, "count.png");
 }
 
 void testApp::update() {
