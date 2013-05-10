@@ -139,7 +139,7 @@
 		1e95efd35ed9c5d97f2f015ed292592d /* timer.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = timer.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/timer.h; sourceTree = SOURCE_ROOT; };
 		1eaed5cffef5186b868078917fbc5992 /* aiAssert.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = aiAssert.h; path = ../../../addons/ofxAssimpModelLoader/libs/assimp/include/aiAssert.h; sourceTree = SOURCE_ROOT; };
 		25f371915e6771cea7595d51145f19cc /* guiTypeText.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = guiTypeText.cpp; path = ../../../addons/ofxControlPanel/src/guiTypeText.cpp; sourceTree = SOURCE_ROOT; };
-		2797BB611738A5C1001F78FB /* LineArt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LineArt.h; path = ../../../ProCamToolkit/SharedCode/LineArt.h; sourceTree = "<group>"; };
+		2700D400173D409100825305 /* LightLeaksUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LightLeaksUtilities.h; path = ../../SharedCode/LightLeaksUtilities.h; sourceTree = "<group>"; };
 		2797BB621738A5C1001F78FB /* ofxProCamToolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxProCamToolkit.cpp; path = ../../../ProCamToolkit/SharedCode/ofxProCamToolkit.cpp; sourceTree = "<group>"; };
 		2797BB631738A5C1001F78FB /* ofxProCamToolkit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxProCamToolkit.h; path = ../../../ProCamToolkit/SharedCode/ofxProCamToolkit.h; sourceTree = "<group>"; };
 		27CFA3A217397D3100B7D01D /* testApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testApp.cpp; sourceTree = "<group>"; };
@@ -829,7 +829,7 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				2797BB611738A5C1001F78FB /* LineArt.h */,
+				2700D400173D409100825305 /* LightLeaksUtilities.h */,
 				27CFA3A217397D3100B7D01D /* testApp.cpp */,
 				27CFA3A317397D3100B7D01D /* testApp.h */,
 				2797BB621738A5C1001F78FB /* ofxProCamToolkit.cpp */,

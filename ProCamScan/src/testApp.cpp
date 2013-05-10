@@ -1,5 +1,7 @@
 #include "testApp.h"
 
+#include "LightLeaksUtilities.h"
+
 using namespace ofxCv;
 using namespace cv;
 
@@ -154,9 +156,9 @@ void testApp::setup() {
 	grayToBinary(binaryCodedVertical, verticalBits);
 	
 	ofLogVerbose() << "saving results";
-	saveImage(camConfidence, "camConfidence.exr");
-	saveImage(minImage, "minImage.png");
-	saveImage(maxImage, "maxImage.png");
+	//saveImage(camConfidence, "camConfidence.exr");
+	//saveImage(minImage, "minImage.png");
+	//saveImage(maxImage, "maxImage.png");
 	
 	ofLogVerbose() << "saving binaryCoded";
 	Mat binaryCoded, emptyChannel;
@@ -166,9 +168,25 @@ void testApp::setup() {
 	channels.push_back(binaryCodedHorizontal);
 	channels.push_back(emptyChannel);
 	merge(channels, binaryCoded);
-	saveImage(binaryCoded, "binaryCoded.png");
+	//saveImage(binaryCoded, "binaryCoded.png");
     
-    cout<<"Done - Huuray!"<<endl;
+    ofLogVerbose() << "Build Pro Map";
+
+    proWidth = 1024 * 3, proHeight = 768;
+	buildProMap(proWidth, proHeight,
+							binaryCoded,
+							camConfidence,
+							proConfidence,
+							proMap,
+							mean,
+							stddev,
+							count);
+	
+	saveImage(proConfidence, "proConfidence.exr");
+	saveImage(proMap, "proMap.png");
+	//saveImage(mean, "mean.png");
+	//saveImage(stddev, "stddev.exr");
+	//saveImage(count, "count.png");
 }
 
 void testApp::update() {

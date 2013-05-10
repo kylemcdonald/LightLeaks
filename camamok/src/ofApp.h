@@ -18,7 +18,7 @@ public:
 	
 	void setup();
 	void update();
-	void draw();	
+	void draw();
 	void keyPressed(int key);
 	void mousePressed(int x, int y, int button);
 	void mouseReleased(int x, int y, int button);
@@ -35,10 +35,10 @@ public:
 	void saveXyzMap();
 	
 	ofImage referenceImage;
-	ofShader xyzShader;
+	ofShader xyzShader, normalShader;
 	float range;
 	ofVec3f zero;
-	ofFbo fbo;
+	ofFbo fboPositions, fboNormals;
 	
 	ofxAssimpModelLoader model;	
 	ofEasyCam cam;

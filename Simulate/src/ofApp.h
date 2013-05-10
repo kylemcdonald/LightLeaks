@@ -9,7 +9,9 @@ public:
 	void update();
 	void draw();
 	
-	ofShortPixels binaryCodedPix;
-	ofFloatPixels camConfidencePix;
-	cv::Mat proConfidence, proMap, mean, stddev, count;
+	ofShortPixels proMap;
+	ofFloatPixels xyzMap, proConfidence;
+	ofVboMesh mesh;
+	ofEasyCam cam;
+	vector<string> directories;
 };

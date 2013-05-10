@@ -23,4 +23,6 @@ public:
 	ofImage cameraMask;
     
     ofxThreadedImageLoader loader;
+
+	cv::Mat proConfidence, proMap, mean, stddev, count;
 };
