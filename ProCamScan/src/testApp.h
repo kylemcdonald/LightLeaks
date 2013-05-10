@@ -16,9 +16,6 @@ public:
 	ofDirectory dirVerticalNormal, dirVerticalInverse;
 	vector<ofFile> hnFiles, hiFiles, vnFiles, viFiles;
 	int horizontalBits, verticalBits, camWidth, camHeight, proWidth, proHeight;
-	cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical;
-	
-	cv::Mat proMap, proConfidence, totalGuesses;
-	cv::Mat minImage, maxImage;
+	cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical, minImage, maxImage;
 	ofImage cameraMask;
 };

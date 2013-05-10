@@ -58,9 +58,6 @@ void testApp::setup() {
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	
 	string path = "scan/";
-	//int proWidth = 1024, proHeight = 768;
-	//int proWidth = 3 * 512, proHeight = 256;
-	int proWidth = 1024*3, proHeight = 768;
 	
 	dirHorizontalNormal.listDir(path + "horizontal/normal/");
 	dirHorizontalInverse.listDir(path + "horizontal/inverse/");
@@ -101,39 +98,10 @@ void testApp::setup() {
 	grayToBinary(binaryCodedHorizontal, horizontalBits);
 	grayToBinary(binaryCodedVertical, verticalBits);
 	
-	ofLogVerbose() << "building proMap";
-	proMap = Mat::zeros(proHeight, proWidth, CV_16UC3);
-	proConfidence = Mat::zeros(proHeight, proWidth, CV_32FC1);
-	
-	for(int cy = 0; cy < camHeight; cy++) {
-		for(int cx = 0; cx < camWidth; cx++) {
-			float curCamConfidence = camConfidence.at<float>(cy, cx);
-			unsigned short px = binaryCodedVertical.at<unsigned short>(cy, cx);
-			unsigned short py = binaryCodedHorizontal.at<unsigned short>(cy, cx);
-			if(px < proWidth && py < proHeight) {
-				float curProConfidence = proConfidence.at<float>(py, px);
-				if(curCamConfidence > curProConfidence) {
-					proConfidence.at<float>(py, px) = curCamConfidence;
-					Vec3w& curProMap = proMap.at<Vec3w>(py, px);
-					curProMap[0] = cx;
-					curProMap[1] = cy;
-				}
-			}
-		}
-	}
-	
-	ofLogVerbose() << "saving min and max";
+	ofLogVerbose() << "saving results";
+	saveImage(camConfidence, "camConfidence.exr");
 	saveImage(minImage, "minImage.png");
 	saveImage(maxImage, "maxImage.png");
-	
-	ofLogVerbose() << "saving proConfidence";
-	saveImage(proConfidence, "proConfidence.exr");
-	
-	ofLogVerbose() << "saving proMap";
-	saveImage(proMap, "proMap.png");
-	
-	ofLogVerbose() << "saving camConfidence";
-	saveImage(camConfidence, "camConfidence.exr");
 	
 	ofLogVerbose() << "saving binaryCoded";
 	Mat binaryCoded, emptyChannel;
