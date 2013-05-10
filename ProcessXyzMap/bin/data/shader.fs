@@ -3,6 +3,8 @@
  #define TWO_PI (6.2831853072)
 
  uniform sampler2DRect xyzMap;
+ uniform sampler2DRect normalMap;
+ uniform sampler2DRect confidenceMap;
  uniform float elapsedTime;
  uniform sampler2DRect texture;
  uniform vec2 textureSize;
@@ -225,8 +227,15 @@ vec2 rotate(vec2 position, float amount) {
 }
 
 void main() {
-	vec4 curSample = texture2DRect(xyzMap, gl_TexCoord[0].st);
+	vec2 overallOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
+	vec4 curSample = texture2DRect(xyzMap, gl_TexCoord[0].st+overallOffset);
+	vec4 curSampleNormal = texture2DRect(normalMap, gl_TexCoord[0].st+overallOffset);
+	vec4 curSampleConfidence = texture2DRect(confidenceMap, gl_TexCoord[0].st+overallOffset);
+	
 	vec3 position = curSample.xyz;
+	vec3 normalDir = curSampleNormal.xyz;
+	float confidence = curSampleConfidence.x;
+	//position.xy += +overallOffset;
 	float present = curSample.a;
 
 	/*if(present == 0.) {
@@ -241,7 +250,7 @@ void main() {
 
 	/*{
 		//if(present == 0 || position.z < 0.01) return;
-		float speed = 0.35;
+		float speed = 0.35;-
 		int i = int(gl_TexCoord[0].x/1024);
 		gl_FragColor = (mod(elapsedTime+i*speed/3.,speed) > speed*0.66666) ? on : off;
 		return;
@@ -254,11 +263,14 @@ void main() {
   		
   		vec2 uv = tc + (p/len)*cos(len*12.0- elapsedTime *4.0)*0.02 - offset;
   		vec3 col = texture2DRect(texture,vec2(0,0)+uv*1024.).xyz;
-  		gl_FragColor = vec4(col,1.0);
+  		if(present> 0)
+  			gl_FragColor = vec4(1);//vec4(col,1.0);
 
 
 		return;
-	}*/
+	}
+*/
+	if(confidence < 0.8) return;
 
 	if(position.z > 0 || (stage <= 9 && stage > 8)  || (stage <= 11 && stage > 10)){
 		
@@ -288,17 +300,17 @@ void main() {
 
 		} else if(stage <= 3.) {
 			// crazy triangles, grid lines
-			if(position.z > center.z*1.9 && position.y < 1){
-			float speed = .05;
-			float scale = .05;
-			float cutoff = 1.-animate00(stage)*0.2;
-			vec3 cur = mod(position + speed * elapsedTime, scale) / scale;
-			cur *= 1. - abs(normal);
-			/*if(stage < 2.) {
-				gl_FragColor = ((cur.x + cur.y + cur.z) < cutoff) ? off : on;
-			} else {*/
-			gl_FragColor = (max(max(cur.x, cur.y), cur.z) < cutoff) ? off : on;
-		}
+			if(  normalDir.z < 0.5){
+				float speed = .05;
+				float scale = .05;
+				float cutoff = 1.-animate00(stage)*0.2;
+				vec3 cur = mod(position + speed * elapsedTime, scale) / scale;
+				cur *= 1. - abs(normal);
+				/*if(stage < 2.) {
+					gl_FragColor = ((cur.x + cur.y + cur.z) < cutoff) ? off : on;
+				} else {*/
+				gl_FragColor = (max(max(cur.x, cur.y), cur.z) < cutoff) ? off : on;
+			}
 			//}
 		
 		} else if(stage <= 4.) {
@@ -403,10 +415,12 @@ void main() {
 			}
 		}
 		else if(stage <= 10) {
-			float spacing = sin(elapsedTime) * .8 + 1;
-			vec2 offset = rotate(vec2(1, 0), .6 * elapsedTime);
-			float result = length(mod(position.xy + offset, spacing) * 2 - spacing / 2);
-			gl_FragColor = (result < spacing / 2) ? on : off;
+			if(normalDir.z < 0.5){
+				float spacing = sin(elapsedTime) * .8 + 1;
+				vec2 offset = rotate(vec2(1, 0), .6 * elapsedTime);
+				float result = length(mod(position.xy + offset, spacing) * 2 - spacing / 2);
+				gl_FragColor = (result < spacing / 2) ? on : off;
+			}
 		} else if(stage <= 11){
 			float i = mod(stage,1);
 

@@ -13,6 +13,8 @@ public:
 	void keyPressed(int key);
 	
 	ofFloatImage xyzMap;
+    ofFloatImage normalMap;
+    ofFloatImage confidenceMap;
 	ofAutoShader shader;
     
     ofImage img;

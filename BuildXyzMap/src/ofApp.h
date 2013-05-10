@@ -9,5 +9,5 @@ public:
 	void update();
 	void draw();
 	
-	cv::Mat proXyzCombined, proConfidenceCombined;
+	cv::Mat proXyzCombined, proNormalCombined, proConfidenceCombined;
 };

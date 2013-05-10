@@ -25,7 +25,7 @@ void ofApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	
-	float threshold = 0.2;
+	float threshold = 0.0;
 	int scaleFactor = 4;
 	
 	ofDirectory dir;
@@ -34,18 +34,22 @@ void ofApp::setup() {
 		string path = dir.getPath(i);
 		if(dir.getFile(i).isDirectory() && path[0] != '-') {
 			ofLogVerbose() << "processing " << path;
-			ofFloatImage xyzMap, proConfidence;
+			ofFloatImage xyzMap, proConfidence, normalMap;
 			ofShortImage proMap;
 			
 			xyzMap.loadImage(path + "/xyzMap.exr");
+            normalMap.loadImage(path + "/normalMap.exr");
 			proConfidence.loadImage(path + "/proConfidence.exr");
 			proMap.loadImage(path + "/proMap.png");
+
 			Mat xyzMapMat = toCv(xyzMap);
+            Mat normalMapMat = toCv(normalMap);
 			Mat proConfidenceMat = toCv(proConfidence);
 			Mat proMapMat = toCv(proMap);
 			
 			if(proXyzCombined.cols == 0) {
 				proXyzCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
+                proNormalCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
 				proConfidenceCombined = Mat::zeros(proConfidenceMat.rows, proConfidenceMat.cols, CV_32FC1);
 			}
 			
@@ -57,6 +61,7 @@ void ofApp::setup() {
 						proConfidenceCombined.at<float>(y, x) = proConfidenceMat.at<float>(y, x);
 						Vec3w cur = proMapMat.at<Vec3w>(y, x);
 						proXyzCombined.at<Vec4f>(y, x) = xyzMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
+						proNormalCombined.at<Vec4f>(y, x) = normalMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
 					}
 				}
 			}
@@ -64,12 +69,13 @@ void ofApp::setup() {
 	}
 	
 	ofLogVerbose() << "saving results";
-	ofFloatPixels proMapFinal, proConfidenceFinal;
-	toOf(proXyzCombined, proMapFinal);	
+	ofFloatPixels proMapFinal, proNormalFinal, proConfidenceFinal;
+	toOf(proXyzCombined, proMapFinal);
+	toOf(proNormalCombined, proNormalFinal);
 	toOf(proConfidenceCombined, proConfidenceFinal);
 	
 	removeIslands(proConfidenceFinal);
-	ofSaveImage(proConfidenceFinal, "proConfidence.exr");
+	ofSaveImage(proConfidenceFinal, "confidenceMap.exr");
 	
 	ofxCv::threshold(proConfidenceFinal, 0);
 	int w = proXyzCombined.cols, h = proXyzCombined.rows;
@@ -77,10 +83,12 @@ void ofApp::setup() {
 		for(int x = 0; x < w; x++) {
 			if(!proConfidenceCombined.at<float>(y, x)) {
 				proXyzCombined.at<Vec4f>(y, x) = Vec4f(0, 0, 0, 0);
+				proNormalCombined.at<Vec4f>(y, x) = Vec4f(0, 0, 0, 0);
 			}
 		}
 	}
-	ofSaveImage(proMapFinal, "proXyz.exr");
+	ofSaveImage(proMapFinal, "xyzMap.exr");
+	ofSaveImage(proNormalFinal, "normalMap.exr");
 }
 
 void ofApp::update() {
