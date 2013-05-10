@@ -13,15 +13,13 @@ bool natural(const ofFile& a, const ofFile& b) {
 	}
 }
 
-void processGraycodeLevel(int i, int n, int dimensions, string normalPath, string inversePath, Mat cameraMask, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat) {
-	ofLogVerbose() << "loading " << normalPath <<  " + " << inversePath << " " << i << " of " << n;
-	ofImage imageNormal, imageInverse;
-	imageNormal.loadImage(normalPath);
-	imageInverse.loadImage(inversePath);
-	int w = imageNormal.getWidth(), h = imageNormal.getHeight();
+void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat, ofImage * imageNormal, ofImage * imageInverse) {
+    ofLogVerbose() << "Process " << i << " of " << n;
+
+	int w = imageNormal->getWidth(), h = imageNormal->getHeight();
 	cv::Mat imageNormalGray, imageInverseGray;
-	convertColor(imageNormal, imageNormalGray, CV_RGB2GRAY);
-	convertColor(imageInverse, imageInverseGray, CV_RGB2GRAY);
+	convertColor(*imageNormal, imageNormalGray, CV_RGB2GRAY);
+	convertColor(*imageInverse, imageInverseGray, CV_RGB2GRAY);
 	imageNormalGray &= cameraMask;
 	imageInverseGray &= cameraMask;
 	if(i == 0) {
@@ -39,7 +37,10 @@ void processGraycodeLevel(int i, int n, int dimensions, string normalPath, strin
 	}
 	unsigned short curMask = 1 << (n - i - 1);
 	float curVariation = curMask / (dimensions * 255. * totalVariation);
+    
+#pragma omp parallel for
 	for(int y = 0; y < h; y++) {
+#pragma omp parallel for
 		for(int x = 0; x < w; x++) {
 			unsigned char normal = imageNormalGray.at<unsigned char>(y, x);
 			unsigned char inverse = imageInverseGray.at<unsigned char>(y, x);
@@ -88,13 +89,67 @@ void testApp::setup() {
 	Mat cameraMaskMat = toCv(cameraMask);
 	//imitate(minImage, cameraMask);
 	//imitate(maxImage, cameraMask);
-	
+
+    
+    hnImageNormal.resize(horizontalBits, 0);
+    hnImageInverse.resize(horizontalBits, 0);
+
+    viImageNormal.resize(verticalBits, 0);
+    viImageInverse.resize(verticalBits, 0);
+
+    
+    //
+    //Load images
+    //
+    
+    ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images multithreaded";
+
+#pragma omp parallel for
 	for(int i = 0; i < horizontalBits; i++) {
-		processGraycodeLevel(i, horizontalBits, 2, hnFiles[i].path(), hiFiles[i].path(), cameraMaskMat, camConfidence, binaryCodedHorizontal, minImage, maxImage);
-	}
+        ofImage * img = new ofImage();
+        img->setUseTexture(false);
+
+        ofImage * imgI = new ofImage();
+        imgI->setUseTexture(false);
+
+        img->loadImage(hnFiles[i].path());
+        imgI->loadImage(hiFiles[i].path());
+        
+        hnImageNormal[i] = img;
+        hnImageInverse[i] = imgI;
+    }
+    
+
+    ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
+    
+#pragma omp parallel for
+
 	for(int i = 0; i < verticalBits; i++) {
-		processGraycodeLevel(i, verticalBits, 2, vnFiles[i].path(), viFiles[i].path(), cameraMaskMat, camConfidence, binaryCodedVertical, minImage, maxImage);
+        ofImage * img = new ofImage();
+        img->setUseTexture(false);
+        
+        ofImage * imgI = new ofImage();
+        imgI->setUseTexture(false);
+
+        img->loadImage(vnFiles[i].path());
+        imgI->loadImage(viFiles[i].path());
+
+        viImageNormal[i] = img;
+        viImageInverse[i] = imgI;
+    }
+    
+    
+    //Process images
+    ofLogVerbose() << "Process " <<  horizontalBits << " horizontal images";
+	for(int i = 0; i < horizontalBits; i++) {
+		processGraycodeLevel(i, horizontalBits, 2, cameraMaskMat, camConfidence, binaryCodedHorizontal, minImage, maxImage, hnImageNormal[i], hnImageInverse[i]);
 	}
+
+    ofLogVerbose() << "Process " <<  verticalBits << " vertical images";
+	for(int i = 0; i < verticalBits; i++) {
+		processGraycodeLevel(i, verticalBits, 2, cameraMaskMat, camConfidence, binaryCodedVertical, minImage, maxImage, viImageNormal[i], viImageInverse[i]);
+	}
+    
 	grayToBinary(binaryCodedHorizontal, horizontalBits);
 	grayToBinary(binaryCodedVertical, verticalBits);
 	
@@ -112,6 +167,8 @@ void testApp::setup() {
 	channels.push_back(emptyChannel);
 	merge(channels, binaryCoded);
 	saveImage(binaryCoded, "binaryCoded.png");
+    
+    cout<<"Done - Huuray!"<<endl;
 }
 
 void testApp::update() {

@@ -5,6 +5,7 @@
 #include "ofMain.h"
 #include "ofxCv.h"
 #include "ofxProCamToolkit.h"
+#include "ofxThreadedImageLoader.h"
 
 class testApp : public ofBaseApp {
 public:
@@ -15,7 +16,11 @@ public:
 	ofDirectory dirHorizontalNormal, dirHorizontalInverse;
 	ofDirectory dirVerticalNormal, dirVerticalInverse;
 	vector<ofFile> hnFiles, hiFiles, vnFiles, viFiles;
+    vector<ofImage*> hnImageNormal, hnImageInverse, viImageNormal, viImageInverse;
+    
 	int horizontalBits, verticalBits, camWidth, camHeight, proWidth, proHeight;
 	cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical, minImage, maxImage;
 	ofImage cameraMask;
+    
+    ofxThreadedImageLoader loader;
 };
