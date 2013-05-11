@@ -20,8 +20,8 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
     
 	int w = imageNormal->getWidth(), h = imageNormal->getHeight();
 	cv::Mat imageNormalGray, imageInverseGray;
-	convertColor(*imageNormal, imageNormalGray, CV_RGB2GRAY);
-	convertColor(*imageInverse, imageInverseGray, CV_RGB2GRAY);
+    imageNormalGray = toCv(*imageNormal);
+    imageInverseGray = toCv(*imageInverse);
     
     if(cameraMask.cols > 0){
         imageNormalGray &= cameraMask;
@@ -190,7 +190,10 @@ void testApp::setup() {
                 //cout<<"Load "+hnFiles[i].path()<<endl;
                 img->loadImage(hnFiles[i].path());
                 imgI->loadImage(hiFiles[i].path());
-                
+
+                img->setImageType(OF_IMAGE_GRAYSCALE);
+                imgI->setImageType(OF_IMAGE_GRAYSCALE);
+
                 hnImageNormal[i] = img;
                 hnImageInverse[i] = imgI;
             }
@@ -223,6 +226,9 @@ void testApp::setup() {
                 img->loadImage(vnFiles[i].path());
                 imgI->loadImage(viFiles[i].path());
                 
+                img->setImageType(OF_IMAGE_GRAYSCALE);
+                imgI->setImageType(OF_IMAGE_GRAYSCALE);
+                
                 viImageNormal[i] = img;
                 viImageInverse[i] = imgI;
             }
@@ -246,8 +252,6 @@ void testApp::setup() {
             viImageInverse.clear();
             viImageNormal.clear();  
 
-            
-            
  
             grayToBinary(binaryCodedHorizontal, horizontalBits);
             grayToBinary(binaryCodedVertical, verticalBits);
