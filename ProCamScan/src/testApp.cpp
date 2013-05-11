@@ -118,11 +118,11 @@ void testApp::setup() {
             //Error handling
             //
             if(horizontalBits == 0){
-                ofLogError() << "No horizontal images found (searching in data/"+path+"horizontal/normal). Quitting";
+                ofLogError() << "No horizontal images found (searching in data/"+path+"cameraImages/horizontal/normal). Quitting";
                 ofExit();
             }
             if(verticalBits == 0){
-                ofLogError() << "No vertical images found (searching in data/"+path+"vertical/normal). Quitting";
+                ofLogError() << "No vertical images found (searching in data/"+path+"cameraImages/vertical/normal). Quitting";
                 ofExit();
             }
             if(dirHorizontalInverse.size() != dirHorizontalNormal.size()){
