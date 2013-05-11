@@ -10,6 +10,7 @@ public:
 	void draw();
 	
 	ofShortPixels proMap;
+    ofImage maskImage;
 	ofFloatPixels xyzMap, proConfidence;
 	ofVboMesh mesh;
 	ofEasyCam cam;

@@ -28,6 +28,7 @@ void ofApp::setup() {
             ofLoadImage(proMap, path + "/proMap.png");
             ofLoadImage(xyzMap, path + "/xyzMap.exr");
             ofLoadImage(proConfidence, path + "/proConfidence.exr");
+            ofLoadImage(maskImage, path + "/mask.png");
             
             ofFloatColor color = ofColor::fromHsb((255 * i) / scanNames.size(), 255, 255);
             mesh.setMode(OF_PRIMITIVE_POINTS);
@@ -38,8 +39,11 @@ void ofApp::setup() {
                         ofShortColor pxy = proMap.getColor(x, y);
                         int cx = pxy.r, cy = pxy.g;
                         ofFloatColor position = xyzMap.getColor(cx / 4, cy / 4);
-                        mesh.addVertex(ofVec3f(position.r, position.g, position.b));
-                        mesh.addColor(color);
+                        int mask = maskImage.getColor(cx / 4, cy / 4).r;
+                        if(mask > 100){
+                            mesh.addVertex(ofVec3f(position.r, position.g, position.b));
+                            mesh.addColor(color);
+                        }
                     }
                 }
             }
