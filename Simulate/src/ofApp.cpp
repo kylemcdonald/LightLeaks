@@ -10,10 +10,6 @@ float range = 706.26;
 void ofApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
-    
-    
-    setCalibrationDataPathRoot();
-    ofSetLogLevel(OF_LOG_VERBOSE);
 	
     
     vector<ofFile> scanNames = getScanNames();
