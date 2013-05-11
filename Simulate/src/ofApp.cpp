@@ -19,7 +19,8 @@ void ofApp::setup() {
     vector<ofFile> scanNames = getScanNames();
     cout<<scanNames.size()<<endl;
     for(int i=0;i<scanNames.size();i++){
-
+        mesh.push_back(ofVboMesh());
+        drawMesh.push_back(true);
         string path = scanNames[i].path()+"/";
         if(path[0] != '-') {
             ofLogVerbose() << "processing " << path;
@@ -31,7 +32,7 @@ void ofApp::setup() {
             ofLoadImage(maskImage, path + "/mask.png");
             
             ofFloatColor color = ofColor::fromHsb((255 * i) / scanNames.size(), 255, 255);
-            mesh.setMode(OF_PRIMITIVE_POINTS);
+            mesh[i].setMode(OF_PRIMITIVE_POINTS);
             for(int y = 0; y < proMap.getHeight(); y++) {
                 for(int x = 0; x < proMap.getWidth(); x++) {
                     ofFloatColor confidence = proConfidence.getColor(x, y);
@@ -39,17 +40,16 @@ void ofApp::setup() {
                         ofShortColor pxy = proMap.getColor(x, y);
                         int cx = pxy.r, cy = pxy.g;
                         ofFloatColor position = xyzMap.getColor(cx / 4, cy / 4);
-                        int mask = maskImage.getColor(cx / 4, cy / 4).r;
+                        int mask = maskImage.getColor(cx , cy).r;
                         if(mask > 100){
-                            mesh.addVertex(ofVec3f(position.r, position.g, position.b));
-                            mesh.addColor(color);
+                            mesh[i].addVertex(ofVec3f(position.r, position.g, position.b));
+                            mesh[i].addColor(color);
                         }
                     }
                 }
             }
         }
     }
-    
 }
 
 
@@ -61,11 +61,27 @@ void ofApp::draw() {
 	cam.begin();
 	ofTranslate(-maxCorner);
 	ofScale(range, range, range);
-	mesh.draw();
+    for(int i=0;i<mesh.size();i++){
+        if(drawMesh[i]){
+            mesh[i].draw();
+        }
+    }
 	cam.end();
 	
 	for(int i = 0; i < directories.size(); i++) {
-		ofSetColor(ofColor::fromHsb((255 * i) / directories.size(), 255, 255));
+        if(drawMesh[i]){
+            ofSetColor(ofColor::fromHsb((255 * i) / directories.size(), 255, 255));
+        } else {
+            ofSetColor(ofColor::fromHsb((255 * i) / directories.size(), 255, 100));
+        }
+
 		ofDrawBitmapString(directories[i], 10, i * 20 + 10);
 	}
+}
+
+void ofApp::keyPressed(int key){
+    int n = key-'1';
+    if(n >= 0 && n <mesh.size()){
+        drawMesh[n] = ! drawMesh[n];
+    }
 }

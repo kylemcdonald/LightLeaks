@@ -12,7 +12,10 @@ public:
 	ofShortPixels proMap;
     ofImage maskImage;
 	ofFloatPixels xyzMap, proConfidence;
-	ofVboMesh mesh;
+	vector<ofVboMesh> mesh;
+    vector<bool> drawMesh;
 	ofEasyCam cam;
 	vector<string> directories;
+    
+    void keyPressed(int key);
 };
