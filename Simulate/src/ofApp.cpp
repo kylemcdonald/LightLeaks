@@ -36,7 +36,7 @@ void ofApp::setup() {
             for(int y = 0; y < proMap.getHeight(); y++) {
                 for(int x = 0; x < proMap.getWidth(); x++) {
                     ofFloatColor confidence = proConfidence.getColor(x, y);
-                    if(confidence.r > .3) {
+                    if(confidence.r > .25) {
                         ofShortColor pxy = proMap.getColor(x, y);
                         int cx = pxy.r, cy = pxy.g;
                         ofFloatColor position = xyzMap.getColor(cx / 4, cy / 4);
