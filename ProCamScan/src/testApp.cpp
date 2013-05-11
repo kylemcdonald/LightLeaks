@@ -83,8 +83,8 @@ void testApp::setup() {
         
         
         
-        ofFile proConfidenceFile = ofFile(getProMap(scanName).path()+"/proConfidence.exr");
-        ofFile proMapFile = ofFile(getProMap(scanName).path()+"/proMap.png");
+        ofFile proConfidenceFile = ofFile(getProMapDir(scanName).path()+"/proConfidence.exr");
+        ofFile proMapFile = ofFile(getProMapDir(scanName).path()+"/proMap.png");
         bool outputFilesExist = proConfidenceFile.exists() || proMapFile.exists();
         if(outputFilesExist){
             ofLogVerbose()<<"Skipping "<<scanName<<" since output files (data/"<<scanName<<"proMaps) already exist";
