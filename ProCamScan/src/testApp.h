@@ -22,6 +22,6 @@ public:
     cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical, minImage, maxImage;
     ofImage cameraMask;
     
-    cv::Mat proConfidence, proMap, mean, stddev, count;
+    cv::Mat proConfidence, proMap;
 
 };

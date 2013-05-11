@@ -5,17 +5,20 @@
 using namespace ofxCv;
 using namespace cv;
 
+void medianThreshold(cv::Mat& src, float thresholdValue) {
+	cv::Mat thresholded, filtered;
+	ofxCv::threshold(src, thresholded, thresholdValue);
+	ofxCv::medianBlur(thresholded, filtered, 3);
+	thresholded &= filtered;
+	min(src, thresholded, src);
+}
+
 void buildProMap(int proWidth, int proHeight,
 								 const Mat& binaryCoded,
 								 const Mat& camConfidence,
 								 Mat& proConfidence,
-								 Mat& proMap,
-								 Mat& mean,
-								 Mat& stddev,
-								 Mat& count) {	
+								 Mat& proMap) {	
 	int camWidth = camConfidence.cols, camHeight = camConfidence.rows;
-	vector< vector< vector<Vec3w> > > mapping(proHeight, vector< vector<Vec3w> >(proWidth));
-	
 	ofLogVerbose() << "building proMap";
 	proMap = Mat::zeros(proHeight, proWidth, CV_16UC3);
 	proConfidence = Mat::zeros(proHeight, proWidth, CV_32FC1);
@@ -26,7 +29,6 @@ void buildProMap(int proWidth, int proHeight,
 			unsigned short px = pxy[0], py = pxy[1];
 			if(px < proWidth && py < proHeight) {
 				Vec3w curProMap(cx, cy, 0);
-				mapping[py][px].push_back(curProMap);
 				float curProConfidence = proConfidence.at<float>(py, px);
 				if(curCamConfidence > curProConfidence) {
 					proConfidence.at<float>(py, px) = curCamConfidence;
@@ -35,24 +37,7 @@ void buildProMap(int proWidth, int proHeight,
 			}
 		}
 	}
-	
-	ofLogVerbose() << "processing mean and stddev" << endl;
-	mean = Mat::zeros(proHeight, proWidth, CV_16UC3);
-	stddev = Mat::zeros(proHeight, proWidth, CV_32FC3);
-	count = Mat::zeros(proHeight, proWidth, CV_8UC1);
-	for(int py = 0; py < proHeight; py++) {
-		for(int px = 0; px < proWidth; px++) {
-			cv::Scalar curMean, curStddev;
-			meanStdDev(mapping[py][px], curMean, curStddev);
-			mean.at<Vec3w>(py, px) = Vec3w(curMean[0], curMean[1], 0);
-			stddev.at<Vec3f>(py, px) = Vec3f(curStddev[0] / proWidth, curStddev[1] / proWidth, 0);
-			count.at<unsigned char>(py, px) += mapping[py][px].size();
-		}
-	}
-    
-    
-    
-
+	medianThreshold(proConfidence, .25);
 }
 
 void setCalibrationDataPathRoot(){

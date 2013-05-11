@@ -274,12 +274,7 @@ void testApp::setup() {
                         binaryCoded,
                         camConfidence,
                         proConfidence,
-                        proMap,
-                        mean,
-                        stddev,
-                        count);
-            
-            
+                        proMap);
 
             saveImage(proConfidence, path+"/proConfidence.exr");
             saveImage(proMap, path+"/proMap.png");
