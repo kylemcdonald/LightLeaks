@@ -82,7 +82,7 @@ void testApp::setup() {
 
         bool outputFilesExist = proConfidenceFile.exists() || proMapFile.exists();
         if(outputFilesExist){
-            ofLogVerbose()<<"Skipping "<<scanName<<" since output files (data/"<<scanName<<"proMaps) already exist";
+            ofLogVerbose()<<"Skipping "<<scanName<<" since output files (SharedData/"<<scanName<<"proMaps) already exist";
         }
         if(scanName[0] == '_'){
             ofLogVerbose()<<"Skipping "<<scanName<<" since it's underscored";
@@ -118,11 +118,11 @@ void testApp::setup() {
             //Error handling
             //
             if(horizontalBits == 0){
-                ofLogError() << "No horizontal images found (searching in data/"+path+"cameraImages/horizontal/normal). Quitting";
+                ofLogError() << "No horizontal images found (searching in SharedData/"+path+"cameraImages/horizontal/normal). Quitting";
                 ofExit();
             }
             if(verticalBits == 0){
-                ofLogError() << "No vertical images found (searching in data/"+path+"cameraImages/vertical/normal). Quitting";
+                ofLogError() << "No vertical images found (searching in SharedData/"+path+"cameraImages/vertical/normal). Quitting";
                 ofExit();
             }
             if(dirHorizontalInverse.size() != dirHorizontalNormal.size()){
@@ -140,7 +140,7 @@ void testApp::setup() {
             bool maskLoaded = cameraMask.loadImage(camMaskPath);
             cameraMask.setImageType(OF_IMAGE_GRAYSCALE);
             if(!maskLoaded){
-                ofLogVerbose() << "No file called cameraMask.png in data/cameraMasks/"+scanName+" folder. Continuing without a camera mask";
+                ofLogVerbose() << "No file called mask.png in SharedData/"+scanName+" folder. Continuing without a camera mask";
             } else {
                 ofLogVerbose() << "Camera mask loaded";
             }

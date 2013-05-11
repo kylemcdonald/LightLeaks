@@ -56,17 +56,14 @@ void buildProMap(int proWidth, int proHeight,
 }
 
 void setCalibrationDataPathRoot(){
-    ofSetDataPathRoot(ofToDataPath("",true)+"../../../data/");
+    ofSetDataPathRoot(ofToDataPath("",true)+"../../../SharedData/");
 
     return ;
 }
 
 
 vector<ofFile> getScanNames(){
-    cout<<ofToDataPath("",true)<<endl;
     ofDirectory rootDir;
-   // rootDir.open(".");
-
     rootDir.listDir(ofToDataPath("",true));
     
     vector<ofFile> ret;
