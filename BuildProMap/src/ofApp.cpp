@@ -8,6 +8,7 @@ using namespace cv;
 void ofApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
+	ofSetLogLevel(OF_LOG_VERBOSE);
 	
 	//int proWidth = 1024, proHeight = 768;
 	//int proWidth = 3 * 512, proHeight = 256;
@@ -22,16 +23,10 @@ void ofApp::setup() {
 							binaryCoded,
 							camConfidence,
 							proConfidence,
-							proMap,
-							mean,
-							stddev,
-							count);
+							proMap);
 	
 	saveImage(proConfidence, "proConfidence.exr");
 	saveImage(proMap, "proMap.png");
-	saveImage(mean, "mean.png");
-	saveImage(stddev, "stddev.exr");
-	saveImage(count, "count.png");
 }
 
 void ofApp::update() {

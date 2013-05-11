@@ -37,4 +37,27 @@ void buildProMap(int proWidth, int proHeight,
 			}
 		}
 	}
+	medianThreshold(proConfidence, .25);
 }
+
+void setCalibrationDataPathRoot(){
+    ofSetDataPathRoot(ofToDataPath("",true)+"../../../data/");
+
+    return ;
+}
+
+
+vector<ofFile> getScanNames(){
+    ofDirectory rootDir;
+    rootDir.open(".");
+    rootDir.listDir();
+    
+    vector<ofFile> ret;
+    for(int i=0;i<rootDir.size();i++){
+        if(rootDir.getPath(i)[0] != '_'){
+            ret.push_back(ofFile(rootDir.getPath(i)));
+        }
+    }
+    return ret;
+}
+
