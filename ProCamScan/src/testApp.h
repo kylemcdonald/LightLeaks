@@ -5,7 +5,6 @@
 #include "ofMain.h"
 #include "ofxCv.h"
 #include "ofxProCamToolkit.h"
-#include "ofxThreadedImageLoader.h"
 
 class testApp : public ofBaseApp {
 public:
@@ -22,7 +21,5 @@ public:
 	cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical, minImage, maxImage;
 	ofImage cameraMask;
     
-    ofxThreadedImageLoader loader;
-
 	cv::Mat proConfidence, proMap, mean, stddev, count;
 };

@@ -45,7 +45,6 @@
 		9d97fdf450cc66e11f05e2794f9b9cc8 /* guiTypePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08549d86f2263bafa64ae5d19077e4e9 /* guiTypePanel.cpp */; };
 		9fef7afad4ddffd2a55aa54a1c323431 /* simpleFileLister.cpp in Sources */ = {isa = PBXBuildFile; fileRef = bdd9e60039a29dafb013cdbda2b6bd7f /* simpleFileLister.cpp */; };
 		BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BBAB23BE13894E4700AA2426 /* GLUT.framework */; };
-		DD20380F173D074F00E7C125 /* ofxThreadedImageLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD20380D173D074F00E7C125 /* ofxThreadedImageLoader.cpp */; };
 		E4328149138ABC9F0047C5CB /* openFrameworksDebug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4328148138ABC890047C5CB /* openFrameworksDebug.a */; };
 		E45BE97B0E8CC7DD009D7055 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9710E8CC7DD009D7055 /* AGL.framework */; };
 		E45BE97C0E8CC7DD009D7055 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9720E8CC7DD009D7055 /* ApplicationServices.framework */; };
@@ -256,9 +255,6 @@
 		9f91d61ed1c9efa6a2acdc47683684d1 /* guiValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = guiValue.cpp; path = ../../../addons/ofxControlPanel/src/guiValue.cpp; sourceTree = SOURCE_ROOT; };
 		9ff9126184dfbde8a912373ebe9d2f9d /* highgui.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = highgui.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv/highgui.h; sourceTree = SOURCE_ROOT; };
 		BBAB23BE13894E4700AA2426 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = ../../../libs/glut/lib/osx/GLUT.framework; sourceTree = "<group>"; };
-		DD20380B173D074F00E7C125 /* install.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = install.xml; sourceTree = "<group>"; };
-		DD20380D173D074F00E7C125 /* ofxThreadedImageLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxThreadedImageLoader.cpp; sourceTree = "<group>"; };
-		DD20380E173D074F00E7C125 /* ofxThreadedImageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxThreadedImageLoader.h; sourceTree = "<group>"; };
 		E4328143138ABC890047C5CB /* openFrameworksLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = openFrameworksLib.xcodeproj; path = ../../../libs/openFrameworksCompiled/project/osx/openFrameworksLib.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E45BE9710E8CC7DD009D7055 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
 		E45BE9720E8CC7DD009D7055 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
@@ -737,7 +733,6 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
-				DD20380A173D074F00E7C125 /* ofxThreadedImageLoader */,
 				2c8f245acbe61e28646c17f20b185423 /* ofxAssimpModelLoader */,
 				a0b90d3b0adb9c1716816714bf7f212b /* ofxOpenCv */,
 				1f4fb5c423662b96adfdcc0badec1cb0 /* ofxXmlSettings */,
@@ -775,25 +770,6 @@
 				BBAB23BE13894E4700AA2426 /* GLUT.framework */,
 			);
 			name = "3rd party frameworks";
-			sourceTree = "<group>";
-		};
-		DD20380A173D074F00E7C125 /* ofxThreadedImageLoader */ = {
-			isa = PBXGroup;
-			children = (
-				DD20380B173D074F00E7C125 /* install.xml */,
-				DD20380C173D074F00E7C125 /* src */,
-			);
-			name = ofxThreadedImageLoader;
-			path = ../../../addons/ofxThreadedImageLoader;
-			sourceTree = "<group>";
-		};
-		DD20380C173D074F00E7C125 /* src */ = {
-			isa = PBXGroup;
-			children = (
-				DD20380D173D074F00E7C125 /* ofxThreadedImageLoader.cpp */,
-				DD20380E173D074F00E7C125 /* ofxThreadedImageLoader.h */,
-			);
-			path = src;
 			sourceTree = "<group>";
 		};
 		E4328144138ABC890047C5CB /* Products */ = {
@@ -1220,7 +1196,6 @@
 				dbcb84a37f9aecc254870d79a0a7486e /* Wrappers.cpp in Sources */,
 				2797BB641738A5C1001F78FB /* ofxProCamToolkit.cpp in Sources */,
 				27CFA3A417397D3100B7D01D /* testApp.cpp in Sources */,
-				DD20380F173D074F00E7C125 /* ofxThreadedImageLoader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
