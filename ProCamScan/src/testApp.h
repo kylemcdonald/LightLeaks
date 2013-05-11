@@ -22,4 +22,5 @@ public:
 	ofImage cameraMask;
     
 	cv::Mat proConfidence, proMap, mean, stddev, count;
+
 };

@@ -22,8 +22,12 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
 	cv::Mat imageNormalGray, imageInverseGray;
 	convertColor(*imageNormal, imageNormalGray, CV_RGB2GRAY);
 	convertColor(*imageInverse, imageInverseGray, CV_RGB2GRAY);
-	imageNormalGray &= cameraMask;
-	imageInverseGray &= cameraMask;
+    
+    if(cameraMask.cols > 0){
+        imageNormalGray &= cameraMask;
+        imageInverseGray &= cameraMask;
+    }
+    
 	if(i == 0) {
 		minMat = min(imageNormalGray, imageInverseGray);
 		maxMat = max(imageNormalGray, imageInverseGray);
@@ -42,7 +46,6 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
     
 #pragma omp parallel for
 	for(int y = 0; y < h; y++) {
-#pragma omp parallel for
 		for(int x = 0; x < w; x++) {
 			unsigned char normal = imageNormalGray.at<unsigned char>(y, x);
 			unsigned char inverse = imageInverseGray.at<unsigned char>(y, x);
@@ -58,10 +61,12 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
 void testApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
-	ofSetLogLevel(OF_LOG_VERBOSE);
 	
 	string path = "scan/";
 	
+    cout << "-----------------"<<endl<<" -- ProCamScan --"<<endl<<"-----------------"<<endl;
+    cout << "Scanning data/"+path+" for images"<<endl;;
+    
 	dirHorizontalNormal.listDir(path + "horizontal/normal/");
 	dirHorizontalInverse.listDir(path + "horizontal/inverse/");
 	dirVerticalNormal.listDir(path + "vertical/normal/");
@@ -70,15 +75,46 @@ void testApp::setup() {
 	hiFiles = dirHorizontalInverse.getFiles();
 	vnFiles = dirVerticalNormal.getFiles();
 	viFiles = dirVerticalInverse.getFiles();
+    
+    ofSetLogLevel(OF_LOG_VERBOSE);
+
 	ofSort(hnFiles, natural);
 	ofSort(hiFiles, natural);
 	ofSort(vnFiles, natural);
 	ofSort(viFiles, natural);
 	horizontalBits = dirHorizontalNormal.size();
 	verticalBits = dirVerticalNormal.size();
-	
-	cameraMask.loadImage(path + "cameraMask.png");
+    
+    //
+    //Error handling
+    //
+    if(horizontalBits == 0){
+        ofLogError() << "No horizontal images found (searching in data/"+path+"horizontal/normal). Quitting";
+        ofExit();
+    }
+    if(verticalBits == 0){
+        ofLogError() << "No vertical images found (searching in data/"+path+"vertical/normal). Quitting";
+        ofExit();
+    }
+    if(dirHorizontalInverse.size() != dirHorizontalNormal.size()){
+        ofLogError() << "Mismatch in number of horizontal images ("+ofToString(dirHorizontalNormal.size())+" normal images and "+ofToString(dirHorizontalInverse.size())+" inverse images)";
+        ofExit();
+    }
+    if(dirVerticalInverse.size() != dirVerticalNormal.size()){
+        ofLogError() << "Mismatch in number of vertical images ("+ofToString(dirVerticalNormal.size())+" normal images and "+ofToString(dirVerticalInverse.size())+" inverse images)";
+        ofExit();
+    }
+    
+	//
+    //Camera mask
+    //
+	bool maskLoaded = cameraMask.loadImage(path + "cameraMask.png");
 	cameraMask.setImageType(OF_IMAGE_GRAYSCALE);
+    if(!maskLoaded){
+        ofLogVerbose() << "No file called cameraMask.png in data/scan folder. Continuing without a camera mask";
+    } else {
+        ofLogVerbose() << "Camera mask loaded";
+    }
 	
 	ofImage prototype;
 	prototype.loadImage(path + "horizontal/normal/0.jpg");
@@ -88,7 +124,10 @@ void testApp::setup() {
 	binaryCodedHorizontal = Mat::zeros(camHeight, camWidth, CV_16UC1);
 	binaryCodedVertical = Mat::zeros(camHeight, camWidth, CV_16UC1);
 	
-	Mat cameraMaskMat = toCv(cameraMask);
+	Mat cameraMaskMat;
+    if(maskLoaded){
+        cameraMaskMat = toCv(cameraMask);
+    }
 	//imitate(minImage, cameraMask);
 	//imitate(maxImage, cameraMask);
 
@@ -125,7 +164,6 @@ void testApp::setup() {
     ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
     
 #pragma omp parallel for
-
 	for(int i = 0; i < verticalBits; i++) {
         ofImage * img = new ofImage();
         img->setUseTexture(false);
@@ -187,6 +225,8 @@ void testApp::setup() {
 	//saveImage(mean, "mean.png");
 	//saveImage(stddev, "stddev.exr");
 	//saveImage(count, "count.png");
+    
+    ofLogVerbose() <<" Done in "+ofToString(ofGetElapsedTimef())+" seconds";
 }
 
 void testApp::update() {
