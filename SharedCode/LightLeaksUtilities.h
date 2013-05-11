@@ -63,9 +63,11 @@ void setCalibrationDataPathRoot(){
 
 
 vector<ofFile> getScanNames(){
+    cout<<ofToDataPath("",true)<<endl;
     ofDirectory rootDir;
-    rootDir.open(".");
-    rootDir.listDir();
+   // rootDir.open(".");
+
+    rootDir.listDir(ofToDataPath("",true));
     
     vector<ofFile> ret;
     for(int i=0;i<rootDir.size();i++){
