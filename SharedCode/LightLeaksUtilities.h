@@ -60,25 +60,19 @@ void setCalibrationDataPathRoot(){
 
     return ;
 }
-string getCalibrationImagesPath(){
-    return "calibrationImages/";
+
+
+vector<ofFile> getScanNames(){
+    ofDirectory rootDir;
+    rootDir.open(".");
+    rootDir.listDir();
+    
+    vector<ofFile> ret;
+    for(int i=0;i<rootDir.size();i++){
+        if(rootDir.getPath(i)[0] != '_'){
+            ret.push_back(ofFile(rootDir.getPath(i)));
+        }
+    }
+    return ret;
 }
 
-string getCameraMasksPath(){
-    return "cameraMasks/";
-}
-ofDirectory getProMapDir(string scanName){
-    ofDirectory rootDir;
-    rootDir.open("proMaps/");
-    if(!rootDir.exists()){
-        rootDir.create();
-    }
-    
-    ofDirectory dir;
-    dir.open(rootDir.path()+"/"+scanName);
-    if(!dir.exists()){
-        dir.create();
-    }
-    
-    return dir;
-}

@@ -62,29 +62,24 @@ void testApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	
-	string calibPath = getCalibrationImagesPath();
 	
     cout << "-----------------"<<endl<<" -- ProCamScan --"<<endl<<"-----------------"<<endl;
-    cout << "Scanning "+calibPath+" for images"<<endl;
-    
     //    ofSetDataPathRoot(<#string root#>)
     setCalibrationDataPathRoot();
     
     ofSetLogLevel(OF_LOG_VERBOSE);
     
     
-    ofDirectory calibrationImagesDir;
-    calibrationImagesDir.listDir(ofToDataPath(calibPath,true));
-    vector<ofFile> scans = calibrationImagesDir.getFiles();
+
+    vector<ofFile> scans = getScanNames();
     for(int scan=0;scan<scans.size();scan++){
         string scanName = scans[scan].getFileName();
         string path = scans[scan].path()+"/";
-        string camMaskPath = getCameraMasksPath()+scanName+"/mask.png";
-        
-        
-        
-        ofFile proConfidenceFile = ofFile(getProMapDir(scanName).path()+"/proConfidence.exr");
-        ofFile proMapFile = ofFile(getProMapDir(scanName).path()+"/proMap.png");
+
+        string camMaskPath = path+"/mask.png";
+        ofFile proConfidenceFile = ofFile(path+"/proConfidence.exr");
+        ofFile proMapFile = ofFile(path+"/proMap.png");
+
         bool outputFilesExist = proConfidenceFile.exists() || proMapFile.exists();
         if(outputFilesExist){
             ofLogVerbose()<<"Skipping "<<scanName<<" since output files (data/"<<scanName<<"proMaps) already exist";
@@ -101,10 +96,10 @@ void testApp::setup() {
             
             ofSetLogLevel(OF_LOG_ERROR);
             
-            dirHorizontalNormal.listDir(path + "horizontal/normal/");
-            dirHorizontalInverse.listDir(path + "horizontal/inverse/");
-            dirVerticalNormal.listDir(path + "vertical/normal/");
-            dirVerticalInverse.listDir(path + "vertical/inverse/");
+            dirHorizontalNormal.listDir(path + "cameraImages/horizontal/normal/");
+            dirHorizontalInverse.listDir(path + "cameraImages/horizontal/inverse/");
+            dirVerticalNormal.listDir(path + "cameraImages/vertical/normal/");
+            dirVerticalInverse.listDir(path + "cameraImages/vertical/inverse/");
             hnFiles = dirHorizontalNormal.getFiles();
             hiFiles = dirHorizontalInverse.getFiles();
             vnFiles = dirVerticalNormal.getFiles();
@@ -151,7 +146,7 @@ void testApp::setup() {
             }
             
             ofImage prototype;
-            prototype.loadImage(path + "horizontal/normal/0.jpg");
+            prototype.loadImage(path + "cameraImages/horizontal/normal/0.jpg");
             camWidth = prototype.getWidth(), camHeight = prototype.getHeight();
             
             camConfidence = Mat::zeros(camHeight, camWidth, CV_32FC1);
@@ -286,8 +281,8 @@ void testApp::setup() {
             
             
 
-            saveImage(proConfidence, getProMapDir(scanName).path()+"/proConfidence.exr");
-            saveImage(proMap, getProMapDir(scanName).path()+"/proMap.png");
+            saveImage(proConfidence, path+"/proConfidence.exr");
+            saveImage(proMap, path+"/proMap.png");
              
              
             //saveImage(mean, "mean.png");
