@@ -17,7 +17,7 @@ bool natural(const ofFile& a, const ofFile& b) {
 
 void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat, ofImage * imageNormal, ofImage * imageInverse) {
     ofLogVerbose() << "Process " << i << " of " << n;
-
+    
 	int w = imageNormal->getWidth(), h = imageNormal->getHeight();
 	cv::Mat imageNormalGray, imageInverseGray;
 	convertColor(*imageNormal, imageNormalGray, CV_RGB2GRAY);
@@ -62,170 +62,238 @@ void testApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	
-	string path = "scan/";
+	string calibPath = getCalibrationImagesPath();
 	
     cout << "-----------------"<<endl<<" -- ProCamScan --"<<endl<<"-----------------"<<endl;
-    cout << "Scanning data/"+path+" for images"<<endl;;
+    cout << "Scanning "+calibPath+" for images"<<endl;
     
-	dirHorizontalNormal.listDir(path + "horizontal/normal/");
-	dirHorizontalInverse.listDir(path + "horizontal/inverse/");
-	dirVerticalNormal.listDir(path + "vertical/normal/");
-	dirVerticalInverse.listDir(path + "vertical/inverse/");
-	hnFiles = dirHorizontalNormal.getFiles();
-	hiFiles = dirHorizontalInverse.getFiles();
-	vnFiles = dirVerticalNormal.getFiles();
-	viFiles = dirVerticalInverse.getFiles();
+    //    ofSetDataPathRoot(<#string root#>)
+    setCalibrationDataPathRoot();
     
     ofSetLogLevel(OF_LOG_VERBOSE);
-
-	ofSort(hnFiles, natural);
-	ofSort(hiFiles, natural);
-	ofSort(vnFiles, natural);
-	ofSort(viFiles, natural);
-	horizontalBits = dirHorizontalNormal.size();
-	verticalBits = dirVerticalNormal.size();
     
-    //
-    //Error handling
-    //
-    if(horizontalBits == 0){
-        ofLogError() << "No horizontal images found (searching in data/"+path+"horizontal/normal). Quitting";
-        ofExit();
-    }
-    if(verticalBits == 0){
-        ofLogError() << "No vertical images found (searching in data/"+path+"vertical/normal). Quitting";
-        ofExit();
-    }
-    if(dirHorizontalInverse.size() != dirHorizontalNormal.size()){
-        ofLogError() << "Mismatch in number of horizontal images ("+ofToString(dirHorizontalNormal.size())+" normal images and "+ofToString(dirHorizontalInverse.size())+" inverse images)";
-        ofExit();
-    }
-    if(dirVerticalInverse.size() != dirVerticalNormal.size()){
-        ofLogError() << "Mismatch in number of vertical images ("+ofToString(dirVerticalNormal.size())+" normal images and "+ofToString(dirVerticalInverse.size())+" inverse images)";
-        ofExit();
-    }
     
-	//
-    //Camera mask
-    //
-	bool maskLoaded = cameraMask.loadImage(path + "cameraMask.png");
-	cameraMask.setImageType(OF_IMAGE_GRAYSCALE);
-    if(!maskLoaded){
-        ofLogVerbose() << "No file called cameraMask.png in data/scan folder. Continuing without a camera mask";
-    } else {
-        ofLogVerbose() << "Camera mask loaded";
-    }
-	
-	ofImage prototype;
-	prototype.loadImage(path + "horizontal/normal/0.jpg");
-	camWidth = prototype.getWidth(), camHeight = prototype.getHeight();
-	
-	camConfidence = Mat::zeros(camHeight, camWidth, CV_32FC1);
-	binaryCodedHorizontal = Mat::zeros(camHeight, camWidth, CV_16UC1);
-	binaryCodedVertical = Mat::zeros(camHeight, camWidth, CV_16UC1);
-	
-	Mat cameraMaskMat;
-    if(maskLoaded){
-        cameraMaskMat = toCv(cameraMask);
-    }
-	//imitate(minImage, cameraMask);
-	//imitate(maxImage, cameraMask);
-
-    
-    hnImageNormal.resize(horizontalBits, 0);
-    hnImageInverse.resize(horizontalBits, 0);
-
-    viImageNormal.resize(verticalBits, 0);
-    viImageInverse.resize(verticalBits, 0);
-
-    
-    //
-    //Load images
-    //
-    
-    ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images multithreaded";
-
-#pragma omp parallel for
-	for(int i = 0; i < horizontalBits; i++) {
-        ofImage * img = new ofImage();
-        img->setUseTexture(false);
-
-        ofImage * imgI = new ofImage();
-        imgI->setUseTexture(false);
-
-        img->loadImage(hnFiles[i].path());
-        imgI->loadImage(hiFiles[i].path());
+    ofDirectory calibrationImagesDir;
+    calibrationImagesDir.listDir(ofToDataPath(calibPath,true));
+    vector<ofFile> scans = calibrationImagesDir.getFiles();
+    for(int scan=0;scan<scans.size();scan++){
+        string scanName = scans[scan].getFileName();
+        string path = scans[scan].path()+"/";
+        string camMaskPath = getCameraMasksPath()+scanName+"/mask.png";
         
-        hnImageNormal[i] = img;
-        hnImageInverse[i] = imgI;
-    }
-    
-
-    ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
-    
-#pragma omp parallel for
-	for(int i = 0; i < verticalBits; i++) {
-        ofImage * img = new ofImage();
-        img->setUseTexture(false);
         
-        ofImage * imgI = new ofImage();
-        imgI->setUseTexture(false);
+        
+        ofFile proConfidenceFile = ofFile(getProMap(scanName).path()+"/proConfidence.exr");
+        ofFile proMapFile = ofFile(getProMap(scanName).path()+"/proMap.png");
+        bool outputFilesExist = proConfidenceFile.exists() || proMapFile.exists();
+        if(outputFilesExist){
+            ofLogVerbose()<<"Skipping "<<scanName<<" since output files (data/"<<scanName<<"proMaps) already exist";
+        }
+        if(scanName[0] == '_'){
+            ofLogVerbose()<<"Skipping "<<scanName<<" since it's underscored";
+        }
+        
+        //Skip folders with underscore
+        if(!outputFilesExist && scanName[0] != '_'){
+            
+            ofLogVerbose()<<"ProCamScan "<<scanName<<endl;
+            
+            
+            ofSetLogLevel(OF_LOG_ERROR);
+            
+            dirHorizontalNormal.listDir(path + "horizontal/normal/");
+            dirHorizontalInverse.listDir(path + "horizontal/inverse/");
+            dirVerticalNormal.listDir(path + "vertical/normal/");
+            dirVerticalInverse.listDir(path + "vertical/inverse/");
+            hnFiles = dirHorizontalNormal.getFiles();
+            hiFiles = dirHorizontalInverse.getFiles();
+            vnFiles = dirVerticalNormal.getFiles();
+            viFiles = dirVerticalInverse.getFiles();
+            
+            ofSetLogLevel(OF_LOG_VERBOSE);
+            
+            ofSort(hnFiles, natural);
+            ofSort(hiFiles, natural);
+            ofSort(vnFiles, natural);
+            ofSort(viFiles, natural);
+            horizontalBits = dirHorizontalNormal.size();
+            verticalBits = dirVerticalNormal.size();
+            
+            //
+            //Error handling
+            //
+            if(horizontalBits == 0){
+                ofLogError() << "No horizontal images found (searching in data/"+path+"horizontal/normal). Quitting";
+                ofExit();
+            }
+            if(verticalBits == 0){
+                ofLogError() << "No vertical images found (searching in data/"+path+"vertical/normal). Quitting";
+                ofExit();
+            }
+            if(dirHorizontalInverse.size() != dirHorizontalNormal.size()){
+                ofLogError() << "Mismatch in number of horizontal images ("+ofToString(dirHorizontalNormal.size())+" normal images and "+ofToString(dirHorizontalInverse.size())+" inverse images)";
+                ofExit();
+            }
+            if(dirVerticalInverse.size() != dirVerticalNormal.size()){
+                ofLogError() << "Mismatch in number of vertical images ("+ofToString(dirVerticalNormal.size())+" normal images and "+ofToString(dirVerticalInverse.size())+" inverse images)";
+                ofExit();
+            }
+            
+            //
+            //Camera mask
+            //
+            bool maskLoaded = cameraMask.loadImage(camMaskPath);
+            cameraMask.setImageType(OF_IMAGE_GRAYSCALE);
+            if(!maskLoaded){
+                ofLogVerbose() << "No file called cameraMask.png in data/cameraMasks/"+scanName+" folder. Continuing without a camera mask";
+            } else {
+                ofLogVerbose() << "Camera mask loaded";
+            }
+            
+            ofImage prototype;
+            prototype.loadImage(path + "horizontal/normal/0.jpg");
+            camWidth = prototype.getWidth(), camHeight = prototype.getHeight();
+            
+            camConfidence = Mat::zeros(camHeight, camWidth, CV_32FC1);
+            binaryCodedHorizontal = Mat::zeros(camHeight, camWidth, CV_16UC1);
+            binaryCodedVertical = Mat::zeros(camHeight, camWidth, CV_16UC1);
+            
+            Mat cameraMaskMat;
+            if(maskLoaded){
+                cameraMaskMat = toCv(cameraMask);
+            }
+            //imitate(minImage, cameraMask);
+            //imitate(maxImage, cameraMask);
+            
+            
+            hnImageNormal.resize(horizontalBits, 0);
+            hnImageInverse.resize(horizontalBits, 0);
+            
+            viImageNormal.resize(verticalBits, 0);
+            viImageInverse.resize(verticalBits, 0);
+            
+            
+            //
+            //Load Horizontal images
+            //
+            
+            ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images multithreaded";
+            
+#pragma omp parallel for
+            for(int i = 0; i < horizontalBits; i++) {
+                ofImage * img = new ofImage();
+                img->setUseTexture(false);
+                
+                ofImage * imgI = new ofImage();
+                imgI->setUseTexture(false);
+                
+                //cout<<"Load "+hnFiles[i].path()<<endl;
+                img->loadImage(hnFiles[i].path());
+                imgI->loadImage(hiFiles[i].path());
+                
+                hnImageNormal[i] = img;
+                hnImageInverse[i] = imgI;
+            }
+            
+            //Process horizontal images
+            ofLogVerbose() << "Process " <<  horizontalBits << " horizontal images";
+            for(int i = 0; i < horizontalBits; i++) {
+                processGraycodeLevel(i, horizontalBits, 2, cameraMaskMat, camConfidence, binaryCodedHorizontal, minImage, maxImage, hnImageNormal[i], hnImageInverse[i]);
+            }            
+            
+            //Delete horizontal images
+            for(int i = 0; i < horizontalBits; i++) {
+                delete hnImageNormal[i];
+                delete hnImageInverse[i];
+            }
+            
+            
+            //
+            //Load Vertical images
+            //            
+            ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
+#pragma omp parallel for
+            for(int i = 0; i < verticalBits; i++) {
+                ofImage * img = new ofImage();
+                img->setUseTexture(false);
+                
+                ofImage * imgI = new ofImage();
+                imgI->setUseTexture(false);
+                
+                img->loadImage(vnFiles[i].path());
+                imgI->loadImage(viFiles[i].path());
+                
+                viImageNormal[i] = img;
+                viImageInverse[i] = imgI;
+            }
 
-        img->loadImage(vnFiles[i].path());
-        imgI->loadImage(viFiles[i].path());
+            
+            //Process vertical images
+            ofLogVerbose() << "Process " <<  verticalBits << " vertical images";
+            for(int i = 0; i < verticalBits; i++) {
+                processGraycodeLevel(i, verticalBits, 2, cameraMaskMat, camConfidence, binaryCodedVertical, minImage, maxImage, viImageNormal[i], viImageInverse[i]);
+            }
 
-        viImageNormal[i] = img;
-        viImageInverse[i] = imgI;
+            //Delete vertical images
+            for(int i = 0; i < verticalBits; i++) {
+                delete viImageNormal[i];
+                delete viImageInverse[i];
+            }            
+            
+            hnImageInverse.clear();
+            hnImageNormal.clear();
+            
+            viImageInverse.clear();
+            viImageNormal.clear();  
+
+            
+            
+ 
+            grayToBinary(binaryCodedHorizontal, horizontalBits);
+            grayToBinary(binaryCodedVertical, verticalBits);
+            
+            //ofLogVerbose() << "saving results";
+            //saveImage(camConfidence, "camConfidence.exr");
+            //saveImage(minImage, "minImage.png");
+            //saveImage(maxImage, "maxImage.png");
+            
+            Mat binaryCoded, emptyChannel;
+            emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);
+            vector<Mat> channels;
+            channels.push_back(binaryCodedVertical);
+            channels.push_back(binaryCodedHorizontal);
+            channels.push_back(emptyChannel);
+            merge(channels, binaryCoded);
+            //ofLogVerbose() << "saving binaryCoded";
+            //saveImage(binaryCoded, "binaryCoded.png");
+            
+            ofLogVerbose() << "Build Pro Map";
+            
+            
+            proWidth = 1024 * 3, proHeight = 768;
+            buildProMap(proWidth, proHeight,
+                        binaryCoded,
+                        camConfidence,
+                        proConfidence,
+                        proMap,
+                        mean,
+                        stddev,
+                        count);
+            
+            
+
+            saveImage(proConfidence, getProMap(scanName).path()+"/proConfidence.exr");
+            saveImage(proMap, getProMap(scanName).path()+"/proMap.png");
+             
+             
+            //saveImage(mean, "mean.png");
+            //saveImage(stddev, "stddev.exr");
+            //saveImage(count, "count.png");
+            
+            
+            
+        }
     }
-    
-    
-    //Process images
-    ofLogVerbose() << "Process " <<  horizontalBits << " horizontal images";
-	for(int i = 0; i < horizontalBits; i++) {
-		processGraycodeLevel(i, horizontalBits, 2, cameraMaskMat, camConfidence, binaryCodedHorizontal, minImage, maxImage, hnImageNormal[i], hnImageInverse[i]);
-	}
-
-    ofLogVerbose() << "Process " <<  verticalBits << " vertical images";
-	for(int i = 0; i < verticalBits; i++) {
-		processGraycodeLevel(i, verticalBits, 2, cameraMaskMat, camConfidence, binaryCodedVertical, minImage, maxImage, viImageNormal[i], viImageInverse[i]);
-	}
-    
-	grayToBinary(binaryCodedHorizontal, horizontalBits);
-	grayToBinary(binaryCodedVertical, verticalBits);
-	
-	ofLogVerbose() << "saving results";
-	//saveImage(camConfidence, "camConfidence.exr");
-	//saveImage(minImage, "minImage.png");
-	//saveImage(maxImage, "maxImage.png");
-	
-	ofLogVerbose() << "saving binaryCoded";
-	Mat binaryCoded, emptyChannel;
-	emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);
-	vector<Mat> channels;
-	channels.push_back(binaryCodedVertical);
-	channels.push_back(binaryCodedHorizontal);
-	channels.push_back(emptyChannel);
-	merge(channels, binaryCoded);
-	//saveImage(binaryCoded, "binaryCoded.png");
-    
-    ofLogVerbose() << "Build Pro Map";
-
-    proWidth = 1024 * 3, proHeight = 768;
-	buildProMap(proWidth, proHeight,
-							binaryCoded,
-							camConfidence,
-							proConfidence,
-							proMap,
-							mean,
-							stddev,
-							count);
-	
-	saveImage(proConfidence, "proConfidence.exr");
-	saveImage(proMap, "proMap.png");
-	//saveImage(mean, "mean.png");
-	//saveImage(stddev, "stddev.exr");
-	//saveImage(count, "count.png");
-    
     ofLogVerbose() <<" Done in "+ofToString(ofGetElapsedTimef())+" seconds";
 }
 

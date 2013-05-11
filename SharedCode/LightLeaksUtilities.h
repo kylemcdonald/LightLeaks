@@ -36,7 +36,7 @@ void buildProMap(int proWidth, int proHeight,
 		}
 	}
 	
-	cout << "processing mean and stddev" << endl;
+	ofLogVerbose() << "processing mean and stddev" << endl;
 	mean = Mat::zeros(proHeight, proWidth, CV_16UC3);
 	stddev = Mat::zeros(proHeight, proWidth, CV_32FC3);
 	count = Mat::zeros(proHeight, proWidth, CV_8UC1);
@@ -49,4 +49,36 @@ void buildProMap(int proWidth, int proHeight,
 			count.at<unsigned char>(py, px) += mapping[py][px].size();
 		}
 	}
+    
+    
+    
+
+}
+
+void setCalibrationDataPathRoot(){
+    ofSetDataPathRoot(ofToDataPath("",true)+"../../../data/");
+
+    return ;
+}
+string getCalibrationImagesPath(){
+    return "calibrationImages/";
+}
+
+string getCameraMasksPath(){
+    return "cameraMasks/";
+}
+ofDirectory getProMap(string scanName){
+    ofDirectory rootDir;
+    rootDir.open("proMaps/");
+    if(!rootDir.exists()){
+        rootDir.create();
+    }
+    
+    ofDirectory dir;
+    dir.open(rootDir.path()+"/"+scanName);
+    if(!dir.exists()){
+        dir.create();
+    }
+    
+    return dir;
 }

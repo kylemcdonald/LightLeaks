@@ -12,15 +12,16 @@ public:
 	void update();
 	void draw();
 
-	ofDirectory dirHorizontalNormal, dirHorizontalInverse;
-	ofDirectory dirVerticalNormal, dirVerticalInverse;
-	vector<ofFile> hnFiles, hiFiles, vnFiles, viFiles;
+    ofDirectory cameraMasksDir;
+    ofDirectory dirHorizontalNormal, dirHorizontalInverse;
+    ofDirectory dirVerticalNormal, dirVerticalInverse;
+    vector<ofFile> hnFiles, hiFiles, vnFiles, viFiles;
     vector<ofImage*> hnImageNormal, hnImageInverse, viImageNormal, viImageInverse;
     
-	int horizontalBits, verticalBits, camWidth, camHeight, proWidth, proHeight;
-	cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical, minImage, maxImage;
-	ofImage cameraMask;
+    int horizontalBits, verticalBits, camWidth, camHeight, proWidth, proHeight;
+    cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical, minImage, maxImage;
+    ofImage cameraMask;
     
-	cv::Mat proConfidence, proMap, mean, stddev, count;
+    cv::Mat proConfidence, proMap, mean, stddev, count;
 
 };
