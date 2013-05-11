@@ -67,7 +67,7 @@ string getCalibrationImagesPath(){
 string getCameraMasksPath(){
     return "cameraMasks/";
 }
-ofDirectory getProMap(string scanName){
+ofDirectory getProMapDir(string scanName){
     ofDirectory rootDir;
     rootDir.open("proMaps/");
     if(!rootDir.exists()){

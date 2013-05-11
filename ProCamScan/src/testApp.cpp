@@ -286,8 +286,8 @@ void testApp::setup() {
             
             
 
-            saveImage(proConfidence, getProMap(scanName).path()+"/proConfidence.exr");
-            saveImage(proMap, getProMap(scanName).path()+"/proMap.png");
+            saveImage(proConfidence, getProMapDir(scanName).path()+"/proConfidence.exr");
+            saveImage(proMap, getProMapDir(scanName).path()+"/proMap.png");
              
              
             //saveImage(mean, "mean.png");
