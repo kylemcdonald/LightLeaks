@@ -24,5 +24,5 @@ public:
     
     ofxThreadedImageLoader loader;
 
-	cv::Mat proConfidence, proMap, mean, stddev, count;
+	cv::Mat proConfidence, proMap;
 };

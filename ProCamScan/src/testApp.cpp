@@ -177,16 +177,12 @@ void testApp::setup() {
 							binaryCoded,
 							camConfidence,
 							proConfidence,
-							proMap,
-							mean,
-							stddev,
-							count);
+							proMap);
+	
+	medianThreshold(proConfidence, .5);
 	
 	saveImage(proConfidence, "proConfidence.exr");
 	saveImage(proMap, "proMap.png");
-	//saveImage(mean, "mean.png");
-	//saveImage(stddev, "stddev.exr");
-	//saveImage(count, "count.png");
 }
 
 void testApp::update() {
