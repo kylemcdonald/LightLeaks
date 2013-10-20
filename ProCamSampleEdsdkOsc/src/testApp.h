@@ -25,7 +25,7 @@ public:
 	}
 	void setup() {
 		oscIn.setup(9001);
-		oscOut.setup("kyle.local", 9000);
+		oscOut.setup("surya.local", 9000);
 		ofAddListener(ofEvents().update, this, &EdsdkOsc::updateOsc);
 		sendMessage("/setup");
 	}
