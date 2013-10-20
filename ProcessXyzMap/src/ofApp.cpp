@@ -13,6 +13,7 @@ void ofApp::setup() {
     confidenceMap.loadImage("confidenceMap.exr");
     
     wallFbo.allocate(2048, 200);
+	ofHideCursor();
 }
 
 void ofApp::update() {

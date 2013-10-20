@@ -11,14 +11,14 @@ void ofApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	
-    
+  setCalibrationDataPathRoot();  
     vector<ofFile> scanNames = getScanNames();
     cout<<scanNames.size()<<endl;
     for(int i=0;i<scanNames.size();i++){
         mesh.push_back(ofVboMesh());
         drawMesh.push_back(true);
         string path = scanNames[i].path()+"/";
-        if(path[0] != '-') {
+        if(path[0] != '_') {
             ofLogVerbose() << "processing " << path;
             directories.push_back(scanNames[i].getFileName());
             

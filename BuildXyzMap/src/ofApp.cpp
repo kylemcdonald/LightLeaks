@@ -1,5 +1,7 @@
 #include "ofApp.h"
 
+#include "LightLeaksUtilities.h"
+
 using namespace cv;
 using namespace ofxCv;
 
@@ -28,28 +30,30 @@ void ofApp::setup() {
 	float threshold = 0.0;
 	int scaleFactor = 4;
 	
-	ofDirectory dir;
-	dir.listDir(".");
-	for(int i = 0; i < dir.size(); i++) {
-		string path = dir.getPath(i);
-		if(dir.getFile(i).isDirectory() && path[0] != '-') {
+	setCalibrationDataPathRoot();
+	
+	vector<ofFile> scanNames = getScanNames();
+	for(int i = 0; i < scanNames.size(); i++) {
+		ofFile scanName = scanNames[i];
+		string path = scanName.path();
+		if(scanName.isDirectory() && path[0] != '_') {
 			ofLogVerbose() << "processing " << path;
 			ofFloatImage xyzMap, proConfidence, normalMap;
 			ofShortImage proMap;
 			
 			xyzMap.loadImage(path + "/xyzMap.exr");
-            normalMap.loadImage(path + "/normalMap.exr");
+			normalMap.loadImage(path + "/normalMap.exr");
 			proConfidence.loadImage(path + "/proConfidence.exr");
 			proMap.loadImage(path + "/proMap.png");
-
+			
 			Mat xyzMapMat = toCv(xyzMap);
-            Mat normalMapMat = toCv(normalMap);
+			Mat normalMapMat = toCv(normalMap);
 			Mat proConfidenceMat = toCv(proConfidence);
 			Mat proMapMat = toCv(proMap);
 			
 			if(proXyzCombined.cols == 0) {
 				proXyzCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
-                proNormalCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
+				proNormalCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
 				proConfidenceCombined = Mat::zeros(proConfidenceMat.rows, proConfidenceMat.cols, CV_32FC1);
 			}
 			

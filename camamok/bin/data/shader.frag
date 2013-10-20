@@ -39,7 +39,7 @@ void main() {
 return;
 
 	float stages = 6.;
-	float stage = 0.; //mod(elapsedTime * .6, stages);
+	float stage = 2.; //mod(elapsedTime * .6, stages);
   
 	if(stage == 0.) {
 		vec2 normPosition = (position.xz + position.yx) / 100.;
