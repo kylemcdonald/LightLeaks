@@ -269,7 +269,7 @@ void testApp::setup() {
             ofLogVerbose() << "Build Pro Map";
             
             
-            proWidth = 1024 * 3, proHeight = 768;
+            proWidth = 1920, proHeight = 1080;
             buildProMap(proWidth, proHeight,
                         binaryCoded,
                         camConfidence,

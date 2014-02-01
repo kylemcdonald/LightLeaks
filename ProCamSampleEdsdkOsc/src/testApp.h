@@ -25,7 +25,7 @@ public:
 	}
 	void setup() {
 		oscIn.setup(9001);
-		oscOut.setup("surya.local", 9000);
+		oscOut.setup("kyle.local", 9000);
 		ofAddListener(ofEvents().update, this, &EdsdkOsc::updateOsc);
 		sendMessage("/setup");
 	}
@@ -86,8 +86,8 @@ public:
 	bool nextState();
 	void keyPressed(int key);
 	
-	const static int tw = 1024 * 3;
-	const static int th = 768;
+	const static int tw = 1920;
+	const static int th = 1080;
 	
 	ofImage mask;
 	EdsdkOsc camera;

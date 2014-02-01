@@ -87,6 +87,7 @@ void testApp::update() {
 
 void testApp::draw() {
 	ofBackground(0);
+	ofSetColor(255);
 	generator.get(pattern).draw(projector * tw, 0);
 	mask.draw(0, 0);
 	if(!capturing) {
@@ -102,6 +103,12 @@ void testApp::draw() {
 }
 
 void testApp::keyPressed(int key) {
+	if(key == ']') {
+		pattern++;
+	}
+	if(key == '[') {
+		pattern--;
+	}
 	if(key == ' ') {
 		camera.takePhoto();
 		capturing = true;

@@ -6,7 +6,7 @@ void testApp::setup() {
 	ofHideCursor();
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	oscIn.setup(9000);
-	oscOut.setup("disco.local", 9001);
+	oscOut.setup("barney1.local", 9001);
 	capturing = false;
 	manual = false;
 	camera.setup();
