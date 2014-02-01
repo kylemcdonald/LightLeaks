@@ -14,8 +14,18 @@ xcuserdata/
 
 .svn/
 obj/
-bin/
+*.app/
 build/
-!data/
+
+*.png
+*.jpg
+*.gif
+*.exr
+
+*.dae
+*.stl
+
+*.wav
+*.mp3
 
 SharedData*/
