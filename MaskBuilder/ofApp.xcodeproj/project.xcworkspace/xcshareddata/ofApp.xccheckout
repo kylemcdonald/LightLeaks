@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>07A8F228-3AC1-4C91-937F-83A9A6B5466E</string>
+	<key>IDESourceControlProjectName</key>
+	<string>ofApp</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>3DAAB9E1-A344-44A1-913C-524C24EDA969</key>
+		<string>ssh://github.com/rezaali/ofxUI.git</string>
+		<key>5585A71D-6751-438B-AB74-DA2656072D6E</key>
+		<string>https://github.com/kylemcdonald/LightLeaks.git</string>
+		<key>E8C0E277-C581-46F4-8C92-CA6CEDE5CDD4</key>
+		<string>ssh://github.com/kylemcdonald/openFrameworks.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>apps/LightLeaks/MaskBuilder/ofApp.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>3DAAB9E1-A344-44A1-913C-524C24EDA969</key>
+		<string>../../../../../addons/ofxUI</string>
+		<key>5585A71D-6751-438B-AB74-DA2656072D6E</key>
+		<string>../../..</string>
+		<key>E8C0E277-C581-46F4-8C92-CA6CEDE5CDD4</key>
+		<string>../../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/kylemcdonald/LightLeaks.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>E8C0E277-C581-46F4-8C92-CA6CEDE5CDD4</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>5585A71D-6751-438B-AB74-DA2656072D6E</string>
+			<key>IDESourceControlWCCName</key>
+			<string>LightLeaks</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>3DAAB9E1-A344-44A1-913C-524C24EDA969</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxUI</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>E8C0E277-C581-46F4-8C92-CA6CEDE5CDD4</string>
+			<key>IDESourceControlWCCName</key>
+			<string>openFrameworks</string>
+		</dict>
+	</array>
+</dict>
+</plist>

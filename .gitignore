@@ -4,12 +4,18 @@
 *.pbxuser
 *.app*
 *.DS_*
+*.xcworkspacedata
+xcuserdata/
+
+*.opensdf
+*.sdf
+*.suo
+*.ipch
 
 .svn/
 obj/
 bin/
 build/
 !data/
-xcuserdata/
 
-SharedData/
+SharedData*/
