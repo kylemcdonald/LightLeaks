@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>50F650A9-AF3F-4A95-A36C-CCC1F34E8258</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Capture</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>294BF347-432A-46A6-9238-878200DF7C2C</key>
+		<string>ssh://github.com/YCAMInterlab/ProCamToolkit.git</string>
+		<key>5204390F-C718-48EB-9808-72EDA22BDE82</key>
+		<string>ssh://github.com/kylemcdonald/openFrameworks.git</string>
+		<key>D88EFC15-D837-46A8-8EE5-114A8A1C5402</key>
+		<string>https://github.com/kylemcdonald/LightLeaks.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>apps/LightLeaks/0-ProCamSampleEdsdkOsc/Capture.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>294BF347-432A-46A6-9238-878200DF7C2C</key>
+		<string>../../../../ProCamToolkit</string>
+		<key>5204390F-C718-48EB-9808-72EDA22BDE82</key>
+		<string>../../../../..</string>
+		<key>D88EFC15-D837-46A8-8EE5-114A8A1C5402</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/kylemcdonald/LightLeaks.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>5204390F-C718-48EB-9808-72EDA22BDE82</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>D88EFC15-D837-46A8-8EE5-114A8A1C5402</string>
+			<key>IDESourceControlWCCName</key>
+			<string>LightLeaks</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>5204390F-C718-48EB-9808-72EDA22BDE82</string>
+			<key>IDESourceControlWCCName</key>
+			<string>openFrameworks</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>294BF347-432A-46A6-9238-878200DF7C2C</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ProCamToolkit</string>
+		</dict>
+	</array>
+</dict>
+</plist>

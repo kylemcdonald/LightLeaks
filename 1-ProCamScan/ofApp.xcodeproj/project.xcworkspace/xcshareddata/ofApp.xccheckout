@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>BBB22C69-90A2-4486-AF3C-3307CE5BCA47</string>
+	<key>IDESourceControlProjectName</key>
+	<string>ofApp</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>82D0F8FA-1775-4674-915D-1C4B7947AE89</key>
+		<string>https://github.com/kylemcdonald/LightLeaks.git</string>
+		<key>CD9483FF-076A-4163-99AB-2C1457369483</key>
+		<string>ssh://github.com/kylemcdonald/openFrameworks.git</string>
+		<key>DCAF91F8-0DDA-4E5B-980D-C7C963795C5F</key>
+		<string>ssh://github.com/kylemcdonald/ofxCv.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>apps/LightLeaks/1-ProCamScan/ofApp.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>82D0F8FA-1775-4674-915D-1C4B7947AE89</key>
+		<string>../../..</string>
+		<key>CD9483FF-076A-4163-99AB-2C1457369483</key>
+		<string>../../../../..</string>
+		<key>DCAF91F8-0DDA-4E5B-980D-C7C963795C5F</key>
+		<string>../../../../../addons/ofxCv</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/kylemcdonald/LightLeaks.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>CD9483FF-076A-4163-99AB-2C1457369483</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>82D0F8FA-1775-4674-915D-1C4B7947AE89</string>
+			<key>IDESourceControlWCCName</key>
+			<string>LightLeaks</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>DCAF91F8-0DDA-4E5B-980D-C7C963795C5F</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxCv</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>CD9483FF-076A-4163-99AB-2C1457369483</string>
+			<key>IDESourceControlWCCName</key>
+			<string>openFrameworks</string>
+		</dict>
+	</array>
+</dict>
+</plist>
