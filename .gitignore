@@ -5,6 +5,7 @@
 *.app*
 *.DS_*
 *.xcworkspacedata
+xcshareddata/
 xcuserdata/
 
 *.opensdf

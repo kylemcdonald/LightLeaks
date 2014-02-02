@@ -24,8 +24,10 @@ public:
 	height(704) {
 	}
 	void setup() {
+		ofXml settings;
+		settings.load("../../../SharedData/settings.xml");
 		oscIn.setup(9001);
-		oscOut.setup("kyle.local", 9000);
+		oscOut.setup(settings.getValue("osc/projector"), 9000);
 		ofAddListener(ofEvents().update, this, &EdsdkOsc::updateOsc);
 		sendMessage("/setup");
 	}
@@ -75,20 +77,4 @@ public:
 		newPhoto = false;
 		return prevNewPhoto;
 	}
-};
-
-class testApp : public ofBaseApp {
-public:
-	void setup();
-	void update();
-	void draw();
-	void generate();
-	bool nextState();
-	void keyPressed(int key);
-	
-	const static int tw = 1920;
-	const static int th = 1080;
-	
-	ofImage mask;
-	EdsdkOsc camera;
 };

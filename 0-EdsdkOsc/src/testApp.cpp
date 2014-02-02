@@ -1,12 +1,15 @@
 #include "testApp.h"
 
 void testApp::setup() {
+	ofXml settings;
+	settings.load("../../../SharedData/settings.xml");
+	
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	ofHideCursor();
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	oscIn.setup(9000);
-	oscOut.setup("barney1.local", 9001);
+	oscOut.setup(settings.getValue("osc/camera/address"), 9001);
 	capturing = false;
 	manual = false;
 	camera.setup();
