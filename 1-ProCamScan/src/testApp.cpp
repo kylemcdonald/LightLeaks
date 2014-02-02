@@ -66,16 +66,20 @@ void testApp::setup() {
 
     vector<ofFile> scans = getScanNames();
     for(int scan=0;scan<scans.size();scan++){
+		if(scans[scan].isFile()) {
+			continue;
+		}
+		
         string scanName = scans[scan].getFileName();
         string path = scans[scan].path()+"/";
-
+		
         string camMaskPath = path+"/mask.png";
         ofFile proConfidenceFile = ofFile(path+"/proConfidence.exr");
         ofFile proMapFile = ofFile(path+"/proMap.png");
 
         bool outputFilesExist = proConfidenceFile.exists() || proMapFile.exists();
         if(outputFilesExist){
-            ofLogVerbose()<<"Skipping "<<scanName<<" since output files (SharedData/"<<scanName<<"proMaps) already exist";
+            ofLogVerbose()<<"Skipping "<<scanName<<" since output files (SharedData/"<<scanName<<"/proMaps) already exist";
         }
         if(scanName[0] == '_'){
             ofLogVerbose()<<"Skipping "<<scanName<<" since it's underscored";
