@@ -1,9 +1,4 @@
 <xml>
-	<camera>
-		<width>5184</width>
-		<height>3456</height>
-	</camera>
-
 	<projectors>
 		<count>1</count>
 		<width>1280</width>

@@ -44,7 +44,7 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
 	unsigned short curMask = 1 << (n - i - 1);
 	float curVariation = curMask / (dimensions * 255. * totalVariation);
     
-#pragma omp parallel for
+
 	for(int y = 0; y < h; y++) {
 		for(int x = 0; x < w; x++) {
 			unsigned char normal = imageNormalGray.at<unsigned char>(y, x);
@@ -61,15 +61,8 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
 void testApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
-	
-	
-    cout << "-----------------"<<endl<<" -- ProCamScan --"<<endl<<"-----------------"<<endl;
-    //    ofSetDataPathRoot(<#string root#>)
     setCalibrationDataPathRoot();
-    
     ofSetLogLevel(OF_LOG_VERBOSE);
-    
-    
 
     vector<ofFile> scans = getScanNames();
     for(int scan=0;scan<scans.size();scan++){
@@ -114,9 +107,7 @@ void testApp::setup() {
             horizontalBits = dirHorizontalNormal.size();
             verticalBits = dirVerticalNormal.size();
             
-            //
             //Error handling
-            //
             if(horizontalBits == 0){
                 ofLogError() << "No horizontal images found (searching in SharedData/"+path+"cameraImages/horizontal/normal). Quitting";
                 ofExit();
@@ -134,9 +125,7 @@ void testApp::setup() {
                 ofExit();
             }
             
-            //
             //Camera mask
-            //
             bool maskLoaded = cameraMask.loadImage(camMaskPath);
             cameraMask.setImageType(OF_IMAGE_GRAYSCALE);
             if(!maskLoaded){
@@ -168,13 +157,10 @@ void testApp::setup() {
             viImageInverse.resize(verticalBits, 0);
             
             
-            //
             //Load Horizontal images
-            //
-            
             ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images multithreaded";
             
-#pragma omp parallel for
+
             for(int i = 0; i < horizontalBits; i++) {
                 ofImage * img = new ofImage();
                 img->setUseTexture(false);
@@ -206,11 +192,9 @@ void testApp::setup() {
             }
             
             
-            //
             //Load Vertical images
-            //            
             ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
-#pragma omp parallel for
+
             for(int i = 0; i < verticalBits; i++) {
                 ofImage * img = new ofImage();
                 img->setUseTexture(false);
@@ -267,10 +251,12 @@ void testApp::setup() {
             //saveImage(binaryCoded, "binaryCoded.png");
             
             ofLogVerbose() << "Build Pro Map";
-            
-            
-            proWidth = 1920, proHeight = 1080;
-            buildProMap(proWidth, proHeight,
+			
+			ofXml settings("settings.xml");
+            proWidth = settings.getIntValue("projectors/width");
+			proHeight = settings.getIntValue("projectors/height");
+			proCount = settings.getIntValue("projectors/count");
+            buildProMap(proCount * proWidth, proHeight,
                         binaryCoded,
                         camConfidence,
                         proConfidence,
@@ -278,14 +264,10 @@ void testApp::setup() {
 
             saveImage(proConfidence, path+"/proConfidence.exr");
             saveImage(proMap, path+"/proMap.png");
-             
-             
+            
             //saveImage(mean, "mean.png");
             //saveImage(stddev, "stddev.exr");
             //saveImage(count, "count.png");
-            
-            
-            
         }
     }
     ofLogVerbose() <<" Done in "+ofToString(ofGetElapsedTimef())+" seconds";

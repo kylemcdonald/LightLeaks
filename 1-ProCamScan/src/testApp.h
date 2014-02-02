@@ -18,7 +18,7 @@ public:
     vector<ofFile> hnFiles, hiFiles, vnFiles, viFiles;
     vector<ofImage*> hnImageNormal, hnImageInverse, viImageNormal, viImageInverse;
     
-    int horizontalBits, verticalBits, camWidth, camHeight, proWidth, proHeight;
+    int horizontalBits, verticalBits, camWidth, camHeight, proWidth, proHeight, proCount;
     cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical, minImage, maxImage;
     ofImage cameraMask;
     

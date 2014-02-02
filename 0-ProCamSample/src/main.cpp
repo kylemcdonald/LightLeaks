@@ -65,7 +65,9 @@ public:
 	void setup() {
 		ofSetVerticalSync(true);
 		ofHideCursor();
-		mask.loadImage("mask.png");
+		if(ofFile::doesFileExist("mask.png")) {
+			mask.loadImage("mask.png");
+		}
 		ofEnableAlphaBlending();
 		ofSetLogLevel(OF_LOG_VERBOSE);
 		camera.setup();
@@ -95,7 +97,9 @@ public:
 		ofBackground(0);
 		ofSetColor(255);
 		generator.get(pattern).draw(projector * tw, 0);
-//		mask.draw(0, 0);
+		if(mask.getWidth() > 0) {
+			mask.draw(0, 0);
+		}
 		if(!capturing) {
 			ofPushMatrix();
 			ofScale(.25, .25);
