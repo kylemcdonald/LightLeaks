@@ -5,6 +5,12 @@
 #include "ofxCv.h"
 #include "ofAutoShader.h"
 
+enum Stage {
+    Lighthouse=0,
+    Spotlight,
+    Intermezzo
+} ;
+
 class ofApp : public ofBaseApp {
 public:
 	void setup();
@@ -21,5 +27,16 @@ public:
     
     bool room;
     
-    ofFbo wallFbo;
+    Stage stage;
+    Stage stageGoal;
+    
+    float stageAge;
+    float stageAmp;
+
+    //Lighthouse
+    float lighthouseAngle;
+
+    //Intermezzo
+    float intermezzoTimer;
+
 };

@@ -4,12 +4,25 @@
 
 #define PI (3.1415926536)
 #define TWO_PI (6.2831853072)
+#define HALF_PI (PI*0.5)
 
 uniform sampler2DRect xyzMap;
 uniform sampler2DRect normalMap;
 uniform sampler2DRect confidenceMap;
 
 uniform float elapsedTime;
+
+//Lighthouse
+uniform float beamAngle;
+uniform float beamWidth;
+
+//Spotlight
+uniform float spotlightSize = 0.1;
+uniform vec2 spotlightPos = vec2(0.5,0.5);
+
+uniform int stage = 0;
+
+
 uniform sampler2DRect texture;
 uniform vec2 textureSize;
 
@@ -20,38 +33,9 @@ uniform vec2 size, mouse;
 
 const bool bw = true;
 const bool useStepTime = true;
-const int stage = 1;
 
-// triangle wave from 0 to 1
-float wrap(float n) {
-	return abs(mod(n, 2.)-1.)*-1. + 1.;
-}
-
-// creates a cosine wave in the plane at a given angle
-float wave(float angle, vec2 point, float phase) {
-	float cth = cos(angle);
-	float sth = sin(angle);
-	return (cos (phase + cth*point.x + sth*point.y) + 1.) / 2.;
-}
-
-const float waves = 20;
-// sum cosine waves at various interfering angles
-// wrap values when they exceed 1
-float quasi(float interferenceAngle, vec2 point, float phase) {
-	float sum = 0.;
-	for (float i = 0.; i < waves; i++) {
-		sum += wave(3.1416*i*interferenceAngle, point, phase);
-	}
-	return wrap(sum);
-}
-
- float square(float x, float w) {
- 	return mod(x, w) > (w / 2) ? 1 : 0;
- }
 
 void main() {
-gl_FragColor = vec4(vec3(1), 1);
-return;
 	vec2 overallOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
 	vec4 curSample = texture2DRect(xyzMap, gl_TexCoord[0].st+overallOffset);
 	vec4 curSampleNormal = texture2DRect(normalMap, gl_TexCoord[0].st+overallOffset);
@@ -71,46 +55,45 @@ return;
 
 	// handle space
 	vec2 positionNorm = position.xy;
-	float positionAngle = atan(positionNorm.y / positionNorm.x);
+	float positionAngle = atan((positionNorm.y - 0.5) / (positionNorm.x-0.5));
 
 	if(stage == 0) {
-		float angleSpeed = .001;
+        //Lighthouse beam
+
+        float angleSpeed = .001;
 		float phaseSpeed = .5;
 		float scale = 50;
-		b = quasi(time * angleSpeed, (positionNorm) * scale, time * phaseSpeed);
-		if(confidence < .01) discard;
-	} else if(stage == 1) {
-		float chunks = 20;
-		float angle = .01 * time;
-		b = wave(angle, positionNorm * chunks, time);
-		if(confidence < .01) discard;
-	} else if(stage == 2) {
-		b = quasi(.0001 * (sin(time) + 1.5) * 400, (positionNorm) * 700, elapsedTime);
-		if(confidence < .01) discard;
-	} else if(stage == 3) {
-		float speed = -10;
-		float scale = 100;
-		b = sin(length(positionNorm) * scale + speed * time);
-		if(confidence < .01) discard;
-	} else if(stage == 4) {
-		float speed = -10;
-		float scale = 100;
-		float wiggleStrength = .005;
-		float petals = 20;
-		float spiral = 20;
-		float power = .1;
-		float wiggle = sin(length(positionNorm) * spiral + time + positionAngle * petals);
-		float base = pow(length(positionNorm), power) + wiggle * wiggleStrength;
-		b = sin(base * scale + speed * time);	
-		if(confidence < .01) discard;
-	} else if(stage == 5) {
-		b = square(elapsedTime, 100 * sin(elapsedTime));
+		//b = quasi(time * angleSpeed, (positionNorm) * scale, time * phaseSpeed);
+        if(abs(positionAngle - beamAngle+HALF_PI) < beamWidth
+           || abs(positionAngle - PI - beamAngle+HALF_PI) < beamWidth
+           || abs(positionAngle + PI - beamAngle+HALF_PI) < beamWidth){
+            b = 1.;
+        } else {
+            b = 0.;
+        }
+		//if(confidence < .01) discard;
 	}
+    else if(stage == 1){
+        //Spotlight
+        if( position.z > 0.15 &&
+           length(positionNorm.xy - spotlightPos) < spotlightSize){
+            b = 1.;
+        } else {
+            b = 0.;
+        }
+    }
+    else if(stage == 2){
+        //Intermezzo
+        
+    }
+    
 
 	// post process
 	if(bw) {
 		b = b > .5 ? 1 : 0;
 	}
-	gl_FragColor = vec4(vec3(b), 1.);
+    
+	gl_FragColor = vec4(vec3(b)+position, 1.);
+
 }
 

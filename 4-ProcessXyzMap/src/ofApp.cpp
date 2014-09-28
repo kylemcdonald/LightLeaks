@@ -1,55 +1,103 @@
 #include "ofApp.h"
 
+
+float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, float valueChange = 1.0){
+    float t = time;
+    float d = duration;
+    float b = startValue;
+    float c = valueChange;
+    
+    t /= d/2.;
+    if (t < 1) return c/2.*t*t*t + b;
+    t -= 2.;
+    return c/2.*(t*t*t + 2.) + b;
+}
+
 void ofApp::setup() {
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	shader.setup("shader");
     
-    img.loadImage("image.png");
     
 	xyzMap.loadImage("xyzMap.exr");
     normalMap.loadImage("normalMap.exr");
     confidenceMap.loadImage("confidenceMap.exr");
     
-    wallFbo.allocate(2048, 200);
-	ofHideCursor();
+    stage = Lighthouse;
+    
+    intermezzoTimer = 10;
+
+	//ofHideCursor();
 }
 
 void ofApp::update() {
-
+    float dt = 1./ofGetFrameRate();
+    
+    stageAge += MIN(dt,0.1);
+    
+    //Go to intermezzo now and then
+    if(stage != Intermezzo){
+        intermezzoTimer -= dt;
+        
+        if(intermezzoTimer < 0){
+            stageGoal = Intermezzo;
+            intermezzoTimer = 10;
+        }
+    } else {
+        //Go back to lighhouse after some seconds
+        if(stageAge > 5){
+            stageGoal = Lighthouse;
+        }
+    }
+    
+    
+    if(stage == Lighthouse){
+        lighthouseAngle += dt * cubicEaseInOut(stageAmp*0.7);
+    }
+    
+    
+    
+    if(stage != stageGoal){
+        stageAmp -= dt*0.5;
+        if(stageAmp < 0){
+            stage = stageGoal;
+            stageAmp = 0;
+            stageAge = 0;
+        }
+    } else {
+        stageAmp = MIN(stageAmp+dt*0.5, 1.);
+    }
 	
+    
 }
 
 void ofApp::draw() {
 	ofBackground(0);
     
-    
-    wallFbo.begin();
-  /*  ofClear(0, 0, 0);
-    ofSetColor(255, 255, 255);
-    for(int y=0;y<wallFbo.getHeight(); y+= 20){
-            for(int x=0;x<wallFbo.getWidth(); x+= 20){
-                ofRect(x, y, 10, 10);
-                ofRect(x+10, y+10, 10, 10);
-            }
-    }*/
-//    image.draw()
-    wallFbo.end();
-    
+    //Lighthouse
+    float beamWidth = 0;
+    if(stage == Lighthouse){
+        beamWidth = 0.3 * cubicEaseInOut(stageAmp);
+    }
     
     
 	shader.begin();
 	shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
-	shader.setUniform2f("textureSize", img.getWidth(), img.getHeight());
+    shader.setUniform1f("beamAngle", fmodf(lighthouseAngle, PI));
+    shader.setUniform1f("beamWidth", beamWidth);
+    shader.setUniform2f("spotlightPos", (float)ofGetMouseX() / ofGetWidth(), (float)ofGetMouseY()/ofGetHeight());
+    shader.setUniform1f("stage", stage);
+    
 	shader.setUniformTexture("xyzMap", xyzMap, 0);
 	shader.setUniformTexture("normalMap", normalMap, 2);
     shader.setUniformTexture("confidenceMap", confidenceMap, 3);
-    shader.setUniformTexture("texture", img.getTextureReference(), 1);
+    
 	xyzMap.draw(0, 0);
 	shader.end();
     
-    //wallFbo.draw(0, 0, ofGetWidth(), ofGetHeight());
+    ofSetColor(255);
+    ofDrawBitmapString("Stage "+ofToString(stage)+" goal "+ofToString(stageGoal)+"  amp "+ofToString(stageAmp), ofPoint(20,30));
 }
 
 void ofApp::keyPressed(int key) {
@@ -62,7 +110,6 @@ void ofApp::keyPressed(int key) {
         } else {
             xyzMap.loadImage("xyzMap.exr");
         }
-		//shader.load("shader");
 	}
     if(key == 'f'){
         ofToggleFullscreen();
