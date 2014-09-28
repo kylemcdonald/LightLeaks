@@ -124,6 +124,8 @@ void ofApp::update() {
 
 void ofApp::draw() {
 	ofBackground(0);
+       ofEnableAlphaBlending();
+    ofSetColor(255);
     
     //Lighthouse parameters
     float beamWidth = 0;
