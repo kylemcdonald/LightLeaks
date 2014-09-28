@@ -38,5 +38,11 @@ public:
 
     //Intermezzo
     float intermezzoTimer;
+    
+    ofFloatImage speakerXYZMap;
+    ofFbo speakerFbo;
+    ofFloatPixels speakerPixels;
 
+    
+    float speakerAmp[4];
 };
