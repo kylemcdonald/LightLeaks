@@ -17,15 +17,13 @@ public:
 	void update();
 	void draw();
 	void keyPressed(int key);
+    
+    bool debugMode;
 	
 	ofFloatImage xyzMap;
     ofFloatImage normalMap;
     ofFloatImage confidenceMap;
 	ofAutoShader shader;
-    
-    ofImage img;
-    
-    bool room;
     
     Stage stage;
     Stage stageGoal;
@@ -39,10 +37,16 @@ public:
     //Intermezzo
     float intermezzoTimer;
     
+    
+    
+    //Speaker sampling
     ofFloatImage speakerXYZMap;
     ofFbo speakerFbo;
     ofFloatPixels speakerPixels;
 
     
     float speakerAmp[4];
+    
+    //Tracking
+    ofVideoGrabber grabber;
 };

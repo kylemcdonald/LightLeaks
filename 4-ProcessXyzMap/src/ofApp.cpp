@@ -13,10 +13,20 @@ float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, flo
     return c/2.*(t*t*t + 2.) + b;
 }
 
+
+
+
 void ofApp::setup() {
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
+    ofEnableAlphaBlending();
+    
+    //Tracker
+    grabber.initGrabber(640, 480);
+
+    
+    
 	shader.setup("shader");
     
     
@@ -28,6 +38,7 @@ void ofApp::setup() {
     
     intermezzoTimer = 10;
     
+    
     //Create the speaker fbo
     ofVec3f speakers[4];
     speakers[0] = ofVec3f(0,0,0);
@@ -36,17 +47,13 @@ void ofApp::setup() {
     speakers[3] = ofVec3f(0,1,0);
     
     
-
-    
     speakerXYZMap.allocate(4, 100, OF_IMAGE_COLOR_ALPHA);
     
-    float speakerAreaSize = 0.1;
+    float speakerAreaSize = 0.2;
     
     float * pixels = speakerXYZMap.getPixels();
     for(int y=0;y<speakerXYZMap.getHeight();y++){
         for(int x=0;x<speakerXYZMap.getWidth();x++){
-            
-            
             pixels[0] = speakers[x].x + sin(y * TWO_PI / 20) * ((float)y/speakerXYZMap.getHeight()) * speakerAreaSize;
             pixels[1] = speakers[x].y ;
             pixels[2] = speakers[x].z + cos(y * TWO_PI / 20) * ((float)y/speakerXYZMap.getHeight()) * speakerAreaSize;;
@@ -60,6 +67,12 @@ void ofApp::setup() {
     speakerPixels.allocate(speakerXYZMap.getWidth(), speakerXYZMap.getHeight(),4);
 
     
+    
+    
+    
+    
+    
+    debugMode = true;
 
 	//ofHideCursor();
 }
@@ -103,7 +116,8 @@ void ofApp::update() {
     }
 	
     
-    
+    //Tracker
+    grabber.update();
  
     
 }
@@ -134,22 +148,21 @@ void ofApp::draw() {
     
 
     //Debug text
-    ofSetColor(255);
-    ofDrawBitmapString("Stage "+ofToString(stage)+" goal "+ofToString(stageGoal)+"  amp "+ofToString(stageAmp), ofPoint(20,30));
+    if(debugMode){
+        ofSetColor(0,100);
+        ofRect(0, 0, 200, 100);
+        ofSetColor(255);
+        ofDrawBitmapString("Stage "+ofToString(stage)+" goal "+ofToString(stageGoal)+"  amp "+ofToString(stageAmp), ofPoint(20,30));
+    }
     
     
     //
     //Speaker sampling code
     //
     speakerFbo.begin(); {
-        
         shader.begin();
-        
         speakerXYZMap.draw(0,0);
-        
         shader.end();
-        
-        
     } speakerFbo.end();
 
 
@@ -165,12 +178,16 @@ void ofApp::draw() {
     }
     
     //Debug drawing
-    ofSetColor(255);
-    speakerXYZMap.draw(0,0);
-    speakerFbo.draw(10,0);
+    if(debugMode){
+        ofSetColor(255);
+        speakerXYZMap.draw(0,0);
+        speakerFbo.draw(10,0);
+        
+        ofDrawBitmapString("Speaker "+ofToString(speakerAmp[0])+" "+ofToString(speakerAmp[1])+" "+ofToString(speakerAmp[2])+" "+ofToString(speakerAmp[3]), ofPoint(20,45));
+    }
 
 
-    //The simple scattering algorithm behind the speaker thingy
+    //The simple scattering algorithm behind the speaker thingy visualized
     /*  ofSetColor(255,0,0);
     for(int i=0;i<100;i++){
         float x = 100 + sin(i * TWO_PI / 20) * i;
@@ -179,20 +196,19 @@ void ofApp::draw() {
         ofCircle(x, y, 5);
         
     }*/
+    
+    
+    //Tracker
+    if(debugMode){
+     //   grabber.draw(10, 120, 640, 480);
+    }
 
 }
 
 void ofApp::keyPressed(int key) {
 	if(key == ' ') {
-        room = !room;
-        
-        if(room){
-            xyzMap.loadImage("xyzMapRoom.exr");
-
-        } else {
-            xyzMap.loadImage("xyzMap.exr");
-        }
-	}
+        debugMode = !debugMode;
+    }
     if(key == 'f'){
         ofToggleFullscreen();
     }
