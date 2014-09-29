@@ -7,6 +7,8 @@
 #include "ofxBlackMagic.h"
 #include "CoordWarp.h"
 #include "ofxXmlSettings.h"
+#include "ofxBiquadFilter.h"
+#include "ofxOsc.h"
 
 enum Stage {
     Lighthouse=0,
@@ -48,6 +50,10 @@ public:
     //Intermezzo
     float intermezzoTimer;
     
+    //Spotlight
+    float spotlightThresholder;
+    ofxBiquadFilter2f spotlightPosition;
+    
     
     
     //Speaker sampling
@@ -68,4 +74,7 @@ public:
     ofVec2f cameraCalibrationCorners[4];
     bool firstFrame;
     int setCorner;
+    
+    //OSC
+    ofxOscSender oscSender;;
 };

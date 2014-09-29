@@ -17,7 +17,7 @@ uniform float beamAngle;
 uniform float beamWidth;
 
 //Spotlight
-uniform float spotlightSize = 0.1;
+uniform float spotlightSize = 0.2;
 uniform vec2 spotlightPos = vec2(0.5,0.5);
 
 uniform int stage = 0;
@@ -94,7 +94,7 @@ void main() {
 		b = b > .5 ? 1 : 0;
 	}
     
-	gl_FragColor = vec4(vec3(b) , 1.);
+	gl_FragColor = vec4(vec3(b) + position , 1.);
 
 }
 

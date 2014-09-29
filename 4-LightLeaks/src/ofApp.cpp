@@ -41,6 +41,10 @@ void ofApp::setup() {
     
     stage = Lighthouse;
     
+    //Spotlight setup
+    spotlightPosition.setFc(0.01); //Low pass biquad filter - allow only slow frequencies
+    
+    //Intermezzo setup
     intermezzoTimer = 10;
     
     
@@ -97,6 +101,7 @@ void ofApp::setup() {
     
     updateCameraCalibration();
     
+    
 
 }
 
@@ -114,12 +119,25 @@ void ofApp::update() {
             intermezzoTimer = 10;
         }
     } else {
+   //Go back to lighhouse after some seconds
+   if(stageAge > 5){
+   stageGoal = Lighthouse;
+   }
+   }
+   */
+    
+    //Go to spotlight when there are contours to track
+    if(stage != Spotlight){
+        if(spotlightThresholder > 1){
+            stageGoal = Spotlight;
+        }
+    } else {
         //Go back to lighhouse after some seconds
         if(stageAge > 5){
             stageGoal = Lighthouse;
+            spotlightThresholder = 0;
         }
     }
-    */
     
     if(stage == Lighthouse){
         lighthouseAngle += dt * cubicEaseInOut(stageAmp*0.7);
@@ -137,7 +155,7 @@ void ofApp::update() {
     } else {
         stageAmp = ofClamp(stageAmp+dt*0.5, 0, 1.);
     }
-	
+    
     
     //Tracker
     bool newFrame = grabber.update();
@@ -147,18 +165,35 @@ void ofApp::update() {
         if(pixels.getWidth()>0){
             contourFinder.setThreshold(ofMap(mouseX, 0, ofGetWidth(), 0, 255));
             cv::Mat mat = ofxCv::toCv(pixels);
-            cameraBackground.update(mat, thresholdedImage);
             
+            cameraBackground.update(mat, thresholdedImage);
+
             if(firstFrame){
                 cameraBackground.reset();
             }
-
+            
+            
+            ofxCv::blur(thresholdedImage, 5);
             thresholdedImage.update();
+            
             contourFinder.findContours(mat);
+            
+            if(contourFinder.getContours().size() > 0){
+                ofRectangle rect =  ofxCv::toOf(contourFinder.getBoundingRect(0));
+                ofVec2f point = ofVec2f(rect.x+rect.width*0.5, rect.y+rect.height);
+                spotlightPosition.update(cameraCalibration.inversetransform(point));
+            }
             
             firstFrame = false;
         }
+        
+        if(contourFinder.getContours().size() > 0){
+            spotlightThresholder += dt;
+        } else {
+            spotlightThresholder -= dt;
+        }
     }
+    
 }
 
 void ofApp::draw() {
@@ -172,13 +207,20 @@ void ofApp::draw() {
     if(stage == Lighthouse){
         beamWidth = 0.3 * cubicEaseInOut(stageAmp);
     }
+    float spotlightSize = 0.1;
+    if(stage == Spotlight){
+        spotlightSize = 0.1 * cubicEaseInOut(stageAmp);
+    }
     
     shader.begin();{
         shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
         shader.setUniform1f("beamAngle", fmodf(lighthouseAngle, PI));
         shader.setUniform1f("beamWidth", beamWidth);
-        shader.setUniform2f("spotlightPos", (float)ofGetMouseX() / ofGetWidth(), (float)ofGetMouseY()/ofGetHeight());
-        shader.setUniform1f("stage", stage);
+//        shader.setUniform2f("spotlightPos", (float)ofGetMouseX() / ofGetWidth(), (float)ofGetMouseY()/ofGetHeight());
+        shader.setUniform2f("spotlightPos", (float) spotlightPosition.value().x, (float)spotlightPosition.value().y);
+        shader.setUniform1f("spotlightSize", spotlightSize);
+        
+        shader.setUniform1i("stage", stage);
         
         shader.setUniformTexture("xyzMap", xyzMap, 0);
         shader.setUniformTexture("normalMap", normalMap, 2);
@@ -191,9 +233,9 @@ void ofApp::draw() {
     //Debug text
     if(debugMode){
         ofSetColor(0,100);
-        ofRect(0, 0, 200, 100);
+        ofRect(410, 0, 250, 100);
         ofSetColor(255);
-        ofDrawBitmapString("Stage "+ofToString(stage)+" goal "+ofToString(stageGoal)+"  amp "+ofToString(stageAmp), ofPoint(20,30));
+        ofDrawBitmapString("Stage "+ofToString(stage)+" goal "+ofToString(stageGoal)+"  amp "+ofToString(stageAmp)+ " fps "+ofToString(ofGetFrameRate(),0), ofPoint(440,30));
     }
     
     
@@ -251,16 +293,19 @@ void ofApp::draw() {
         grabber.drawGray();
         contourFinder.draw();
         
-        thresholdedImage.draw(1920,0);
+        thresholdedImage.draw(0,1080);
         
         ofPushStyle();
         ofNoFill();
         ofSetColor(255, 0, 0);
-        for(int i = 0; i < contourFinder.getContours().size(); i++) {
-            ofRectangle rect =  ofxCv::toOf(contourFinder.getBoundingRect(i));
-            ofVec2f point = ofVec2f(rect.x+rect.width*0.5, rect.y+rect.height);
-            point = cameraCalibration.inversetransform(point);
-            ofCircle(point.x, point.y, 20);
+        //        for(int i = 0; i < contourFinder.getContours().size(); i++) {
+        { int i=0;
+            if(contourFinder.getContours().size() > i){
+                ofRectangle rect =  ofxCv::toOf(contourFinder.getBoundingRect(i));
+                ofVec2f point = ofVec2f(rect.x+rect.width*0.5, rect.y+rect.height);
+                point = cameraCalibration.inversetransform(point);
+                ofCircle(point.x*1920, point.y*1080, 20);
+            }
         }
         
         ofSetColor(255, 255, 0);
@@ -281,9 +326,9 @@ void ofApp::draw() {
 void ofApp::updateCameraCalibration(){
     ofVec2f inputCorners[4];
     inputCorners[0] = ofVec2f(0,0);
-    inputCorners[1] = ofVec2f(1920,0);
-    inputCorners[2] = ofVec2f(1920,1080);
-    inputCorners[3] = ofVec2f(0,1080);
+    inputCorners[1] = ofVec2f(1,0);
+    inputCorners[2] = ofVec2f(1,1);
+    inputCorners[3] = ofVec2f(0,1);
     
     cameraCalibration.calculateMatrix(inputCorners, cameraCalibrationCorners);
 }
@@ -332,11 +377,10 @@ void ofApp::mouseMoved(int x, int y){
 
 void ofApp::mousePressed( int x, int y, int button ){
     if(setCorner != -1){
-        
         settings.setValue("corner"+ofToString(setCorner)+"x", int(cameraCalibrationCorners[setCorner].x));
         settings.setValue("corner"+ofToString(setCorner)+"y", int(cameraCalibrationCorners[setCorner].y));
         settings.save("settings.xml");
-
+        
         setCorner = -1;
     }
 }

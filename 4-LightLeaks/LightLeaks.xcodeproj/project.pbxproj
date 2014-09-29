@@ -58,6 +58,9 @@
 		DDA5D49D19C48D690066B686 /* simpleFileLister.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDA5D48019C48D690066B686 /* simpleFileLister.cpp */; };
 		DDA5D49E19C48D690066B686 /* simpleLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDA5D48219C48D690066B686 /* simpleLogger.cpp */; };
 		DDBF096D19D97060002CD2DC /* CoordWarp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDBF096B19D97060002CD2DC /* CoordWarp.cpp */; };
+		DDE5F49319D9948500F6A391 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = DDE5F48819D9948500F6A391 /* README.md */; };
+		DDE5F49419D9948500F6A391 /* ofxBiquadFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE5F48A19D9948500F6A391 /* ofxBiquadFilter.cpp */; };
+		DDE5F49519D9948500F6A391 /* ofxBiquadFilterInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE5F48C19D9948500F6A391 /* ofxBiquadFilterInstance.cpp */; };
 		E4328149138ABC9F0047C5CB /* openFrameworksDebug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4328148138ABC890047C5CB /* openFrameworksDebug.a */; };
 		E45BE97B0E8CC7DD009D7055 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9710E8CC7DD009D7055 /* AGL.framework */; };
 		E45BE97C0E8CC7DD009D7055 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9720E8CC7DD009D7055 /* ApplicationServices.framework */; };
@@ -308,6 +311,12 @@
 		DDA5D48319C48D690066B686 /* simpleLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = simpleLogger.h; sourceTree = "<group>"; };
 		DDBF096B19D97060002CD2DC /* CoordWarp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoordWarp.cpp; sourceTree = "<group>"; };
 		DDBF096C19D97060002CD2DC /* CoordWarp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoordWarp.h; sourceTree = "<group>"; };
+		DDE5F46F19D9948500F6A391 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		DDE5F48819D9948500F6A391 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		DDE5F48A19D9948500F6A391 /* ofxBiquadFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBiquadFilter.cpp; sourceTree = "<group>"; };
+		DDE5F48B19D9948500F6A391 /* ofxBiquadFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxBiquadFilter.h; sourceTree = "<group>"; };
+		DDE5F48C19D9948500F6A391 /* ofxBiquadFilterInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBiquadFilterInstance.cpp; sourceTree = "<group>"; };
+		DDE5F48D19D9948500F6A391 /* ofxBiquadFilterInstance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxBiquadFilterInstance.h; sourceTree = "<group>"; };
 		E4328143138ABC890047C5CB /* openFrameworksLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = openFrameworksLib.xcodeproj; path = ../../../libs/openFrameworksCompiled/project/osx/openFrameworksLib.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E45BE9710E8CC7DD009D7055 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
 		E45BE9720E8CC7DD009D7055 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
@@ -778,6 +787,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				DDE5F46E19D9948500F6A391 /* ofxBiquadFilter */,
 				DD6C86FF19D955DD0065A9B1 /* ofxBlackmagic */,
 				DDA5D44719C48D690066B686 /* ofxControlPanel */,
 				2c8f245acbe61e28646c17f20b185423 /* ofxAssimpModelLoader */,
@@ -956,6 +966,28 @@
 			);
 			name = src;
 			path = ../../../addons/ofxControlPanel/src;
+			sourceTree = "<group>";
+		};
+		DDE5F46E19D9948500F6A391 /* ofxBiquadFilter */ = {
+			isa = PBXGroup;
+			children = (
+				DDE5F46F19D9948500F6A391 /* .gitignore */,
+				DDE5F48819D9948500F6A391 /* README.md */,
+				DDE5F48919D9948500F6A391 /* src */,
+			);
+			name = ofxBiquadFilter;
+			path = ../../../addons/ofxBiquadFilter;
+			sourceTree = "<group>";
+		};
+		DDE5F48919D9948500F6A391 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				DDE5F48A19D9948500F6A391 /* ofxBiquadFilter.cpp */,
+				DDE5F48B19D9948500F6A391 /* ofxBiquadFilter.h */,
+				DDE5F48C19D9948500F6A391 /* ofxBiquadFilterInstance.cpp */,
+				DDE5F48D19D9948500F6A391 /* ofxBiquadFilterInstance.h */,
+			);
+			path = src;
 			sourceTree = "<group>";
 		};
 		E4328144138ABC890047C5CB /* Products */ = {
@@ -1302,7 +1334,10 @@
 				DDA5D48F19C48D690066B686 /* guiTypeLabel.cpp in Sources */,
 				DDA5D48E19C48D690066B686 /* guiTypeFileLister.cpp in Sources */,
 				DDA5D49119C48D690066B686 /* guiTypeMultiToggle.cpp in Sources */,
+				DDE5F49519D9948500F6A391 /* ofxBiquadFilterInstance.cpp in Sources */,
+				DDE5F49319D9948500F6A391 /* README.md in Sources */,
 				6aabab39e82af5cfea23a205b39766e6 /* ContourFinder.cpp in Sources */,
+				DDE5F49419D9948500F6A391 /* ofxBiquadFilter.cpp in Sources */,
 				45cc483a999bf1065a6b926c53724159 /* Distance.cpp in Sources */,
 				5cc34d433f5806179935b89ddc75729f /* Flow.cpp in Sources */,
 				DDA5D48D19C48D690066B686 /* guiTypeDrawable.cpp in Sources */,
