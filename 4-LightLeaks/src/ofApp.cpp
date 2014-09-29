@@ -35,9 +35,9 @@ void ofApp::setup() {
 	shader.setup("shader");
     
     
-	xyzMap.loadImage("xyzMap.exr");
-    normalMap.loadImage("normalMap.exr");
-    confidenceMap.loadImage("confidenceMap.exr");
+	xyzMap.loadImage("../../../SharedData/xyzMap.exr");
+    normalMap.loadImage("../../../SharedData/normalMap.exr");
+    confidenceMap.loadImage("../../../SharedData/confidenceMap.exr");
     
     stage = Lighthouse;
     
@@ -102,7 +102,7 @@ void ofApp::setup() {
     updateCameraCalibration();
     
     
-
+    oscSender.setup("localhost", 7777);
 }
 
 void ofApp::update() {
@@ -194,6 +194,12 @@ void ofApp::update() {
         }
     }
     
+    
+    //OSC
+    ofxOscMessage msg;
+    msg.setAddress("/audio/lighthouse_angle");
+    msg.addFloatArg(fmodf(lighthouseAngle/TWO_PI, 1));
+    oscSender.sendMessage(msg);
 }
 
 void ofApp::draw() {
@@ -214,7 +220,7 @@ void ofApp::draw() {
     
     shader.begin();{
         shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
-        shader.setUniform1f("beamAngle", fmodf(lighthouseAngle, PI));
+        shader.setUniform1f("beamAngle", fmodf(lighthouseAngle, TWO_PI));
         shader.setUniform1f("beamWidth", beamWidth);
 //        shader.setUniform2f("spotlightPos", (float)ofGetMouseX() / ofGetWidth(), (float)ofGetMouseY()/ofGetHeight());
         shader.setUniform2f("spotlightPos", (float) spotlightPosition.value().x, (float)spotlightPosition.value().y);

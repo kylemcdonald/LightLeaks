@@ -56,22 +56,19 @@ void main() {
 
 	// handle space
 	vec2 positionNorm = position.xy;
-	float positionAngle = atan((positionNorm.y - 0.5) / (positionNorm.x-0.5));
+	float positionAngle = atan((positionNorm.y - 0.5) , (positionNorm.x-0.25));
 
 	if(stage == 0) {
         //Lighthouse beam
 
-        float angleSpeed = .001;
-		float phaseSpeed = .5;
-		float scale = 50;
-		//b = quasi(time * angleSpeed, (positionNorm) * scale, time * phaseSpeed);
-        if(abs(positionAngle - beamAngle+HALF_PI) < beamWidth
-           || abs(positionAngle - PI - beamAngle+HALF_PI) < beamWidth
-           || abs(positionAngle + PI - beamAngle+HALF_PI) < beamWidth){
+        if(abs(positionAngle - beamAngle) < beamWidth
+           || abs(positionAngle - TWO_PI - beamAngle) < beamWidth
+           || abs(positionAngle + TWO_PI - beamAngle) < beamWidth){
             b = 1.;
         } else {
             b = 0.;
         }
+        
 		//if(confidence < .01) discard;
 	}
     else if(stage == 1){
@@ -91,10 +88,10 @@ void main() {
 
 	// post process
 	if(bw) {
-		b = b > .5 ? 1 : 0;
+	//	b = b > .5 ? 1 : 0;
 	}
     
-	gl_FragColor = vec4(vec3(b) + position , 1.);
+	gl_FragColor = vec4(vec3(b)  , 1.);
 
 }
 
