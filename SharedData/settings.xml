@@ -1,12 +1,12 @@
 <xml>
 	<projectors>
-		<count>1</count>
+		<count>3</count>
 		<width>1280</width>
-		<height>720</height>
+		<height>1024</height>
 	</projectors>
 
 	<osc>
-		<camera>camera.local</camera>
-		<projector>projector.local</projector>
+		<camera>192.168.5.161</camera>
+		<projector>192.168.4.163</projector>
 	</osc>
 </xml>

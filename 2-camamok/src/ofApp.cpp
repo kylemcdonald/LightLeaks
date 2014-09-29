@@ -321,10 +321,8 @@ void ofApp::saveCalibration() {
 void ofApp::saveXyzMap() {
 	ofFloatPixels pix;
 	fboPositions.readToPixels(pix);
-	pix.mirror(true, false);
 	ofSaveImage(pix, "xyzMap.exr");
 	fboNormals.readToPixels(pix);
-	pix.mirror(true, false);
 	ofSaveImage(pix, "normalMap.exr");
 }
 
@@ -563,8 +561,6 @@ void ofApp::drawOverlay() {
 		
 		ofSetColor(255);
 		ofPushMatrix();
-		ofTranslate(0, fboPositions.getHeight());
-		ofScale(1, -1);
 		fboPositions.draw(0, 0);
 		fboNormals.draw(fboPositions.getWidth() / 2, 0);
 		ofPopMatrix();

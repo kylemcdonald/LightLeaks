@@ -15,6 +15,20 @@
 0. Run `BuildXyzMap`. This will produce `SharedData/confidenceMap.exr`, `SharedData/xyzMap.exr` and `SharedData/normalMap.exr`
 0. Copy the results of `BuildXyzMap` into `ProcessXyzMap/bin/data/` and run `ProcessXyzMap`.
 
+# Install Notes
+
+* Each projector should be focused on the mirror balls, outputting native pixels (no scaling or keystoning) and framing the entire colleciton of mirror balls.
+
+## Click Festival (2012)
+
+* Mac Mini
+* 1024x768 (native resolution) with TH2G
+
+## La Gaîté Lyrique (2014)
+
+* iMac
+* 1280x1024 with TH2G on projectiondesign F32 sx+ (native 1400x1050) inset on the sensor
+
 ## Redesign
 
 1. Run the CalibrationCapture app from a laptop that is on the same network as the computer that is connected to the projectors.
@@ -26,19 +40,8 @@
 
 Better interaction design:
 
-* use remote trigger instead of second laptop?
-* handle file copying for people
+* Save from EdsdkOsc to SharedData/
+* Show preview of image when EdsdkOsc is capturing
+* Show preview of result once ProCamScan finishes
 * automatically build reference images? remove all reflections then equalize histogram?
 * UI for creating masks
-
-# Install Notes
-
-## Click Festival (2012)
-
-* Mac Mini
-* 1024x768 (native resolution) with Triple Head to Go
-
-## La Gaîté Lyrique (2014)
-
-* iMac
-* 1280x1024 with Triple Head to Go on projectiondesign F32 sx+ (native 1400x1050) inset on the sensor
