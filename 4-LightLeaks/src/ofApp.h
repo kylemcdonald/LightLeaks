@@ -4,6 +4,9 @@
 #include "ofxAssimpModelLoader.h"
 #include "ofxCv.h"
 #include "ofAutoShader.h"
+#include "ofxBlackMagic.h"
+#include "CoordWarp.h"
+#include "ofxXmlSettings.h"
 
 enum Stage {
     Lighthouse=0,
@@ -17,6 +20,11 @@ public:
 	void update();
 	void draw();
 	void keyPressed(int key);
+    void mouseMoved(int x, int y);
+    void mousePressed( int x, int y, int button );
+    
+    
+    void updateCameraCalibration();
     
     bool debugMode;
 	
@@ -24,6 +32,9 @@ public:
     ofFloatImage normalMap;
     ofFloatImage confidenceMap;
 	ofAutoShader shader;
+    
+    //Settings
+    ofxXmlSettings settings;
     
     Stage stage;
     Stage stageGoal;
@@ -48,5 +59,13 @@ public:
     float speakerAmp[4];
     
     //Tracking
-    ofVideoGrabber grabber;
+    ofxBlackMagic grabber;
+    
+    ofxCv::RunningBackground cameraBackground;
+    ofxCv::ContourFinder contourFinder;
+    ofImage thresholdedImage;
+    coordWarping cameraCalibration;
+    ofVec2f cameraCalibrationCorners[4];
+    bool firstFrame;
+    int setCorner;
 };

@@ -36,6 +36,7 @@ const bool useStepTime = true;
 
 
 void main() {
+    
 	vec2 overallOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
 	vec4 curSample = texture2DRect(xyzMap, gl_TexCoord[0].st+overallOffset);
 	vec4 curSampleNormal = texture2DRect(normalMap, gl_TexCoord[0].st+overallOffset);
@@ -93,7 +94,7 @@ void main() {
 		b = b > .5 ? 1 : 0;
 	}
     
-	gl_FragColor = vec4(vec3(b)/*+position*/, 1.);
+	gl_FragColor = vec4(vec3(b) , 1.);
 
 }
 

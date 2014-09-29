@@ -1,5 +1,7 @@
 #include "ofApp.h"
 
+#define PREVIEW_SCALE (400./1920)
+
 
 float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, float valueChange = 1.0){
     float t = time;
@@ -22,11 +24,14 @@ void ofApp::setup() {
 	ofSetFrameRate(120);
     ofEnableAlphaBlending();
     
-    //Tracker
-    grabber.initGrabber(640, 480);
+    
+    //Settings
+    settings.load("settings.xml");
+    
+    debugMode = true;
 
     
-    
+    //Shader
 	shader.setup("shader");
     
     
@@ -68,19 +73,37 @@ void ofApp::setup() {
 
     
     
+    //Tracker
+    grabber.setup(1920, 1080, 25);
     
-    
-    
-    
-    debugMode = true;
 
-	//ofHideCursor();
+    
+    contourFinder.setMinAreaRadius(10);
+    contourFinder.setMaxAreaRadius(200);
+    contourFinder.setUseTargetColor(false);
+    
+    
+    cameraCalibrationCorners[0] = ofVec2f(settings.getValue("corner0x",0),
+                                          settings.getValue("corner0y",0));
+    cameraCalibrationCorners[1] = ofVec2f(settings.getValue("corner1x",1920),
+                                          settings.getValue("corner1y",0));
+    cameraCalibrationCorners[2] = ofVec2f(settings.getValue("corner2x",1920),
+                                          settings.getValue("corner2y",1080));
+    cameraCalibrationCorners[3] = ofVec2f(settings.getValue("corner3x",0),
+                                          settings.getValue("corner3y",1080));
+    
+    setCorner = -1;
+    firstFrame = true;
+    
+    updateCameraCalibration();
+    
+
 }
 
 void ofApp::update() {
-    float dt = 1./ofGetFrameRate();
+    float dt = ofClamp(1./ofGetFrameRate(), 0.0, 0.1);
     
-    stageAge += MIN(dt,0.1);
+    stageAge += dt;
     
     //Go to intermezzo now and then
   /*  if(stage != Intermezzo){
@@ -112,17 +135,34 @@ void ofApp::update() {
             stageAge = 0;
         }
     } else {
-        stageAmp = MIN(stageAmp+dt*0.5, 1.);
+        stageAmp = ofClamp(stageAmp+dt*0.5, 0, 1.);
     }
 	
     
     //Tracker
-    grabber.update();
- 
+    bool newFrame = grabber.update();
     
+    if(newFrame ) {
+        ofPixels pixels = grabber.getGrayPixels();
+        if(pixels.getWidth()>0){
+            contourFinder.setThreshold(ofMap(mouseX, 0, ofGetWidth(), 0, 255));
+            cv::Mat mat = ofxCv::toCv(pixels);
+            cameraBackground.update(mat, thresholdedImage);
+            
+            if(firstFrame){
+                cameraBackground.reset();
+            }
+
+            thresholdedImage.update();
+            contourFinder.findContours(mat);
+            
+            firstFrame = false;
+        }
+    }
 }
 
 void ofApp::draw() {
+    
 	ofBackground(0);
        ofEnableAlphaBlending();
     ofSetColor(255);
@@ -132,7 +172,6 @@ void ofApp::draw() {
     if(stage == Lighthouse){
         beamWidth = 0.3 * cubicEaseInOut(stageAmp);
     }
-    
     
     shader.begin();{
         shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
@@ -181,11 +220,15 @@ void ofApp::draw() {
     
     //Debug drawing
     if(debugMode){
+        ofPushMatrix();
+        ofTranslate(420, 0);
         ofSetColor(255);
         speakerXYZMap.draw(0,0);
         speakerFbo.draw(10,0);
         
         ofDrawBitmapString("Speaker "+ofToString(speakerAmp[0])+" "+ofToString(speakerAmp[1])+" "+ofToString(speakerAmp[2])+" "+ofToString(speakerAmp[3]), ofPoint(20,45));
+        
+        ofPopMatrix();
     }
 
 
@@ -202,9 +245,47 @@ void ofApp::draw() {
     
     //Tracker
     if(debugMode){
-     //   grabber.draw(10, 120, 640, 480);
+        ofPushMatrix();
+//        ofTranslate(10, 120);
+        ofScale(PREVIEW_SCALE, PREVIEW_SCALE);
+        grabber.drawGray();
+        contourFinder.draw();
+        
+        thresholdedImage.draw(1920,0);
+        
+        ofPushStyle();
+        ofNoFill();
+        ofSetColor(255, 0, 0);
+        for(int i = 0; i < contourFinder.getContours().size(); i++) {
+            ofRectangle rect =  ofxCv::toOf(contourFinder.getBoundingRect(i));
+            ofVec2f point = ofVec2f(rect.x+rect.width*0.5, rect.y+rect.height);
+            point = cameraCalibration.inversetransform(point);
+            ofCircle(point.x, point.y, 20);
+        }
+        
+        ofSetColor(255, 255, 0);
+        glBegin(GL_LINE_STRIP);
+        for(int i=0;i<4;i++){
+            glVertex2d(cameraCalibrationCorners[i].x, cameraCalibrationCorners[i].y);
+        }
+        glVertex2d(cameraCalibrationCorners[0].x, cameraCalibrationCorners[0].y);
+        glEnd();
+        ofPopStyle();
+
+        ofPopMatrix();
     }
 
+}
+
+
+void ofApp::updateCameraCalibration(){
+    ofVec2f inputCorners[4];
+    inputCorners[0] = ofVec2f(0,0);
+    inputCorners[1] = ofVec2f(1920,0);
+    inputCorners[2] = ofVec2f(1920,1080);
+    inputCorners[3] = ofVec2f(0,1080);
+    
+    cameraCalibration.calculateMatrix(inputCorners, cameraCalibrationCorners);
 }
 
 void ofApp::keyPressed(int key) {
@@ -214,4 +295,50 @@ void ofApp::keyPressed(int key) {
     if(key == 'f'){
         ofToggleFullscreen();
     }
+    
+    if(key == OF_KEY_BACKSPACE){
+        if(setCorner != -1){
+            cameraCalibrationCorners[setCorner] = ofVec2f(settings.getValue("corner"+ofToString(setCorner)+"x",0),
+                                                          settings.getValue("corner"+ofToString(setCorner)+"y",0));
+            
+            updateCameraCalibration();
+        }
+        setCorner = -1;
+    }
+    
+    if(debugMode){
+        if(key == '1'){
+            setCorner = 0;
+        }
+        if(key == '2'){
+            setCorner = 1;
+        }
+        if(key == '3'){
+            setCorner = 2;
+        }
+        if(key == '4'){
+            setCorner = 3;
+        }
+    }
 }
+
+void ofApp::mouseMoved(int x, int y){
+    if(setCorner != -1 ){
+        cameraCalibrationCorners[setCorner] = ofVec2f(x / PREVIEW_SCALE, y / PREVIEW_SCALE);
+        updateCameraCalibration();
+        
+    }
+}
+
+void ofApp::mousePressed( int x, int y, int button ){
+    if(setCorner != -1){
+        
+        settings.setValue("corner"+ofToString(setCorner)+"x", int(cameraCalibrationCorners[setCorner].x));
+        settings.setValue("corner"+ofToString(setCorner)+"y", int(cameraCalibrationCorners[setCorner].y));
+        settings.save("settings.xml");
+
+        setCorner = -1;
+    }
+}
+
+
