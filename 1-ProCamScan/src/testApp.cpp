@@ -6,6 +6,7 @@ using namespace ofxCv;
 using namespace cv;
 
 #define USE_GDC
+#define SAVE_DEBUG
 
 bool natural(const ofFile& a, const ofFile& b) {
 	string aname = a.getBaseName(), bname = b.getBaseName();
@@ -17,7 +18,7 @@ bool natural(const ofFile& a, const ofFile& b) {
 	}
 }
 
-void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat, ofImage * imageNormal, ofImage * imageInverse) {
+void processGraycodeLevel(int i, int n, int dimensions, const Mat& cameraMask, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat, ofImage * imageNormal, ofImage * imageInverse) {
     ofLogVerbose() << "Process " << i << " of " << n;
     
 	int w = imageNormal->getWidth(), h = imageNormal->getHeight();
@@ -45,7 +46,6 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
 	}
 	unsigned short curMask = 1 << (n - i - 1);
 	float curVariation = curMask / (dimensions * 255. * totalVariation);
-    
 
 	for(int y = 0; y < h; y++) {
 		for(int x = 0; x < w; x++) {
@@ -57,7 +57,12 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
 			float range = fabsf((float) normal - (float) inverse);
 			confidence.at<float>(y, x) += curVariation * range;
 		}
-	}
+    }
+    
+//    saveImage(imageNormalGray, "normal-gray-" + ofToString(i) + ".jpg");
+//    saveImage(imageInverseGray, "inverse-gray-" + ofToString(i) + ".jpg");
+//    saveImage(confidence, "confidence-" + ofToString(i) + ".exr");
+//    cout << "cur variation: " << curVariation << endl;
 }
 
 void testApp::setup() {
@@ -151,8 +156,10 @@ void testApp::setup() {
             if(maskLoaded){
                 cameraMaskMat = toCv(cameraMask);
             }
-            //imitate(minImage, cameraMask);
-            //imitate(maxImage, cameraMask);
+#ifdef SAVE_DEBUG
+            imitate(minImage, cameraMask);
+            imitate(maxImage, cameraMask);
+#endif
             
             cout << "converted to mat " << cameraMaskMat.rows << "x" << cameraMaskMat.cols << endl;
             
@@ -171,7 +178,7 @@ void testApp::setup() {
             dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
 #endif
                 //Load Horizontal images
-                ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images multithreaded";
+                ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images";
 #ifdef USE_GDC
                 dispatch_apply(horizontalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i){
 #else
@@ -218,7 +225,7 @@ void testApp::setup() {
 #endif
                 
                 //Load Vertical images
-                ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
+                ofLogVerbose() << "Loading " <<  verticalBits << " vertical images";
 
 #ifdef USE_GDC
                 dispatch_apply(verticalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i) {
@@ -275,10 +282,12 @@ void testApp::setup() {
             grayToBinary(binaryCodedHorizontal, horizontalBits);
             grayToBinary(binaryCodedVertical, verticalBits);
             
-            //ofLogVerbose() << "saving results";
-            //saveImage(camConfidence, "camConfidence.exr");
-            //saveImage(minImage, "minImage.png");
-            //saveImage(maxImage, "maxImage.png");
+#ifdef SAVE_DEBUG
+            ofLogVerbose() << "saving debug results";
+            saveImage(camConfidence, path+"/camConfidence.exr");
+            saveImage(minImage, path+"/minImage.png");
+            saveImage(maxImage, path+"/maxImage.png");
+#endif
             
             Mat binaryCoded, emptyChannel;
             emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);
@@ -304,10 +313,6 @@ void testApp::setup() {
 
             saveImage(proConfidence, path+"/proConfidence.exr");
             saveImage(proMap, path+"/proMap.png");
-            
-            //saveImage(mean, "mean.png");
-            //saveImage(stddev, "stddev.exr");
-            //saveImage(count, "count.png");
         }
     }
     time = ofGetElapsedTimef();

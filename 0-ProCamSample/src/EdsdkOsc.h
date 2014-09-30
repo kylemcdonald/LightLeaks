@@ -32,7 +32,7 @@ public:
 		ofXml settings;
 		settings.load("../../../SharedData/settings.xml");
 		oscIn.setup(9001);
-		oscOut.setup(settings.getValue("osc/projector"), 9000);
+		oscOut.setup(settings.getValue("osc/camera"), 9000);
 		ofAddListener(ofEvents().update, this, &EdsdkOsc::updateOsc);
 		sendMessage("/setup");
 	}

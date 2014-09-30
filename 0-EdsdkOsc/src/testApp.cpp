@@ -4,7 +4,7 @@ void testApp::setup() {
 	ofXml settings;
 	settings.load("../../../SharedData/settings.xml");
 	
-    remoteComputer = settings.getValue("osc/camera");
+    remoteComputer = settings.getValue("osc/projector");
     
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
