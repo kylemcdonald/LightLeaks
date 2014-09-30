@@ -37,30 +37,30 @@ const bool useStepTime = true;
 
 void main() {
     
-	vec2 overallOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
-	vec4 curSample = texture2DRect(xyzMap, gl_TexCoord[0].st+overallOffset);
-	vec4 curSampleNormal = texture2DRect(normalMap, gl_TexCoord[0].st+overallOffset);
-	vec4 curSampleConfidence = texture2DRect(confidenceMap, gl_TexCoord[0].st+overallOffset);
-	
-	vec3 position = curSample.xyz;
-	vec3 normalDir = curSampleNormal.xyz;
-	float confidence = curSampleConfidence.x;
-
-	float b;
-
-	// handle time
-	float time = elapsedTime;
-	if(useStepTime) {
-		time = elapsedTime + sin(elapsedTime);
-	}
-
-	// handle space
-	vec2 positionNorm = position.xy;
-	float positionAngle = atan((positionNorm.y - 0.5) , (positionNorm.x-0.25));
-
-	if(stage == 0) {
+    vec2 overallOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
+    vec4 curSample = texture2DRect(xyzMap, gl_TexCoord[0].st+overallOffset);
+    vec4 curSampleNormal = texture2DRect(normalMap, gl_TexCoord[0].st+overallOffset);
+    vec4 curSampleConfidence = texture2DRect(confidenceMap, gl_TexCoord[0].st+overallOffset);
+    
+    vec3 position = curSample.xyz;
+    vec3 normalDir = curSampleNormal.xyz;
+    float confidence = curSampleConfidence.x;
+    
+    float b;
+    
+    // handle time
+    float time = elapsedTime;
+    if(useStepTime) {
+        time = elapsedTime + sin(elapsedTime);
+    }
+    
+    // handle space
+    vec2 positionNorm = position.xy;
+    float positionAngle = atan((positionNorm.y - 0.25) , (positionNorm.x-0.5)) + PI + HALF_PI;
+    
+    if(stage == 0) {
         //Lighthouse beam
-
+        
         if(abs(positionAngle - beamAngle) < beamWidth
            || abs(positionAngle - TWO_PI - beamAngle) < beamWidth
            || abs(positionAngle + TWO_PI - beamAngle) < beamWidth){
@@ -69,8 +69,8 @@ void main() {
             b = 0.;
         }
         
-		//if(confidence < .01) discard;
-	}
+      //  if(confidence < .01) discard;
+    }
     else if(stage == 1){
         //Spotlight
         if( position.z > 0.15 &&
@@ -85,13 +85,13 @@ void main() {
         
     }
     
-
-	// post process
-	if(bw) {
-	//	b = b > .5 ? 1 : 0;
-	}
     
-	gl_FragColor = vec4(vec3(b)  , 1.);
-
+    // post process
+    if(bw) {
+        //	b = b > .5 ? 1 : 0;
+    }
+    
+    gl_FragColor = vec4(vec3(b) + position , 1.);
+    
 }
 

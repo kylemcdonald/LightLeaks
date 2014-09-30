@@ -82,7 +82,7 @@ void ofApp::setup() {
     
 
     
-    contourFinder.setMinAreaRadius(10);
+    contourFinder.setMinAreaRadius(20);
     contourFinder.setMaxAreaRadius(200);
     contourFinder.setUseTargetColor(false);
     
@@ -140,7 +140,7 @@ void ofApp::update() {
     }
     
     if(stage == Lighthouse){
-        lighthouseAngle += dt * cubicEaseInOut(stageAmp*0.7);
+        lighthouseAngle += dt * cubicEaseInOut(stageAmp) * (3 + sin(ofGetElapsedTimeMillis() / 5000.));
     }
     
     
@@ -163,9 +163,10 @@ void ofApp::update() {
     if(newFrame ) {
         ofPixels pixels = grabber.getGrayPixels();
         if(pixels.getWidth()>0){
-            contourFinder.setThreshold(ofMap(mouseX, 0, ofGetWidth(), 0, 255));
+            contourFinder.setThreshold(128);
             cv::Mat mat = ofxCv::toCv(pixels);
-            
+
+            cameraBackground.setDifferenceMode(ofxCv::RunningBackground::BRIGHTER);
             cameraBackground.update(mat, thresholdedImage);
 
             if(firstFrame){
@@ -176,11 +177,12 @@ void ofApp::update() {
             ofxCv::blur(thresholdedImage, 5);
             thresholdedImage.update();
             
-            contourFinder.findContours(mat);
+
+            contourFinder.findContours(thresholdedImage);
             
             if(contourFinder.getContours().size() > 0){
                 ofRectangle rect =  ofxCv::toOf(contourFinder.getBoundingRect(0));
-                ofVec2f point = ofVec2f(rect.x+rect.width*0.5, rect.y+rect.height);
+                ofVec2f point = ofVec2f(rect.x, rect.y+rect.height*0.5);
                 spotlightPosition.update(cameraCalibration.inversetransform(point));
             }
             
@@ -275,7 +277,6 @@ void ofApp::draw() {
         speakerFbo.draw(10,0);
         
         ofDrawBitmapString("Speaker "+ofToString(speakerAmp[0])+" "+ofToString(speakerAmp[1])+" "+ofToString(speakerAmp[2])+" "+ofToString(speakerAmp[3]), ofPoint(20,45));
-        
         ofPopMatrix();
     }
 
@@ -294,12 +295,14 @@ void ofApp::draw() {
     //Tracker
     if(debugMode){
         ofPushMatrix();
-//        ofTranslate(10, 120);
+        ofTranslate(0, 300);
         ofScale(PREVIEW_SCALE, PREVIEW_SCALE);
         grabber.drawGray();
         contourFinder.draw();
         
-        thresholdedImage.draw(0,1080);
+        if(thresholdedImage.isAllocated()){
+            thresholdedImage.draw(0,1080);
+        }
         
         ofPushStyle();
         ofNoFill();
@@ -308,9 +311,9 @@ void ofApp::draw() {
         { int i=0;
             if(contourFinder.getContours().size() > i){
                 ofRectangle rect =  ofxCv::toOf(contourFinder.getBoundingRect(i));
-                ofVec2f point = ofVec2f(rect.x+rect.width*0.5, rect.y+rect.height);
-                point = cameraCalibration.inversetransform(point);
-                ofCircle(point.x*1920, point.y*1080, 20);
+                ofVec2f point = ofVec2f(rect.x, rect.y+rect.height*0.5);
+             //   point = cameraCalibration.inversetransform(point);
+                ofCircle(point.x, point.y, 20);
             }
         }
         
@@ -324,6 +327,8 @@ void ofApp::draw() {
         ofPopStyle();
 
         ofPopMatrix();
+        
+        ofDrawBitmapString("Spotlight pos "+ofToString(spotlightPosition.value().x,1)+" "+ofToString(spotlightPosition.value().y,1), ofPoint(440,65));
     }
 
 }
@@ -331,10 +336,10 @@ void ofApp::draw() {
 
 void ofApp::updateCameraCalibration(){
     ofVec2f inputCorners[4];
-    inputCorners[0] = ofVec2f(0,0);
-    inputCorners[1] = ofVec2f(1,0);
-    inputCorners[2] = ofVec2f(1,1);
-    inputCorners[3] = ofVec2f(0,1);
+    inputCorners[0] = ofVec2f(0,0.5);
+    inputCorners[1] = ofVec2f(1,0.5);
+    inputCorners[2] = ofVec2f(1,0);
+    inputCorners[3] = ofVec2f(0,0);
     
     cameraCalibration.calculateMatrix(inputCorners, cameraCalibrationCorners);
 }
@@ -375,7 +380,7 @@ void ofApp::keyPressed(int key) {
 
 void ofApp::mouseMoved(int x, int y){
     if(setCorner != -1 ){
-        cameraCalibrationCorners[setCorner] = ofVec2f(x / PREVIEW_SCALE, y / PREVIEW_SCALE);
+        cameraCalibrationCorners[setCorner] = ofVec2f(x / PREVIEW_SCALE, (y-300) / PREVIEW_SCALE);
         updateCameraCalibration();
         
     }
