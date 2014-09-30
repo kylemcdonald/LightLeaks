@@ -291,6 +291,7 @@ void testApp::setup() {
             //saveImage(count, "count.png");
         }
     }
+    time = ofGetElapsedTimef();
     ofLogVerbose() <<" Done in "+ofToString(ofGetElapsedTimef())+" seconds";
 }
 
@@ -298,4 +299,7 @@ void testApp::update() {
 }
 
 void testApp::draw() {
+    ofBackground(30);
+    ofSetColor(200);
+    ofDrawBitmapString("I'm done....\nIt took me "+ofToString(time)+" seconds", ofPoint(10,20));
 }

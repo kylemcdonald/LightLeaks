@@ -23,5 +23,7 @@ public:
     ofImage cameraMask;
     
     cv::Mat proConfidence, proMap;
+    
+    int time;
 
 };
