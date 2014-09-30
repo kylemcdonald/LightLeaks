@@ -4,12 +4,13 @@ void testApp::setup() {
 	ofXml settings;
 	settings.load("../../../SharedData/settings.xml");
 	
+    remoteComputer = settings.getValue("osc/camera");
+    
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
-	ofHideCursor();
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	oscIn.setup(9000);
-	oscOut.setup(settings.getValue("osc/camera"), 9001);
+	oscOut.setup(remoteComputer, 9001);
 	capturing = false;
 	manual = false;
 	camera.setup();
@@ -44,6 +45,8 @@ void testApp::update() {
             savePath = "out.jpg";
 			camera.savePhoto(savePath);
 			manual = false;
+            preview.loadImage(savePath);
+
 		} else {
 			ofxOscMessage msgOut;
 			msgOut.setAddress("/newPhoto");
@@ -64,14 +67,16 @@ void testApp::update() {
 void testApp::draw() {
 	ofBackground(0);
 	ofSetColor(255);
-	if(!capturing) {
-		camera.draw(0, 0);
-    } else {
-        // todo: fit and center
+	
+    if(preview.isAllocated()){
         preview.draw(0, 0, ofGetWidth(), ofGetHeight());
     }
+    
 	ofDrawBitmapStringHighlight("savePath: " + savePath, 10, 20);
-	ofDrawBitmapStringHighlight("capturing: " + ofToString(capturing), 10, 40);
+    ofDrawBitmapStringHighlight("remote computer: " + remoteComputer, 10, 40);
+	ofDrawBitmapStringHighlight("capturing: " + ofToString(capturing), 10, 60);
+    ofDrawBitmapStringHighlight("press space to take a preview image", 10, 80);
+
 }
 
 void testApp::keyPressed(int key) {

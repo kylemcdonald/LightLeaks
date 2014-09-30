@@ -21,4 +21,6 @@ public:
 	string savePath;
 	bool capturing;
 	bool manual;
+    
+    string remoteComputer;
 };
