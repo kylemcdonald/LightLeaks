@@ -34,15 +34,15 @@
 		<key>03E909CB-6CED-4D19-81D1-5B6E03843A40</key>
 		<string>../../../../openFrameworks</string>
 		<key>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</key>
-		<string>../../../../..</string>
+		<string>../../../..</string>
 		<key>311230CAB78E521A7FB11ECA42EEFA8819284098</key>
-		<string>../../../../../addons/ofxControlPanel</string>
+		<string>../../../../addons/ofxControlPanel</string>
 		<key>37526DA425E5430474A14FBFA1BC4525160B5FC1</key>
-		<string>../../../../../addons/ofxCv</string>
+		<string>../../../../addons/ofxCv</string>
 		<key>474EC532BB7E81F6DD5A5B4226C9AA507F28B025</key>
 		<string>../../..</string>
 		<key>7776A343-CAF3-40E3-BE3A-7268412AE902</key>
-		<string>../../../../../../..</string>
+		<string>../../../..</string>
 		<key>D1330788-C5EE-40E2-AD9E-5601DC6E23F8</key>
 		<string>../../../../openFrameworks/addons/ofxControlPanel</string>
 		<key>DEF0C85C-3808-4973-9E35-E6A797165303</key>
@@ -62,7 +62,7 @@
 			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>7776A343-CAF3-40E3-BE3A-7268412AE902</string>
 			<key>IDESourceControlWCCName</key>
-			<string>..</string>
+			<string></string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
@@ -70,7 +70,7 @@
 			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</string>
 			<key>IDESourceControlWCCName</key>
-			<string>..</string>
+			<string></string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>

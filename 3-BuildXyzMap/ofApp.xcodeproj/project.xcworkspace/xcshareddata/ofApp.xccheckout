@@ -34,7 +34,7 @@
 		<key>1C2CD247-58FC-4CE3-B4C1-C25628CEC7AD</key>
 		<string>../../../../openFrameworks</string>
 		<key>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</key>
-		<string>../../../../..</string>
+		<string>../../../..</string>
 		<key>311230CAB78E521A7FB11ECA42EEFA8819284098</key>
 		<string>../../../../addons/ofxControlPanel</string>
 		<key>37526DA425E5430474A14FBFA1BC4525160B5FC1</key>
@@ -60,7 +60,7 @@
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>F0672D21-A6F9-4FF5-9BEF-35623FD45843</string>
+			<string>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</string>
 			<key>IDESourceControlWCCName</key>
 			<string></string>
 		</dict>
@@ -68,9 +68,9 @@
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</string>
+			<string>F0672D21-A6F9-4FF5-9BEF-35623FD45843</string>
 			<key>IDESourceControlWCCName</key>
-			<string>..</string>
+			<string></string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
