@@ -260,7 +260,7 @@ void testApp::setup() {
             //saveImage(camConfidence, "camConfidence.exr");
             ofLogVerbose()<<"Save equalized mapping reference";
             equalizeHist(minImage);
-            saveImage(minImage, path+"/mappingReference.png");
+            saveImage(minImage, path+"/referenceImage.jpg");
             
             Mat binaryCoded, emptyChannel;
             emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);
