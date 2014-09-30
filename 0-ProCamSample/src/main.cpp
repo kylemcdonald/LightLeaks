@@ -34,6 +34,7 @@ public:
 		generator.generate();
 		stringstream dirStr;
 		dirStr <<
+        "projector-" << projector << "/" <<
 		(direction == 0 ? "vertical/" : "horizontal/") <<
 		(inverse == 0 ? "inverse/" : "normal/");
 		curDirectory = dirStr.str();

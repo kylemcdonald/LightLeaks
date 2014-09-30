@@ -38,10 +38,15 @@
 5. In the Calibration app, select control points until the model lines up.
 6. Start the LightLeaks app.
 
-Better interaction design:
+Changes:
 
 * Save from EdsdkOsc to SharedData/
 * Show preview of image when EdsdkOsc is capturing
 * Show preview of result once ProCamScan finishes
 * automatically build reference images? remove all reflections then equalize histogram?
 * UI for creating masks
+
+* Put quads behind 3d model
+* output to separate projector folders?
+* need to reconstruct single map from multiple projector folders?
+* 

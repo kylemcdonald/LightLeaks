@@ -23,8 +23,9 @@ void testApp::update() {
 			capturing = true;
 		}
 		if(msgIn.getAddress() == "/savePhoto") {
-			string filename = msgIn.getArgAsString(0);
-			camera.savePhoto(filename);
+			savePath = msgIn.getArgAsString(0);
+			camera.savePhoto(savePath);
+            preview.loadImage(savePath);
 		}
 		if(msgIn.getAddress() == "/update") {
 			camera.update();
@@ -40,7 +41,8 @@ void testApp::update() {
 	
 	if(camera.isPhotoNew()) {
 		if(manual) {
-			camera.savePhoto("out.jpg");
+            savePath = "out.jpg";
+			camera.savePhoto(savePath);
 			manual = false;
 		} else {
 			ofxOscMessage msgOut;
@@ -64,7 +66,10 @@ void testApp::draw() {
 	ofSetColor(255);
 	if(!capturing) {
 		camera.draw(0, 0);
-	}
+    } else {
+        // todo: fit and center
+        preview.draw(0, 0, ofGetWidth(), ofGetHeight());
+    }
 	ofDrawBitmapStringHighlight("savePath: " + savePath, 10, 20);
 	ofDrawBitmapStringHighlight("capturing: " + ofToString(capturing), 10, 40);
 }

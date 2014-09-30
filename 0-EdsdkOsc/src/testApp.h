@@ -13,7 +13,8 @@ public:
 	
 	void keyPressed(int key);
 	
-	ofxEdsdk::Camera camera;
+    ofxEdsdk::Camera camera;
+    ofImage preview;
 	ofxOscReceiver oscIn;
 	ofxOscSender oscOut;
 	
