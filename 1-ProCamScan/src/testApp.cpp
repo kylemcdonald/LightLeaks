@@ -90,7 +90,6 @@ void testApp::setup() {
             
             ofLogVerbose()<<"ProCamScan "<<scanName<<endl;
             
-            
             ofSetLogLevel(OF_LOG_ERROR);
             
             dirHorizontalNormal.listDir(path + "cameraImages/horizontal/normal/");
@@ -160,75 +159,93 @@ void testApp::setup() {
             viImageNormal.resize(verticalBits, 0);
             viImageInverse.resize(verticalBits, 0);
             
+            //A dispatch group that the horizontal job and vertical job will be added to
+            dispatch_group_t group = dispatch_group_create();
+
+            //Create the async job for handling horizontal images
+            dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
+                
+                //Load Horizontal images
+                ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images multithreaded";
+                
+                dispatch_apply(horizontalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i) {
+                    //   for(int i = 0; i < horizontalBits; i++) {
+                    
+                    ofImage * img = new ofImage();
+                    img->setUseTexture(false);
+                    
+                    ofImage * imgI = new ofImage();
+                    imgI->setUseTexture(false);
+                    
+                    // ofLogVerbose() <<"Load "+hnFiles[i].path()<<endl;
+                    img->loadImage(hnFiles[i].path());
+                    imgI->loadImage(hiFiles[i].path());
+                    
+                    img->setImageType(OF_IMAGE_GRAYSCALE);
+                    imgI->setImageType(OF_IMAGE_GRAYSCALE);
+                    
+                    hnImageNormal[i] = img;
+                    hnImageInverse[i] = imgI;
+                });
+                
+                
+                //Process horizontal images
+                ofLogVerbose() << "Process " <<  horizontalBits << " horizontal images";
+                for(int i = 0; i < horizontalBits; i++) {
+                    processGraycodeLevel(i, horizontalBits, 2, cameraMaskMat, camConfidence, binaryCodedHorizontal, minImage, maxImage, hnImageNormal[i], hnImageInverse[i]);
+                };
+                
+                
+                //Delete horizontal images
+                for(int i = 0; i < horizontalBits; i++) {
+                    delete hnImageNormal[i];
+                    delete hnImageInverse[i];
+                }
+                
+            });
             
-            //Load Horizontal images
-            ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images multithreaded";
+            //Create the async job for handling vertical images
+            dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
+                
+                //Load Vertical images
+                ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
+                
+                dispatch_apply(verticalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i) {
+                    //for(int i = 0; i < verticalBits; i++) {
+                    ofImage * img = new ofImage();
+                    img->setUseTexture(false);
+                    
+                    ofImage * imgI = new ofImage();
+                    imgI->setUseTexture(false);
+                    
+                    img->loadImage(vnFiles[i].path());
+                    imgI->loadImage(viFiles[i].path());
+                    
+                    img->setImageType(OF_IMAGE_GRAYSCALE);
+                    imgI->setImageType(OF_IMAGE_GRAYSCALE);
+                    
+                    viImageNormal[i] = img;
+                    viImageInverse[i] = imgI;
+                });
+                
+                
+                //Process vertical images
+                ofLogVerbose() << "Process " <<  verticalBits << " vertical images";
+                for(int i = 0; i < verticalBits; i++) {
+                    processGraycodeLevel(i, verticalBits, 2, cameraMaskMat, camConfidence, binaryCodedVertical, minImage, maxImage, viImageNormal[i], viImageInverse[i]);
+                }
+                
+                //Delete vertical images
+                for(int i = 0; i < verticalBits; i++) {
+                    delete viImageNormal[i];
+                    delete viImageInverse[i];
+                }            
+            });
+            
+            //Wait for the group to finish before continuing
+            dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
             
 
-            for(int i = 0; i < horizontalBits; i++) {
-                ofImage * img = new ofImage();
-                img->setUseTexture(false);
-                
-                ofImage * imgI = new ofImage();
-                imgI->setUseTexture(false);
-                
-                //cout<<"Load "+hnFiles[i].path()<<endl;
-                img->loadImage(hnFiles[i].path());
-                imgI->loadImage(hiFiles[i].path());
-
-                img->setImageType(OF_IMAGE_GRAYSCALE);
-                imgI->setImageType(OF_IMAGE_GRAYSCALE);
-
-                hnImageNormal[i] = img;
-                hnImageInverse[i] = imgI;
-            }
-            
-            //Process horizontal images
-            ofLogVerbose() << "Process " <<  horizontalBits << " horizontal images";
-            for(int i = 0; i < horizontalBits; i++) {
-                processGraycodeLevel(i, horizontalBits, 2, cameraMaskMat, camConfidence, binaryCodedHorizontal, minImage, maxImage, hnImageNormal[i], hnImageInverse[i]);
-            }            
-            
-            //Delete horizontal images
-            for(int i = 0; i < horizontalBits; i++) {
-                delete hnImageNormal[i];
-                delete hnImageInverse[i];
-            }
-            
-            
-            //Load Vertical images
-            ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
-
-            for(int i = 0; i < verticalBits; i++) {
-                ofImage * img = new ofImage();
-                img->setUseTexture(false);
-                
-                ofImage * imgI = new ofImage();
-                imgI->setUseTexture(false);
-                
-                img->loadImage(vnFiles[i].path());
-                imgI->loadImage(viFiles[i].path());
-                
-                img->setImageType(OF_IMAGE_GRAYSCALE);
-                imgI->setImageType(OF_IMAGE_GRAYSCALE);
-                
-                viImageNormal[i] = img;
-                viImageInverse[i] = imgI;
-            }
-
-            
-            //Process vertical images
-            ofLogVerbose() << "Process " <<  verticalBits << " vertical images";
-            for(int i = 0; i < verticalBits; i++) {
-                processGraycodeLevel(i, verticalBits, 2, cameraMaskMat, camConfidence, binaryCodedVertical, minImage, maxImage, viImageNormal[i], viImageInverse[i]);
-            }
-
-            //Delete vertical images
-            for(int i = 0; i < verticalBits; i++) {
-                delete viImageNormal[i];
-                delete viImageInverse[i];
-            }            
-            
             hnImageInverse.clear();
             hnImageNormal.clear();
             
