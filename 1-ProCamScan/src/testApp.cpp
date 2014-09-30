@@ -5,6 +5,8 @@
 using namespace ofxCv;
 using namespace cv;
 
+#define USE_GDC
+
 bool natural(const ofFile& a, const ofFile& b) {
 	string aname = a.getBaseName(), bname = b.getBaseName();
 	int aint = ofToInt(aname), bint = ofToInt(bname);
@@ -152,6 +154,8 @@ void testApp::setup() {
             //imitate(minImage, cameraMask);
             //imitate(maxImage, cameraMask);
             
+            cout << "converted to mat " << cameraMaskMat.rows << "x" << cameraMaskMat.cols << endl;
+            
             
             hnImageNormal.resize(horizontalBits, 0);
             hnImageInverse.resize(horizontalBits, 0);
@@ -159,18 +163,20 @@ void testApp::setup() {
             viImageNormal.resize(verticalBits, 0);
             viImageInverse.resize(verticalBits, 0);
             
+#ifdef USE_GDC
             //A dispatch group that the horizontal job and vertical job will be added to
             dispatch_group_t group = dispatch_group_create();
 
             //Create the async job for handling horizontal images
             dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
-                
+#endif
                 //Load Horizontal images
                 ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images multithreaded";
-                
-                dispatch_apply(horizontalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i) {
-                    //   for(int i = 0; i < horizontalBits; i++) {
-                    
+#ifdef USE_GDC
+                dispatch_apply(horizontalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i){
+#else
+               for(int i = 0; i < horizontalBits; i++) {
+#endif
                     ofImage * img = new ofImage();
                     img->setUseTexture(false);
                     
@@ -186,7 +192,10 @@ void testApp::setup() {
                     
                     hnImageNormal[i] = img;
                     hnImageInverse[i] = imgI;
-                });
+                }
+#ifdef USE_GDC
+                );
+#endif
                 
                 
                 //Process horizontal images
@@ -201,17 +210,22 @@ void testApp::setup() {
                     delete hnImageNormal[i];
                     delete hnImageInverse[i];
                 }
-                
+#ifdef USE_GDC
             });
             
             //Create the async job for handling vertical images
             dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
+#endif
                 
                 //Load Vertical images
                 ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
-                
+
+#ifdef USE_GDC
                 dispatch_apply(verticalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i) {
-                    //for(int i = 0; i < verticalBits; i++) {
+#else
+                for(int i = 0; i < verticalBits; i++) {
+#endif
+                    
                     ofImage * img = new ofImage();
                     img->setUseTexture(false);
                     
@@ -226,7 +240,10 @@ void testApp::setup() {
                     
                     viImageNormal[i] = img;
                     viImageInverse[i] = imgI;
-                });
+                }
+#ifdef USE_GDC
+                );
+#endif
                 
                 
                 //Process vertical images
@@ -239,11 +256,13 @@ void testApp::setup() {
                 for(int i = 0; i < verticalBits; i++) {
                     delete viImageNormal[i];
                     delete viImageInverse[i];
-                }            
+                }
+#ifdef USE_GDC
             });
             
             //Wait for the group to finish before continuing
             dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+#endif
             
 
             hnImageInverse.clear();
