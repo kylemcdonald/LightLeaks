@@ -91,7 +91,7 @@ void main() {
         //	b = b > .5 ? 1 : 0;
     }
     
-    gl_FragColor = vec4(vec3(b) + position , 1.);
+    gl_FragColor = vec4(vec3(b)  , 1.);
     
 }
 
