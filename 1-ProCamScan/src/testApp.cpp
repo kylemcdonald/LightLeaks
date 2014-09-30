@@ -258,8 +258,9 @@ void testApp::setup() {
             
             //ofLogVerbose() << "saving results";
             //saveImage(camConfidence, "camConfidence.exr");
-            //saveImage(minImage, "minImage.png");
-            //saveImage(maxImage, "maxImage.png");
+            ofLogVerbose()<<"Save equalized mapping reference";
+            equalizeHist(minImage);
+            saveImage(minImage, path+"/mappingReference.png");
             
             Mat binaryCoded, emptyChannel;
             emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);
