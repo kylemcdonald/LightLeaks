@@ -26,6 +26,9 @@ public:
 	bool needToCapture = false;
 	long captureTime = 0;
 	bool referenceImage = false;
+    
+    bool generated;
+    string timestamp;
 	
 	void generate() {
 		generator.setSize(tw, th);
@@ -34,11 +37,13 @@ public:
 		generator.generate();
 		stringstream dirStr;
 		dirStr <<
-        "projector-" << projector << "/" <<
+        "../../../SharedData/scan-"<< timestamp << "/cameraImages/" <<
 		(direction == 0 ? "vertical/" : "horizontal/") <<
 		(inverse == 0 ? "inverse/" : "normal/");
 		curDirectory = dirStr.str();
+        cout<<"Create "<<curDirectory<<endl;
 		camera.createDirectory(curDirectory);
+        generated = true;
 	}
 	
 	bool nextState() {
@@ -72,12 +77,22 @@ public:
 		ofEnableAlphaBlending();
 		ofSetLogLevel(OF_LOG_VERBOSE);
 		camera.setup();
-		generate();
+        
 	}
 	
 	void update() {
 		if(!capturing) {
 			camera.update();
+            
+            if(camera.start){
+                camera.start = false;
+                camera.takePhoto();
+                
+                timestamp = ofToString(ofGetHours())+ofToString(ofGetMinutes());
+                generate();
+
+                capturing = true;
+            }
 		}
 		if(camera.isPhotoNew()) {
 			if(referenceImage) {
@@ -97,7 +112,9 @@ public:
 	void draw() {
 		ofBackground(0);
 		ofSetColor(255);
-		generator.get(pattern).draw(projector * tw, 0);
+        if(generated){
+            generator.get(pattern).draw(projector * tw, 0);
+        }
 		if(mask.getWidth() > 0) {
 			mask.draw(0, 0);
 		}
@@ -121,6 +138,9 @@ public:
 			pattern--;
 		}
 		if(key == ' ') {
+            timestamp = ofToString(ofGetHours())+ofToString(ofGetMinutes());
+            generate();
+            
 			camera.takePhoto();
 			capturing = true;
 		}

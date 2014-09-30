@@ -10,6 +10,7 @@ protected:
 	ofxOscSender oscOut;
 	bool newPhoto;
 	int width, height;
+    
 	
 	void sendMessage(string address) {
 		ofxOscMessage msgOut;
@@ -18,11 +19,15 @@ protected:
 	}
 	
 public:
+    bool start;
+
 	EdsdkOsc()
 	:newPhoto(false),
 	width(1056),
-	height(704) {
+	height(704),
+    start(false){
 	}
+    
 	void setup() {
 		ofXml settings;
 		settings.load("../../../SharedData/settings.xml");
@@ -37,6 +42,9 @@ public:
 			if(msgIn.getAddress() == "/newPhoto") {
 				newPhoto = true;
 			}
+            if(msgIn.getAddress() == "/start") {
+                start = true;
+            }
 		}
 	}
 	void createDirectory(string directory) {

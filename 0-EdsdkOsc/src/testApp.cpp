@@ -8,7 +8,7 @@ void testApp::setup() {
     
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
-	ofSetLogLevel(OF_LOG_VERBOSE);
+//	ofSetLogLevel(OF_LOG_VERBOSE);
 	oscIn.setup(9000);
 	oscOut.setup(remoteComputer, 9001);
 	capturing = false;
@@ -36,6 +36,7 @@ void testApp::update() {
 		}
 		if(msgIn.getAddress() == "/createDirectory") {
 			string directory = msgIn.getArgAsString(0);
+            cout<<"Create folder "<<directory<<endl;
 			ofDirectory::createDirectory(directory, true, true);
 		}
 	}
@@ -75,13 +76,20 @@ void testApp::draw() {
 	ofDrawBitmapStringHighlight("savePath: " + savePath, 10, 20);
     ofDrawBitmapStringHighlight("remote computer: " + remoteComputer, 10, 40);
 	ofDrawBitmapStringHighlight("capturing: " + ofToString(capturing), 10, 60);
-    ofDrawBitmapStringHighlight("press space to take a preview image", 10, 80);
+    ofDrawBitmapStringHighlight("press 'p' to take a preview image", 10, 80);
+    ofDrawBitmapStringHighlight("press ' ' to start the scan", 10, 100);
 
 }
 
 void testApp::keyPressed(int key) {
-	if(key == ' ') {
+	if(key == 'p') {
 		camera.takePhoto();
 		manual = true;
 	}
+    if(key == ' ') {
+        ofxOscMessage msgOut;
+        msgOut.setAddress("/start");
+        oscOut.sendMessage(msgOut);
+
+    }
 }
