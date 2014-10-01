@@ -1,7 +1,7 @@
 #include "ofApp.h"
 
 #define PREVIEW_SCALE (400./1920)
-
+const ofVec2f previewOffset(440, 248);
 
 float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, float valueChange = 1.0){
     float t = time;
@@ -243,7 +243,7 @@ void ofApp::draw() {
         ofSetColor(0,100);
         ofRect(410, 0, 250, 100);
         ofSetColor(255);
-        ofDrawBitmapString("Stage "+ofToString(stage)+" goal "+ofToString(stageGoal)+"  amp "+ofToString(stageAmp)+ " fps "+ofToString(ofGetFrameRate(),0), ofPoint(440,30));
+        ofDrawBitmapString("Stage "+ofToString(stage)+" goal "+ofToString(stageGoal)+"  amp "+ofToString(stageAmp)+ " fps "+ofToString(ofGetFrameRate(),0), 10, 30);
     }
     
     
@@ -276,14 +276,11 @@ void ofApp::draw() {
     
     //Debug drawing
     if(debugMode){
-        ofPushMatrix();
-        ofTranslate(420, 0);
         ofSetColor(255);
         speakerXYZMap.draw(0,0);
         speakerFbo.draw(10,0);
         
-        ofDrawBitmapString("Speaker "+ofToString(speakerAmp[0])+" "+ofToString(speakerAmp[1])+" "+ofToString(speakerAmp[2])+" "+ofToString(speakerAmp[3]), ofPoint(20,45));
-        ofPopMatrix();
+        ofDrawBitmapString("Speaker "+ofToString(speakerAmp[0])+" "+ofToString(speakerAmp[1])+" "+ofToString(speakerAmp[2])+" "+ofToString(speakerAmp[3]), 20,45);
     }
     
 
@@ -302,7 +299,7 @@ void ofApp::draw() {
     //Tracker
     if(debugMode){
         ofPushMatrix();
-        ofTranslate(0, 300);
+        ofTranslate(previewOffset);
         ofScale(PREVIEW_SCALE, PREVIEW_SCALE);
         grabber.drawGray();
         contourFinder.draw();
@@ -335,7 +332,7 @@ void ofApp::draw() {
 
         ofPopMatrix();
         
-        ofDrawBitmapString("Spotlight pos "+ofToString(spotlightPosition.value().x,1)+" "+ofToString(spotlightPosition.value().y,1), ofPoint(440,65));
+        ofDrawBitmapString("Spotlight pos "+ofToString(spotlightPosition.value().x,1)+" "+ofToString(spotlightPosition.value().y,1), 20, 65);
     }
 
 }
@@ -349,6 +346,10 @@ void ofApp::updateCameraCalibration(){
     inputCorners[3] = ofVec2f(0,0);
     
     cameraCalibration.calculateMatrix(inputCorners, cameraCalibrationCorners);
+}
+
+void ofApp::exit() {
+    grabber.close();
 }
 
 void ofApp::keyPressed(int key) {
@@ -387,7 +388,7 @@ void ofApp::keyPressed(int key) {
 
 void ofApp::mouseMoved(int x, int y){
     if(setCorner != -1 ){
-        cameraCalibrationCorners[setCorner] = ofVec2f(x / PREVIEW_SCALE, (y-300) / PREVIEW_SCALE);
+        cameraCalibrationCorners[setCorner] = (ofVec2f(x, y) - previewOffset) / PREVIEW_SCALE;
         updateCameraCalibration();
         
     }
