@@ -15,9 +15,6 @@ float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, flo
     return c/2.*(t*t*t + 2.) + b;
 }
 
-
-
-
 void ofApp::setup() {
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	ofSetVerticalSync(true);
@@ -111,7 +108,6 @@ void ofApp::update() {
     float dt = currentTime - previousTime;
     dt = ofClamp(dt, 0, .1);
     previousTime = currentTime;
-//    float dt = ofClamp(1./ofGetFrameRate(), 0.0, 0.1);
     
     stageAge += dt;
     
@@ -209,8 +205,7 @@ void ofApp::update() {
     oscSender.sendMessage(msg);
 }
 
-void ofApp::draw() {
-    
+void ofApp::draw() {    
 	ofBackground(0);
        ofEnableAlphaBlending();
     ofSetColor(255);
@@ -238,6 +233,7 @@ void ofApp::draw() {
         shader.setUniformTexture("xyzMap", xyzMap, 0);
         shader.setUniformTexture("normalMap", normalMap, 2);
         shader.setUniformTexture("confidenceMap", confidenceMap, 3);
+        shader.setUniform1i("useConfidence", 1);
         
         xyzMap.draw(0, 0);
     }shader.end();
@@ -257,12 +253,14 @@ void ofApp::draw() {
     //
     speakerFbo.begin(); {
         shader.begin();
+        shader.setUniformTexture("xyzMap", speakerXYZMap, 0);
+        shader.setUniform1i("useConfidence", 0);
         speakerXYZMap.draw(0,0);
         shader.end();
     } speakerFbo.end();
 
 
-    //Read back the fbo, and avarage it on the CPU
+    //Read back the fbo, and average it on the CPU
     speakerFbo.getTextureReference().readToPixels(speakerPixels);
     
     for(int s=0;s<4;s++){

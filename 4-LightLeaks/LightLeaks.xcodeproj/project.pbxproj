@@ -182,12 +182,8 @@
 		273B61CD19D9AEB80054A3E7 /* OscReceivedElements.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OscReceivedElements.h; sourceTree = "<group>"; };
 		273B61CE19D9AEB80054A3E7 /* OscTypes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OscTypes.cpp; sourceTree = "<group>"; };
 		273B61CF19D9AEB80054A3E7 /* OscTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OscTypes.h; sourceTree = "<group>"; };
-		277AA94F1814958800B45F3D /* .gitkeep */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
-		277AA9501814958800B45F3D /* confidenceMap.exr */ = {isa = PBXFileReference; lastKnownFileType = file; path = confidenceMap.exr; sourceTree = "<group>"; };
-		277AA9511814958800B45F3D /* normalMap.exr */ = {isa = PBXFileReference; lastKnownFileType = file; path = normalMap.exr; sourceTree = "<group>"; };
-		277AA9521814958800B45F3D /* shader.fs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = shader.fs; sourceTree = "<group>"; };
 		277AA9531814958800B45F3D /* shader.vs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = shader.vs; sourceTree = "<group>"; };
-		277AA9541814958800B45F3D /* xyzMap.exr */ = {isa = PBXFileReference; lastKnownFileType = file; path = xyzMap.exr; sourceTree = "<group>"; };
+		277FC3B319DC6BB30028F414 /* shader.fs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = shader.fs; sourceTree = "<group>"; };
 		27B1EB8C1738A54B004BC322 /* ofApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofApp.cpp; sourceTree = "<group>"; };
 		27B1EB8D1738A54B004BC322 /* ofApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofApp.h; sourceTree = "<group>"; };
 		27B60BAD189DDA8D00E068E0 /* LightLeaksUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LightLeaksUtilities.h; sourceTree = "<group>"; };
@@ -689,12 +685,8 @@
 		277AA94E1814958800B45F3D /* data */ = {
 			isa = PBXGroup;
 			children = (
-				277AA94F1814958800B45F3D /* .gitkeep */,
-				277AA9501814958800B45F3D /* confidenceMap.exr */,
-				277AA9511814958800B45F3D /* normalMap.exr */,
-				277AA9521814958800B45F3D /* shader.fs */,
+				277FC3B319DC6BB30028F414 /* shader.fs */,
 				277AA9531814958800B45F3D /* shader.vs */,
-				277AA9541814958800B45F3D /* xyzMap.exr */,
 			);
 			name = data;
 			path = bin/data;

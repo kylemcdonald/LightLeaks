@@ -2,24 +2,23 @@
  #define PI (3.1415926536)
  #define TWO_PI (6.2831853072)
 
- uniform sampler2DRect xyzMap;
- uniform sampler2DRect normalMap;
- uniform sampler2DRect confidenceMap;
- uniform float elapsedTime;
- uniform sampler2DRect texture;
- uniform vec2 textureSize;
+uniform sampler2DRect xyzMap;
+uniform sampler2DRect normalMap;
+uniform sampler2DRect confidenceMap;
+uniform
+uniform float elapsedTime;
+uniform sampler2DRect texture;
+uniform vec2 textureSize;
 
- varying vec3 normal;
- varying float randomOffset;
+varying vec3 normal;
+varying float randomOffset;
 
- const vec4 on = vec4(1.);
- const vec4 off = vec4(vec3(0.), 1.);
+const vec4 on = vec4(1.);
+const vec4 off = vec4(vec3(0.), 1.);
 
- const vec3 center = vec3(0, 0, 0); 
+const vec3 center = vec3(.1, .25, .5);
 
- const float waves = 19.;
-
-
+const float waves = 19.;
 
  uniform float blackbody_color[273] = float[273](
  	1.0000, 0.0425, 0.0000, /* 1000K */
@@ -233,9 +232,10 @@ void main() {
 	vec4 curSampleConfidence = texture2DRect(confidenceMap, gl_TexCoord[0].st+overallOffset);
 	
 	vec3 position = curSample.xyz;
-	vec3 normalDir = curSampleNormal.xyz;
+    vec3 fromCenter = position - center;
+    vec3 normalDir = curSampleNormal.xyz;
 	float confidence = curSampleConfidence.x;
-	//position.xy += +overallOffset;
+//    position.xyz -= vec3(.1, .25, .5);
 	float present = curSample.a;
 
 	/*if(present == 0.) {
@@ -244,214 +244,180 @@ void main() {
 	}*/
 
 	float stages = 11.;
-	float stage = 7;//+mod(elapsedTime * .3, stages);
+	float stage = mod(elapsedTime * .3, stages);
 
 	gl_FragColor = vec4(0);
+//    if(confidence < .1) { return; }
+//    else { gl_FragColor = vec4(1); return; } // just white
 
-	if(confidence < .1) {
-	gl_FragColor = vec4(0);
-} else {
-	gl_FragColor = vec4(vec3(mod(elapsedTime * 2 + length(position) * 20, 1) > .8 ? 1 : 0), 1);
-	}
-	return;
+    // growing in concentric circles X
+    
+//    gl_FragColor = vec4(vec3(mod(elapsedTime * -2 + length(fromCenter) * 20, 1) > .8 ? 1 : 0), 1);
 
-	/*{
-		//if(present == 0 || position.z < 0.01) return;
-		float speed = 0.35;
-		int i = int(gl_TexCoord[0].x/1024);
-		gl_FragColor = (mod(elapsedTime+i*speed/3.,speed) > speed*0.66666) ? on : off;
-		return;
-	}*/
-	/*{
-		vec2 offset = vec2(0.2, -0.1);
-		vec2 tc = position.xy + offset;
-  		vec2 p = -1.0 + 2.0 * tc;
-  		float len = length(p);
-  		
-  		vec2 uv = tc + (p/len)*cos(len*12.0- elapsedTime *4.0)*0.02 - offset;
-  		vec3 col = texture2DRect(texture,vec2(0,0)+uv*1024.).xyz;
-  		if(present> 0)
-  			gl_FragColor = vec4(1);//vec4(col,1.0);
+//    // flashing
+//    //if(present == 0 || position.z < 0.01) return;
+//    float speed = 0.35;
+//    int i = int(gl_TexCoord[0].x/1024);
+//    gl_FragColor = (mod(elapsedTime+i*speed/3.,speed) > speed*0.666) ? on : off;
+//    return;
 
+//    vec2 offset = vec2(0.2, -0.1);
+//    vec2 tc = position.xy + offset;
+//    vec2 p = -1.0 + 2.0 * tc;
+//    float len = length(p);
+//    vec2 uv = tc + (p/len)*cos(len*12.0- elapsedTime *4.0)*0.02 - offset;
+//    vec3 col = texture2DRect(texture,vec2(0,0)+uv*1024.).xyz;
+//    if(present> 0)
+//        gl_FragColor = vec4(1);//vec4(col,1.0);
+//    return;
+    
+//    // diagonal stripes (broken)
+//    float speed = .1;
+//    const float scale = .01 ;
+//    float a = (1.-animate01(stage))*.5;
+//    //float a = scale/2.;
+//    vec2 rotated = rotate(position.xy, elapsedTime);
+//    gl_FragColor = (mod((rotated.x*mod(stage,1)+ rotated.y + position.z) + (elapsedTime * speed), scale) > a) ?
+//    on : off;
 
-		return;
-	}
-*/
-	if(confidence < 0.1) return;
+//    // fast rising stripes (broken)
+//    //if(normal.z == 0.) {
+//    float a = 1.-mod(elapsedTime,1);
+//    float speed = .1;
+//    float height = center.z * 2.;
+//    gl_FragColor = (((1-position.y * (position.x) * 1./height) < ( a ))) ? on : off;
+    
+//    // fast rising strips (working)
+//    float b = mod(position.x * 10. - elapsedTime * 1.5, 1.);
+//    b *= b;
+//    gl_FragColor = vec4(vec3(b), 1.);
+    
+//    // crazy triangles, grid lines
+//    float speed = .05;
+//    float scale = .05;
+//    float cutoff = 1.-animate00(stage)*0.2;
+//    vec3 cur = mod(position + speed * elapsedTime, scale) / scale;
+//    cur *= 1. - abs(normal);
+//    /*if(stage < 2.) {
+//        gl_FragColor = ((cur.x + cur.y + cur.z) < cutoff) ? off : on;
+//    } else {*/
+//    gl_FragColor = (max(max(cur.x, cur.z), cur.y) < cutoff) ? off : on;
 
-	if(position.z > 0 || (stage <= 9 && stage > 8)  || (stage <= 11 && stage > 10)){
-		
-		if(stage <= 1.) {
+//    // one line thorugh the room
+//    // TODO: different angles 
+//    vec2 divider = vec2(cos(elapsedTime*2.), sin(elapsedTime*2.));
+//    float side = (position.x * divider.y) - (position.y * divider.x);
+//    gl_FragColor = abs(side) < .01 + 0.1 * sin(elapsedTime * 2.) ? on : off;
 
-			// diagonal stripes
-			float speed = 100;
-			const float scale = .00001 ;
-			float a = (1.-animate01(stage))*0.2;
-			//float a = scale/2.;
+//    vec2 normPosition = (position.xz + position.yx) / 100.;
+//    float b = 0.3*(sin(elapsedTime*3.0+30.0*position.y)+1.);
+//    //gl_FragColor = vec4(vec3(b), 1.);
+//    vec3 color = colorTemp(4000. + (1-b+0.3) * 5000.,1.0);
+//    gl_FragColor = vec4(color*b*animate00(stage), 1.);
+    
+//    //Tilting room X
+//    float t = sin(elapsedTime)*.1;
+//    vec2 rot = vec2(sin(t), cos(t));
+//    float b = sin(50.*dot(rot, fromCenter.yz));
+//    //float c = 0.5*(sin(b+elapsedTime)+1.);
+//    gl_FragColor = vec4(vec3(b)*animate00(stage), 1.);
+    
+//    // Glittering floor
+//    float t = sin(elapsedTime)*.5;
+//    vec2 rot = vec2(sin(t), cos(t)) * (1 + sin(elapsedTime) * .5) + elapsedTime;
+//    float b = sin(50.*dot(rot, fromCenter.yz));
+//    gl_FragColor = vec4(vec3(b), 1.);
 
-			vec2 rotated = rotate(position.xy, elapsedTime);
-			gl_FragColor = (mod((rotated.x*mod(stage,1)+ rotated.y + position.z) + (elapsedTime * speed), scale) > a) ?
-			on : off;
+//    // color temperature
+//    float t = elapsedTime;
+//    vec2 rot = vec2(sin(t), cos(t));
+//    float r = (1.+sin(4.*dot(rot, fromCenter.yx)))*0.5;
+//    vec3 color = colorTemp(animate00(stage)*4000. +2000. + r * 5000.,1.);
+//    gl_FragColor = vec4(color*animate00(stage), 1.);
 
+//    // soft fade across floor
+//    float t = elapsedTime;
+//    vec2 rot = vec2(sin(t), cos(t));
+//    float r = sin(2.*dot(rot, fromCenter.yx))*animate00(stage);
+//    float g = sin(4.*dot(rot, fromCenter.yx))*animate00(stage);
+//    float b = sin(6.*dot(rot, fromCenter.yx))*animate00(stage);
+//    gl_FragColor = vec4(r,g,b, 1.);		
+	
+    // concentric pulsing spheres
+    vec3 c = center;
+    float b = sin(500.*mod(length(fromCenter)+(0.02*sin(elapsedTime*1.)), 10.));
+    gl_FragColor = vec4(vec3(b), 1.);
 
+//    // unstable light
+//    vec2 normPosition = (position.xz + position.yx) / 100.;
+//    float b = quasi(elapsedTime*0.04, (normPosition)*200.);
+//    gl_FragColor = vec4(vec3(b), 1.);
+    
+//    // zebra wiggle
+//    vec2 normPosition = (fromCenter.xz + fromCenter.yx) / 200.;
+//    float b = quasi(elapsedTime*.1, (normPosition)*1000.);
+//    gl_FragColor = vec4(vec3(b), 1.);
 
-		} else if(stage <= 2.) {
-			// fast rising stripes
-			//if(normal.z == 0.) {
-			float a = 1.-mod(stage,1);
-			float speed = .01;
+//    // Text on end wall
+//    if(position.y == center.y * 2.){
+//        vec2 samplePos = position.xz;
+//        samplePos.x -= sin(elapsedTime)* 0.02;
+//        samplePos.y -= 0.05;
+//        samplePos *= 2.;
+//        samplePos *= 1024.;
+//        vec4 curSample = texture2DRect(texture, samplePos);
+//
+//        gl_FragColor = curSample;
+//    }
 
-			float height = center.z * 2.;
+//    // Text on ceiling
+//    //if(position.y == center.y * 2.){
+//        vec2 samplePos = position.yx - center.yx;
+//        samplePos.y *= -1;
+//        samplePos *= textureSize.x * mod(elapsedTime, 20);
+//        samplePos += textureSize / 2;
+//        //sampl
+//        vec4 curSample = texture2DRect(texture, samplePos);
+//
+//        gl_FragColor = curSample;
+//        //gl_FragColor = vec4(position.x*2, position.y, position.z*3, 1);
+//    //}
 
-			gl_FragColor = (((1-position.y * (position.x) * 1./height) < ( a ))) ? on : off;
+//    // three projectors CMY
+//    if(gl_TexCoord[0].x < 1280.) {
+//        gl_FragColor = vec4(0., 1., 1., 1.);
+//    } else if(gl_TexCoord[0].x < 2560.) {
+//        gl_FragColor = vec4(1., 0., 1., 1.);
+//    } else {
+//        gl_FragColor= vec4(1., 1., 0., 1.);
+//    }
 
-		} else if(stage <= 3.) {
-			// crazy triangles, grid lines
-			if(  normalDir.z < 0.5){
-				float speed = .05;
-				float scale = .05;
-				float cutoff = 1.-animate00(stage)*0.2;
-				vec3 cur = mod(position + speed * elapsedTime, scale) / scale;
-				cur *= 1. - abs(normal);
-				/*if(stage < 2.) {
-					gl_FragColor = ((cur.x + cur.y + cur.z) < cutoff) ? off : on;
-				} else {*/
-				gl_FragColor = (max(max(cur.x, cur.y), cur.z) < cutoff) ? off : on;
-			}
-			//}
-		
-		} else if(stage <= 4.) {
-			// one line thorugh the room
-			// TODO: different angles 
-			vec2 divider = vec2(cos(elapsedTime*2.), sin(elapsedTime*2.));
-			float side = (position.x * divider.y) - (position.y * divider.x);
-
-			gl_FragColor = abs(side) < .01 + 0.1 * sin(elapsedTime * 2.) ? on : off;
-		} else if(stage <= 5.){
-				vec2 normPosition = (position.xz + position.yx) / 100.;
-				float b = 0.3*(sin(elapsedTime*3.0+30.0*position.y)+1.);
-				//gl_FragColor = vec4(vec3(b), 1.);
-
-				//Color
-				vec3 color = colorTemp(4000. + (1-b+0.3) * 5000.,1.0);
-
-				gl_FragColor = vec4(color*b*animate00(stage), 1.);
-		} /*else if(stage <= 6.){
-			//Tilting room
-
-				float t = sin(elapsedTime)*.1;
-				vec2 fromCenter = center.yz - position.yz;
-				vec2 rot = vec2(sin(t), cos(t));
-
-				float b = sin(50.*dot(rot, fromCenter));
-			
-			//float c = 0.5*(sin(b+elapsedTime)+1.);
-				gl_FragColor = vec4(vec3(b)*animate00(stage), 1.);		
-		} else if(stage <= 6.){
-				float t = elapsedTime;
-				vec2 fromCenter = center.yx - position.yx;
-				vec2 rot = vec2(sin(t), cos(t));
-
-				float r = (1.+sin(4.*dot(rot, fromCenter)))*0.5;
-				
-				vec3 color = colorTemp(animate00(stage)*4000. +2000. + r * 5000.,1.);
-
-				gl_FragColor = vec4(color*animate00(stage), 1.);		
-
-		} */else if(stage <= 6.){
-				float t = elapsedTime;
-				vec2 fromCenter = center.yx - position.yx;
-				vec2 rot = vec2(sin(t), cos(t));
-
-				float r = sin(2.*dot(rot, fromCenter))*animate00(stage);
-				float g = sin(4.*dot(rot, fromCenter))*animate00(stage);
-				float b = sin(6.*dot(rot, fromCenter))*animate00(stage);
-
-
-				gl_FragColor = vec4(r,g,b, 1.);		
-		} else if(stage <= 7.){
-				//Spheres
-				vec3 c = center;
-				c.x += 0.05;
-				c.y -= 0.02;
-				vec3 fromCenter = c.xyz - position.xyz;
-				float b = sin(500.*mod(length(fromCenter)+(0.02*sin(elapsedTime*1.)), 10.));
-
-				gl_FragColor = vec4(vec3(b), 1.);
-
-		} /*else if(stage <= 13.) {
-				vec2 normPosition = (position.xz + position.yx) / 100.;
-				float b = quasi(elapsedTime*0.04, (normPosition)*200.);
-				gl_FragColor = vec4(vec3(b), 1.);
-		} *//*else if(stage <= 8){ 
-			// Text on end wall
-			if(position.y == center.y * 2.){
-				vec2 samplePos = position.xz;
-				samplePos.x -= sin(elapsedTime)* 0.02;
-				samplePos.y -= 0.05;
-				samplePos *= 2.;
-				samplePos *= 1024.;
-				vec4 curSample = texture2DRect(texture, samplePos);
-
-				gl_FragColor = curSample;
-			}
-
-		}*/
-		else if(stage <= 8){ 
-			// Text on ceilling
-			//if(position.y == center.y * 2.){
-				vec2 samplePos = position.yx - center.yx;
-				samplePos.y *= -1;
-				samplePos *= textureSize.x * mod(elapsedTime, 20);
-				samplePos += textureSize / 2;
-				//sampl
-				vec4 curSample = texture2DRect(texture, samplePos);
-
-				gl_FragColor = curSample;
-				//gl_FragColor = vec4(position.x*2, position.y, position.z*3, 1);
-			//}
-
-		}
-		else if(stage <= 9) {
-			if(gl_TexCoord[0].x < 1024.) {
-				gl_FragColor = vec4(1., 0., 0., 1.);
-			} else if(gl_TexCoord[0].x < 2048.) {
-				gl_FragColor = vec4(0., 1., 0., 1.);
-			} else {
-				gl_FragColor= vec4(0., 0., 1., 1.);
-			}
-		}
-		else if(stage <= 10) {
-			if(normalDir.z < 0.5){
-				float spacing = sin(elapsedTime) * .8 + 1;
-				vec2 offset = rotate(vec2(1, 0), .6 * elapsedTime);
-				float result = length(mod(position.xy + offset, spacing) * 2 - spacing / 2);
-				gl_FragColor = (result < spacing / 2) ? on : off;
-			}
-		} else if(stage <= 11){
-			float i = mod(stage,1);
-
-			vec2 screenSpace = gl_TexCoord[0].xy - vec2(512,400);
-			screenSpace /= 2000.;
-			vec2 worldSpace = position.xy;
-			worldSpace -= center.xy;
-			vec2 mixedSpace = mix(screenSpace, worldSpace, i);
-			if(length(mixedSpace) < .1) {
-				gl_FragColor =  on;
-				if(present == 0)
-					gl_FragColor = vec4(vec3(1-i), 1);
-			}
-		}
-
-		/*else if(stage <= 4.) {
-			// moving outlines 
-			const float speed = 10.;
-			const float scale = 6.;
-			float localTime = 5. * randomOffset + elapsedTime;
-			gl_FragColor = 
-			(mod((-position.x - position.y + position.z) + (localTime * speed), scale) > scale / 2.) ?
-			on : off;
-		} */
-	}
+//    // spotlight circles
+//    if(normalDir.x < 0.5){
+//        float spacing = sin(elapsedTime) * .2 + 1;
+//        vec2 offset = rotate(vec2(1, 0), .6 * elapsedTime);
+//        float result = length(mod(position.yz + offset, spacing) * 2 - spacing / 2);
+//        gl_FragColor = (result < spacing / 2) ? on : off;
+//    }
+	
+//    float i = mod(stage,1);
+//    vec2 screenSpace = gl_TexCoord[0].xy - vec2(512,400);
+//    screenSpace /= 2000.;
+//    vec2 worldSpace = position.xy;
+//    worldSpace -= center.xy;
+//    vec2 mixedSpace = mix(screenSpace, worldSpace, i);
+//    if(length(mixedSpace) < .1) {
+//        gl_FragColor =  on;
+//        if(present == 0)
+//            gl_FragColor = vec4(vec3(1-i), 1);
+//    }
+	
+//    // moving outlines
+//    const float speed = 10.;
+//    const float scale = 6.;
+//    float localTime = 5. * randomOffset + elapsedTime;
+//    gl_FragColor = 
+//    (mod((-position.x - position.y + position.z) + (localTime * speed), scale) > scale / 2.) ?
+//    on : off;
 }
 
