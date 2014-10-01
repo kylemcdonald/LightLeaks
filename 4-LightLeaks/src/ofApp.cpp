@@ -48,10 +48,10 @@ void ofApp::setup() {
     
     //Create the speaker fbo
     ofVec3f speakers[4];
-    speakers[0] = ofVec3f(0,0,0);
-    speakers[1] = ofVec3f(1,0,0);
-    speakers[2] = ofVec3f(1,1,0);
-    speakers[3] = ofVec3f(0,1,0);
+    speakers[0] = ofVec3f(.2,.5,1);
+    speakers[1] = ofVec3f(.2,0,1);
+    speakers[2] = ofVec3f(.2,0,0);
+    speakers[3] = ofVec3f(.2,.5,0);
     
     
     speakerXYZMap.allocate(4, 100, OF_IMAGE_COLOR_ALPHA);
@@ -61,9 +61,9 @@ void ofApp::setup() {
     float * pixels = speakerXYZMap.getPixels();
     for(int y=0;y<speakerXYZMap.getHeight();y++){
         for(int x=0;x<speakerXYZMap.getWidth();x++){
-            pixels[0] = speakers[x].x + sin(y * TWO_PI / 20) * ((float)y/speakerXYZMap.getHeight()) * speakerAreaSize;
-            pixels[1] = speakers[x].y ;
-            pixels[2] = speakers[x].z + cos(y * TWO_PI / 20) * ((float)y/speakerXYZMap.getHeight()) * speakerAreaSize;;
+            pixels[0] = speakers[x].x;
+            pixels[1] = speakers[x].y + sin(y * TWO_PI / 20) * ((float)y/speakerXYZMap.getHeight()) * speakerAreaSize;
+            pixels[2] = speakers[x].z + cos(y * TWO_PI / 20) * ((float)y/speakerXYZMap.getHeight()) * speakerAreaSize;
             pixels[3] = 1.0;
             pixels += 4;
         }
@@ -173,7 +173,6 @@ void ofApp::update() {
             if(firstFrame){
                 cameraBackground.reset();
             }
-            
             
             ofxCv::blur(thresholdedImage, 5);
             thresholdedImage.update();
