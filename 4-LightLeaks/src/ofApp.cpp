@@ -305,7 +305,11 @@ void ofApp::draw() {
         contourFinder.draw();
         
         if(thresholdedImage.isAllocated()){
-            thresholdedImage.draw(0,1080);
+            ofPushStyle();
+            ofEnableBlendMode(OF_BLENDMODE_ADD);
+            ofSetColor(ofColor::red);
+            thresholdedImage.draw(0,0);
+            ofPopStyle();
         }
         
         ofPushStyle();
