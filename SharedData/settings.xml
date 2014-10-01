@@ -1,16 +1,12 @@
 <xml>
 	<projectors>
-		<count>3</count>
-		<width>1280</width>
-		<height>1024</height>
+		<count>1</count>
+		<width>1024</width>
+		<height>768</height>
 	</projectors>
-    
-    <sample>
-        <singlepass>true</singlepass>
-    </sample>
 
 	<osc>
 		<camera>kyle.local</camera>
-		<projector>lightleaks.local</projector>
+		<projector>kyle.local</projector>
 	</osc>
 </xml>

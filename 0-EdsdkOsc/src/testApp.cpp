@@ -47,7 +47,6 @@ void testApp::update() {
 			camera.savePhoto(savePath);
 			manual = false;
             preview.loadImage(savePath);
-
 		} else {
 			ofxOscMessage msgOut;
 			msgOut.setAddress("/newPhoto");
@@ -78,6 +77,7 @@ void testApp::draw() {
 	ofDrawBitmapStringHighlight("capturing: " + ofToString(capturing), 10, 60);
     ofDrawBitmapStringHighlight("press 'p' to take a preview image", 10, 80);
     ofDrawBitmapStringHighlight("press ' ' to start the scan", 10, 100);
+    ofDrawBitmapStringHighlight("press '`' to re-send confirmation", 10, 120);
 
 }
 
@@ -90,6 +90,10 @@ void testApp::keyPressed(int key) {
         ofxOscMessage msgOut;
         msgOut.setAddress("/start");
         oscOut.sendMessage(msgOut);
-
+    }
+    if(key == '`') {
+        ofxOscMessage msgOut;
+        msgOut.setAddress("/newPhoto");
+        oscOut.sendMessage(msgOut);
     }
 }

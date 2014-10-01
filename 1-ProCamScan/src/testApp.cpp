@@ -6,7 +6,7 @@ using namespace ofxCv;
 using namespace cv;
 
 #define USE_GDC
-#define SAVE_DEBUG
+//#define SAVE_DEBUG
 
 bool natural(const ofFile& a, const ofFile& b) {
 	string aname = a.getBaseName(), bname = b.getBaseName();
@@ -156,13 +156,8 @@ void testApp::setup() {
             if(maskLoaded){
                 cameraMaskMat = toCv(cameraMask);
             }
-#ifdef SAVE_DEBUG
-            imitate(minImage, cameraMask);
-            imitate(maxImage, cameraMask);
-#endif
             
             cout << "converted to mat " << cameraMaskMat.rows << "x" << cameraMaskMat.cols << endl;
-            
             
             hnImageNormal.resize(horizontalBits, 0);
             hnImageInverse.resize(horizontalBits, 0);
@@ -288,6 +283,10 @@ void testApp::setup() {
             saveImage(minImage, path+"/minImage.png");
             saveImage(maxImage, path+"/maxImage.png");
 #endif
+            ofLogVerbose() << "building and saving reference image";
+            Mat referenceImage;
+            ofxCv::equalizeHist(minImage, referenceImage);
+            saveImage(referenceImage, path+"/referenceImage.jpg");
             
             Mat binaryCoded, emptyChannel;
             emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);
