@@ -56,7 +56,7 @@ void ofApp::setup() {
     
     speakerXYZMap.allocate(4, 100, OF_IMAGE_COLOR_ALPHA);
     
-    float speakerAreaSize = 0.2;
+    float speakerAreaSize = 0.01;
     
     float * pixels = speakerXYZMap.getPixels();
     for(int y=0;y<speakerXYZMap.getHeight();y++){
@@ -111,21 +111,21 @@ void ofApp::update() {
     
     stageAge += dt;
     
-    //Go to intermezzo now and then
-  /*  if(stage != Intermezzo){
-        intermezzoTimer -= dt;
-        
-        if(intermezzoTimer < 0){
-            stageGoal = Intermezzo;
-            intermezzoTimer = 10;
-        }
-    } else {
-   //Go back to lighhouse after some seconds
-   if(stageAge > 5){
-   stageGoal = Lighthouse;
-   }
-   }
-   */
+//    //Go to intermezzo now and then
+//  if(stage != Intermezzo){
+//        intermezzoTimer -= dt;
+//        
+//        if(intermezzoTimer < 0){
+//            stageGoal = Intermezzo;
+//            intermezzoTimer = 10;
+//        }
+//    }
+//   else {
+//   //Go back to lighhouse after some seconds
+//       if(stageAge > 5){
+//           stageGoal = Lighthouse;
+//       }
+//   }
     
     //Go to spotlight when there are contours to track
     if(stage != Spotlight){
@@ -206,8 +206,8 @@ void ofApp::update() {
 }
 
 void ofApp::draw() {    
-	ofBackground(0);
-       ofEnableAlphaBlending();
+    ofBackground(0);
+    ofEnableAlphaBlending();
     ofSetColor(255);
     
     //Lighthouse parameters
@@ -263,13 +263,17 @@ void ofApp::draw() {
     //Read back the fbo, and average it on the CPU
     speakerFbo.getTextureReference().readToPixels(speakerPixels);
     
+    ofxOscMessage brightnessMsg;
+    brightnessMsg.setAddress("/audio/brightness");
     for(int s=0;s<4;s++){
         speakerAmp[s] = 0;
         for(int y=0;y<speakerFbo.getHeight();y++){
             speakerAmp[s] += speakerPixels.getColor(s, y)[0];
         }
         speakerAmp[s] /= speakerFbo.getHeight();
+        brightnessMsg.addFloatArg(speakerAmp[s]);
     }
+    oscSender.sendMessage(brightnessMsg);
     
     //Debug drawing
     if(debugMode){
@@ -282,6 +286,7 @@ void ofApp::draw() {
         ofDrawBitmapString("Speaker "+ofToString(speakerAmp[0])+" "+ofToString(speakerAmp[1])+" "+ofToString(speakerAmp[2])+" "+ofToString(speakerAmp[3]), ofPoint(20,45));
         ofPopMatrix();
     }
+    
 
 
     //The simple scattering algorithm behind the speaker thingy visualized

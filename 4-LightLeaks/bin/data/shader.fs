@@ -28,10 +28,12 @@ uniform vec2 size, mouse;
 
 const bool bw = true;
 const bool useStepTime = true;
+const vec3 center = vec3(0.1, 0.25, 0.5);
 
 void main() {
     vec2 projectionOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
     vec3 position = texture2DRect(xyzMap, gl_TexCoord[0].st + projectionOffset).xyz;
+    vec3 fromCenter = position - center;
     vec3 normal = texture2DRect(normalMap, gl_TexCoord[0].st + projectionOffset).xyz;
     float confidence = texture2DRect(confidenceMap, gl_TexCoord[0].st).r;
     if(useConfidence == 0) {
@@ -50,40 +52,49 @@ void main() {
     vec2 positionNorm = position.xy;
     float positionAngle = atan((positionNorm.y - 0.25) , (positionNorm.x-0.5)) + PI + HALF_PI;
     
-    if(stage == 0) {
-        //Lighthouse beam
-        
-        if(abs(positionAngle - beamAngle) < beamWidth
-           || abs(positionAngle - TWO_PI - beamAngle) < beamWidth
-           || abs(positionAngle + TWO_PI - beamAngle) < beamWidth){
-            b = 1.;
-        } else {
-            b = 0.;
-        }
-        
-      //  if(confidence < .01) discard;
-    }
-    else if(stage == 1){
-        //Spotlight
-        if( position.z > 0.15 &&
-           length(positionNorm.xy - spotlightPos) < spotlightSize){
-            b = 1.;
-        } else {
-            b = 0.;
-        }
-    }
-    else if(stage == 2){
-        //Intermezzo
-        
-    }
+//    if(stage == 0) {
+//        //Lighthouse beam
+//        
+//        if(abs(positionAngle - beamAngle) < beamWidth
+//           || abs(positionAngle - TWO_PI - beamAngle) < beamWidth
+//           || abs(positionAngle + TWO_PI - beamAngle) < beamWidth){
+//            b = 1.;
+//        } else {
+//            b = 0.;
+//        }
+//        
+//      //  if(confidence < .01) discard;
+//    }
+//    else if(stage == 1){
+//        //Spotlight
+//        if( position.z > 0.15 &&
+//           length(positionNorm.xy - spotlightPos) < spotlightSize){
+//            b = 1.;
+//        } else {
+//            b = 0.;
+//        }
+//    }
+//    else if(stage == 2){
+//        // fast rising stripes
+//        b = mod(position.x * 10. - time * 1.5, 1.);
+//        b *= b;
+    
+//        // glittering floor
+//        float t = sin(time)*.5;
+//        vec2 rot = vec2(sin(t), cos(t)) * (1. + sin(time) * .5) + time;
+//        b = sin(50. * dot(rot, fromCenter.yz));
+    
+        // concentric spheres
+        b = sin(500.*mod(length(fromCenter)+(0.02*sin(time*1.)), 10.));
+//    }
     
     
-    // post process
+    // threshold
     if(bw) {
         //	b = b > .5 ? 1 : 0;
     }
     
-    gl_FragColor = vec4(vec3(b)  , 1.);
-    gl_FragColor *= confidence;
+    b *= confidence; // for previs
+    gl_FragColor = vec4(vec3(b), 1.);
 }
 
