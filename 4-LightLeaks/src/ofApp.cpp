@@ -45,7 +45,13 @@ void ofApp::setup() {
     //Intermezzo setup
     intermezzoTimer = 10;
     
+    setupSpeakers();
+    setupTracker();
     
+    oscSender.setup("localhost", 7777);
+}
+
+void ofApp::setupSpeakers() {
     //Create the speaker fbo
     ofVec3f speakers[4];
     speakers[0] = ofVec3f(.2,.5,1);
@@ -72,13 +78,12 @@ void ofApp::setup() {
     
     speakerFbo.allocate(speakerXYZMap.getWidth(), speakerXYZMap.getHeight());
     speakerPixels.allocate(speakerXYZMap.getWidth(), speakerXYZMap.getHeight(),4);
+}
 
-    
-    
-    //Tracker
+void ofApp::setupTracker() {    //Tracker
     grabber.setup(1920, 1080, 25);
     
-
+    
     
     contourFinder.setMinAreaRadius(20);
     contourFinder.setMaxAreaRadius(200);
@@ -98,14 +103,11 @@ void ofApp::setup() {
     firstFrame = true;
     
     updateCameraCalibration();
-    
-    
-    oscSender.setup("localhost", 7777);
 }
 
 void ofApp::update() {
     float currentTime = ofGetElapsedTimef();
-    float dt = currentTime - previousTime;
+    dt = currentTime - previousTime;
     dt = ofClamp(dt, 0, .1);
     previousTime = currentTime;
     
@@ -144,8 +146,6 @@ void ofApp::update() {
         lighthouseAngle += dt * cubicEaseInOut(stageAmp) * (3 + sin(ofGetElapsedTimeMillis() / 5000.));
     }
     
-    
-    
     if(stage != stageGoal){
         stageAmp -= dt*0.5;
         if(stageAmp < 0){
@@ -157,8 +157,16 @@ void ofApp::update() {
         stageAmp = ofClamp(stageAmp+dt*0.5, 0, 1.);
     }
     
+    updateTracker();
     
-    //Tracker
+    //OSC
+    ofxOscMessage msg;
+    msg.setAddress("/audio/lighthouse_angle");
+    msg.addFloatArg(fmodf(lighthouseAngle/TWO_PI, 1));
+    oscSender.sendMessage(msg);
+}
+
+void ofApp::updateTracker() {
     bool newFrame = grabber.update();
     
     if(newFrame ) {
@@ -166,10 +174,10 @@ void ofApp::update() {
         if(pixels.getWidth()>0){
             contourFinder.setThreshold(128);
             cv::Mat mat = ofxCv::toCv(pixels);
-
+            
             cameraBackground.setDifferenceMode(ofxCv::RunningBackground::BRIGHTER);
             cameraBackground.update(mat, thresholdedImage);
-
+            
             if(firstFrame){
                 cameraBackground.reset();
             }
@@ -177,7 +185,7 @@ void ofApp::update() {
             ofxCv::blur(thresholdedImage, 5);
             thresholdedImage.update();
             
-
+            
             contourFinder.findContours(thresholdedImage);
             
             if(contourFinder.getContours().size() > 0){
@@ -195,16 +203,9 @@ void ofApp::update() {
             spotlightThresholder -= dt;
         }
     }
-    
-    
-    //OSC
-    ofxOscMessage msg;
-    msg.setAddress("/audio/lighthouse_angle");
-    msg.addFloatArg(fmodf(lighthouseAngle/TWO_PI, 1));
-    oscSender.sendMessage(msg);
 }
 
-void ofApp::draw() {    
+void ofApp::draw() {
     ofBackground(0);
     ofEnableAlphaBlending();
     ofSetColor(255);

@@ -18,8 +18,8 @@ enum Stage {
 
 class ofApp : public ofBaseApp {
 public:
-	void setup();
-	void update();
+    void setup(), setupSpeakers(), setupTracker();
+    void update(), updateTracker();
 	void draw();
     void exit();
 	void keyPressed(int key);
@@ -30,7 +30,7 @@ public:
     
     bool debugMode;
     
-    float previousTime;
+    float dt, previousTime;
 	
 	ofFloatImage xyzMap;
     ofFloatImage normalMap;
