@@ -33,6 +33,11 @@ void main() {
         confidence = 1.;
     }
     
+    if(confidence < .1) {
+        gl_FragColor = vec4(vec3(0), 1);
+        return;
+    }
+    
     float b = 0.;
     
     // handle time
@@ -68,7 +73,6 @@ void main() {
 //    else if(stage == 2){
     
     float substage = mod(elapsedTime / 10., 4.);
-    
     if(substage < 1) {
         // fast rising stripes
         b = mod(position.x * 10. - time * 1.5, 1.);
@@ -86,7 +90,16 @@ void main() {
         float t = sin(time)*.1;
         vec2 rot = vec2(sin(t), cos(t));
         b = sin(50.*dot(rot, centered.yz));
+    } else if(substage < 5) {
+        // checkerboard (needs to be animated)
+        vec3 modp = mod(position.xyz * 24, 2.);
+        if(modp.x > 1) {
+            b = (modp.z < 1 || modp.y > 1) ? 1 : 0;
+        } else {
+            b = (modp.z > 1 || modp.y < 1) ? 1 : 0;
+        }
     }
+    
 //    }
     
     
@@ -95,7 +108,7 @@ void main() {
 //        b = b > .5 ? 1 : 0;
 //    }
     
-    b *= confidence; // for previs
+//    b *= confidence; // for previs
     gl_FragColor = vec4(vec3(b), 1.);
 }
 
