@@ -41,7 +41,7 @@ public:
 		(direction == 0 ? "vertical/" : "horizontal/") <<
 		(inverse == 0 ? "inverse/" : "normal/");
 		curDirectory = dirStr.str();
-        cout<<"Create "<<curDirectory<<endl;
+        ofLog() << "Creating " << curDirectory;
 		camera.createDirectory(curDirectory);
         generated = true;
 	}
@@ -68,13 +68,18 @@ public:
 		return true;
 	}
 	
-	void setup() {
+    void setup() {
 		ofSetVerticalSync(true);
 		ofHideCursor();
-		if(ofFile::doesFileExist("mask.png")) {
-			mask.loadImage("mask.png");
-		}
-		ofEnableAlphaBlending();
+		if(ofFile::doesFileExist("../../../SharedData/mask.png")) {
+			mask.loadImage("../../../SharedData/mask.png");
+            ofLog() << "Loaded mask";
+            ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
+            ofBackground(255);
+        } else {
+            ofEnableAlphaBlending();
+            ofBackground(0);
+        }
 		ofSetLogLevel(OF_LOG_VERBOSE);
 		camera.setup();
         
@@ -110,7 +115,6 @@ public:
 	}
 	
 	void draw() {
-		ofBackground(0);
 		ofSetColor(255);
         if(generated){
             generator.get(pattern).draw(projector * tw, 0);
@@ -161,6 +165,12 @@ int main() {
 	totalProjectors = settings.getIntValue("projectors/count");
 	tw = settings.getIntValue("projectors/width");
 	th = settings.getIntValue("projectors/height");
+    
+    if(settings.getBoolValue("sample/singlepass")) {
+        ofLog() << "Using single pass sampling";
+        tw *= totalProjectors;
+        totalProjectors = 1;
+    }
 	
 	ofAppGlutWindow window;
 	ofSetupOpenGL(&window, totalProjectors * tw, th, OF_FULLSCREEN);

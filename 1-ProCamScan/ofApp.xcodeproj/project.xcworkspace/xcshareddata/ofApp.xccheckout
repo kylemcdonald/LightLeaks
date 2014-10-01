@@ -28,13 +28,13 @@
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</key>
-		<string>../../../../..</string>
+		<string>../../../..</string>
 		<key>37526DA425E5430474A14FBFA1BC4525160B5FC1</key>
-		<string>../../../../../addons/ofxCv</string>
+		<string>../../../../addons/ofxCv</string>
 		<key>474EC532BB7E81F6DD5A5B4226C9AA507F28B025</key>
 		<string>../../..</string>
 		<key>82D0F8FA-1775-4674-915D-1C4B7947AE89</key>
-		<string>../../../../../../..</string>
+		<string>../../../..</string>
 		<key>CD9483FF-076A-4163-99AB-2C1457369483</key>
 		<string>../../../../openFrameworks</string>
 		<key>DCAF91F8-0DDA-4E5B-980D-C7C963795C5F</key>
@@ -54,7 +54,7 @@
 			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>82D0F8FA-1775-4674-915D-1C4B7947AE89</string>
 			<key>IDESourceControlWCCName</key>
-			<string>..</string>
+			<string></string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
@@ -62,7 +62,7 @@
 			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</string>
 			<key>IDESourceControlWCCName</key>
-			<string>..</string>
+			<string></string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>

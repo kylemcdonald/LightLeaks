@@ -29,6 +29,8 @@ public:
     void updateCameraCalibration();
     
     bool debugMode;
+    
+    float previousTime;
 	
 	ofFloatImage xyzMap;
     ofFloatImage normalMap;

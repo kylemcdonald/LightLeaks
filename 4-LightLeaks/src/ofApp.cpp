@@ -30,6 +30,7 @@ void ofApp::setup() {
     
     debugMode = true;
 
+    previousTime = 0;
     
     //Shader
 	shader.setup("shader");
@@ -106,7 +107,11 @@ void ofApp::setup() {
 }
 
 void ofApp::update() {
-    float dt = ofClamp(1./ofGetFrameRate(), 0.0, 0.1);
+    float currentTime = ofGetElapsedTimef();
+    float dt = currentTime - previousTime;
+    dt = ofClamp(dt, 0, .1);
+    previousTime = currentTime;
+//    float dt = ofClamp(1./ofGetFrameRate(), 0.0, 0.1);
     
     stageAge += dt;
     

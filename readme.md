@@ -28,6 +28,7 @@
 
 * iMac
 * 1280x1024 with TH2G on projectiondesign F32 sx+ (native 1400x1050) inset on the sensor
+* When calibrating, create a network from the calibration computer that shares the ethernet and therefore provides DHCP.
 
 ## Redesign
 
@@ -37,3 +38,5 @@
 4. *Transfer the images to the Calibration app*, it will decode all the images and let you know how accurately it could reconstruct the environment.
 5. In the Calibration app, select control points until the model lines up.
 6. Start the LightLeaks app.
+
+

@@ -5,6 +5,9 @@
 using namespace ofxCv;
 using namespace cv;
 
+#define USE_GDC
+//#define SAVE_DEBUG
+
 bool natural(const ofFile& a, const ofFile& b) {
 	string aname = a.getBaseName(), bname = b.getBaseName();
 	int aint = ofToInt(aname), bint = ofToInt(bname);
@@ -15,7 +18,7 @@ bool natural(const ofFile& a, const ofFile& b) {
 	}
 }
 
-void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat, ofImage * imageNormal, ofImage * imageInverse) {
+void processGraycodeLevel(int i, int n, int dimensions, const Mat& cameraMask, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat, ofImage * imageNormal, ofImage * imageInverse) {
     ofLogVerbose() << "Process " << i << " of " << n;
     
 	int w = imageNormal->getWidth(), h = imageNormal->getHeight();
@@ -43,7 +46,6 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
 	}
 	unsigned short curMask = 1 << (n - i - 1);
 	float curVariation = curMask / (dimensions * 255. * totalVariation);
-    
 
 	for(int y = 0; y < h; y++) {
 		for(int x = 0; x < w; x++) {
@@ -55,7 +57,12 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat cameraMask, Mat& con
 			float range = fabsf((float) normal - (float) inverse);
 			confidence.at<float>(y, x) += curVariation * range;
 		}
-	}
+    }
+    
+//    saveImage(imageNormalGray, "normal-gray-" + ofToString(i) + ".jpg");
+//    saveImage(imageInverseGray, "inverse-gray-" + ofToString(i) + ".jpg");
+//    saveImage(confidence, "confidence-" + ofToString(i) + ".exr");
+//    cout << "cur variation: " << curVariation << endl;
 }
 
 void testApp::setup() {
@@ -149,9 +156,8 @@ void testApp::setup() {
             if(maskLoaded){
                 cameraMaskMat = toCv(cameraMask);
             }
-            //imitate(minImage, cameraMask);
-            //imitate(maxImage, cameraMask);
             
+            cout << "converted to mat " << cameraMaskMat.rows << "x" << cameraMaskMat.cols << endl;
             
             hnImageNormal.resize(horizontalBits, 0);
             hnImageInverse.resize(horizontalBits, 0);
@@ -159,18 +165,20 @@ void testApp::setup() {
             viImageNormal.resize(verticalBits, 0);
             viImageInverse.resize(verticalBits, 0);
             
+#ifdef USE_GDC
             //A dispatch group that the horizontal job and vertical job will be added to
             dispatch_group_t group = dispatch_group_create();
 
             //Create the async job for handling horizontal images
             dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
-                
+#endif
                 //Load Horizontal images
-                ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images multithreaded";
-                
-                dispatch_apply(horizontalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i) {
-                    //   for(int i = 0; i < horizontalBits; i++) {
-                    
+                ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images";
+#ifdef USE_GDC
+                dispatch_apply(horizontalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i){
+#else
+               for(int i = 0; i < horizontalBits; i++) {
+#endif
                     ofImage * img = new ofImage();
                     img->setUseTexture(false);
                     
@@ -186,7 +194,10 @@ void testApp::setup() {
                     
                     hnImageNormal[i] = img;
                     hnImageInverse[i] = imgI;
-                });
+                }
+#ifdef USE_GDC
+                );
+#endif
                 
                 
                 //Process horizontal images
@@ -201,17 +212,22 @@ void testApp::setup() {
                     delete hnImageNormal[i];
                     delete hnImageInverse[i];
                 }
-                
+#ifdef USE_GDC
             });
             
             //Create the async job for handling vertical images
             dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
+#endif
                 
                 //Load Vertical images
-                ofLogVerbose() << "Loading " <<  verticalBits << " vertical images multithreaded";
-                
+                ofLogVerbose() << "Loading " <<  verticalBits << " vertical images";
+
+#ifdef USE_GDC
                 dispatch_apply(verticalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i) {
-                    //for(int i = 0; i < verticalBits; i++) {
+#else
+                for(int i = 0; i < verticalBits; i++) {
+#endif
+                    
                     ofImage * img = new ofImage();
                     img->setUseTexture(false);
                     
@@ -226,7 +242,10 @@ void testApp::setup() {
                     
                     viImageNormal[i] = img;
                     viImageInverse[i] = imgI;
-                });
+                }
+#ifdef USE_GDC
+                );
+#endif
                 
                 
                 //Process vertical images
@@ -239,11 +258,13 @@ void testApp::setup() {
                 for(int i = 0; i < verticalBits; i++) {
                     delete viImageNormal[i];
                     delete viImageInverse[i];
-                }            
+                }
+#ifdef USE_GDC
             });
             
             //Wait for the group to finish before continuing
             dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+#endif
             
 
             hnImageInverse.clear();
@@ -256,11 +277,16 @@ void testApp::setup() {
             grayToBinary(binaryCodedHorizontal, horizontalBits);
             grayToBinary(binaryCodedVertical, verticalBits);
             
-            //ofLogVerbose() << "saving results";
-            //saveImage(camConfidence, "camConfidence.exr");
-            ofLogVerbose()<<"Save equalized mapping reference";
-            equalizeHist(minImage);
-            saveImage(minImage, path+"/referenceImage.jpg");
+#ifdef SAVE_DEBUG
+            ofLogVerbose() << "saving debug results";
+            saveImage(camConfidence, path+"/camConfidence.exr");
+            saveImage(minImage, path+"/minImage.png");
+            saveImage(maxImage, path+"/maxImage.png");
+#endif
+            ofLogVerbose() << "building and saving reference image";
+            Mat referenceImage;
+            ofxCv::equalizeHist(minImage, referenceImage);
+            saveImage(referenceImage, path+"/referenceImage.jpg");
             
             Mat binaryCoded, emptyChannel;
             emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);
@@ -286,10 +312,6 @@ void testApp::setup() {
 
             saveImage(proConfidence, path+"/proConfidence.exr");
             saveImage(proMap, path+"/proMap.png");
-            
-            //saveImage(mean, "mean.png");
-            //saveImage(stddev, "stddev.exr");
-            //saveImage(count, "count.png");
         }
     }
     time = ofGetElapsedTimef();

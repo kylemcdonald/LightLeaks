@@ -4,9 +4,13 @@
 		<width>1280</width>
 		<height>1024</height>
 	</projectors>
+    
+    <sample>
+        <singlepass>true</singlepass>
+    </sample>
 
 	<osc>
-		<camera>192.168.5.161</camera>
-		<projector>192.168.4.163</projector>
+		<camera>kyle.local</camera>
+		<projector>lightleaks.local</projector>
 	</osc>
 </xml>
