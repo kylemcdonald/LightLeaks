@@ -1,7 +1,8 @@
 #include "ofApp.h"
 
-#define PREVIEW_SCALE (400./1920)
-const ofVec2f previewOffset(440, 248);
+const float trackScale = .25; // actual resizing on the image data
+const float previewScale = .25; // presentation on the screen for calibration
+const ofVec2f previewOffset(440, 248); // placement of debug image for calibration
 
 float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, float valueChange = 1.0){
     float t = time;
@@ -170,27 +171,27 @@ void ofApp::updateTracker() {
     bool newFrame = grabber.update();
     
     if(newFrame ) {
-        ofPixels pixels = grabber.getGrayPixels();
+        ofPixels& pixels = grabber.getGrayPixels();
         if(pixels.getWidth()>0){
-            contourFinder.setThreshold(128);
-            cv::Mat mat = ofxCv::toCv(pixels);
+            ofxCv::resize(pixels, grabberSmall, trackScale, trackScale, cv::INTER_AREA);
+            cv::Mat mat = ofxCv::toCv(grabberSmall);
             
             cameraBackground.setDifferenceMode(ofxCv::RunningBackground::BRIGHTER);
-            cameraBackground.update(mat, thresholdedImage);
+            cameraBackground.update(mat, grabberThresholded);
             
             if(firstFrame){
                 cameraBackground.reset();
             }
             
-            ofxCv::blur(thresholdedImage, 5);
-            thresholdedImage.update();
+            ofxCv::blur(grabberThresholded, 5);
             
-            
-            contourFinder.findContours(thresholdedImage);
+            contourFinder.setThreshold(128);
+            contourFinder.findContours(grabberThresholded);
             
             if(contourFinder.getContours().size() > 0){
                 ofRectangle rect =  ofxCv::toOf(contourFinder.getBoundingRect(0));
                 ofVec2f point = ofVec2f(rect.x, rect.y+rect.height*0.5);
+                point /= trackScale;
                 spotlightPosition.update(cameraCalibration.inversetransform(point));
             }
             
@@ -301,17 +302,20 @@ void ofApp::draw() {
     if(debugMode){
         ofPushMatrix();
         ofTranslate(previewOffset);
-        ofScale(PREVIEW_SCALE, PREVIEW_SCALE);
-        grabber.drawGray();
-        contourFinder.draw();
+        ofScale(previewScale, previewScale);
         
-        if(thresholdedImage.isAllocated()){
-            ofPushStyle();
-            ofEnableBlendMode(OF_BLENDMODE_ADD);
-            ofSetColor(ofColor::red);
-            thresholdedImage.draw(0,0);
-            ofPopStyle();
-        }
+        ofPushMatrix();
+        ofScale(1 / trackScale, 1 / trackScale);
+        
+        ofxCv::drawMat(grabberSmall, 0, 0);
+        
+        ofPushStyle();
+        ofEnableBlendMode(OF_BLENDMODE_ADD);
+        ofSetColor(ofColor::red);
+        ofxCv::drawMat(grabberThresholded, 0, 0);
+        ofPopStyle();
+        
+        ofPopMatrix();
         
         ofPushStyle();
         ofNoFill();
@@ -393,7 +397,7 @@ void ofApp::keyPressed(int key) {
 
 void ofApp::mouseMoved(int x, int y){
     if(setCorner != -1 ){
-        cameraCalibrationCorners[setCorner] = (ofVec2f(x, y) - previewOffset) / PREVIEW_SCALE;
+        cameraCalibrationCorners[setCorner] = (ofVec2f(x, y) - previewOffset) / previewScale;
         updateCameraCalibration();
         
     }

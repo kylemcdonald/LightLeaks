@@ -66,10 +66,10 @@ public:
     
     //Tracking
     ofxBlackMagic grabber;
+    cv::Mat grabberSmall, grabberThresholded;
     
     ofxCv::RunningBackground cameraBackground;
     ofxCv::ContourFinder contourFinder;
-    ofImage thresholdedImage;
     coordWarping cameraCalibration;
     ofVec2f cameraCalibrationCorners[4];
     bool firstFrame;
