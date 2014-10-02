@@ -9,11 +9,11 @@ const int foregroundDilate = 5; // connect disconnected parts. will fail to sepa
 const float contourFinderThreshold = 32; // higher blur calls for lower threshold
 const float minAreaRadius = 5; // after scaling by trackScale
 const float maxAreaRadius = 80; // after scaling by trackScale
-const float lighthouseSpeed = 1;
+const float lighthouseSpeed = .1; // should be 1
 
 const float durationIntermezzo = 10;
 const float intervalIntermezzo = 45;
-const float delaySpotlight = .5; // in and out delay
+const float delaySpotlight = 1; // in and out delay
 
 float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, float valueChange = 1.0){
     float t = time;
@@ -190,12 +190,28 @@ void ofApp::update() {
     }
     
     updateTracker();
+    updateOsc();
+}
+
+void ofApp::updateOsc() {
+    if(stage == Lighthouse) {
+        ofxOscMessage msg;
+        msg.setAddress("/audio/lighthouse_angle");
+        msg.addFloatArg(fmodf(lighthouseAngle/TWO_PI, 1));
+        oscSender.sendMessage(msg);
+    }
     
-    //OSC
-    ofxOscMessage msg;
-    msg.setAddress("/audio/lighthouse_angle");
-    msg.addFloatArg(fmodf(lighthouseAngle/TWO_PI, 1));
-    oscSender.sendMessage(msg);
+    if(stage == Spotlight) {
+        ofxOscMessage msg;
+        msg.setAddress("/audio/spotlight_position");
+        float x = spotlightPosition.value().x;
+        float y = spotlightPosition.value().y;
+        x = ofMap(x, 0, 1, -1, 1);
+        y = ofMap(y, .5, 0, -1, 1);
+        msg.addFloatArg(y); // between Rs and R
+        msg.addFloatArg(x); // between Ls and L
+        oscSender.sendMessage(msg);
+    }
 }
 
 void ofApp::updateTracker() {

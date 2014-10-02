@@ -19,7 +19,7 @@ enum Stage {
 class ofApp : public ofBaseApp {
 public:
     void setup(), setupSpeakers(), setupTracker();
-    void update(), updateTracker();
+    void update(), updateTracker(), updateOsc();
 	void draw();
     void exit();
 	void keyPressed(int key);
