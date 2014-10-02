@@ -14,6 +14,7 @@ const float lighthouseSpeed = .1; // should be 1
 const float durationIntermezzo = 10;
 const float intervalIntermezzo = 45;
 const float delaySpotlight = 1; // in and out delay
+const int photoFrequency = 10; // every 10 spotlights
 
 float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, float valueChange = 1.0){
     float t = time;
@@ -42,6 +43,7 @@ void ofApp::setup() {
     ofSetFrameRate(120);
     ofEnableAlphaBlending();
     
+    photoCounter = 0;
     
     //Settings
     settings.load("settings.xml");
@@ -184,6 +186,13 @@ void ofApp::update() {
             stageAge = 0;
             stage = stageGoal;
             startStage(stage);
+            if(stage == Spotlight) {
+                photoCounter = (photoCounter + 1) % photoFrequency;
+                if(photoCounter == 0) {
+                    ofDirectory::createDirectory("photos", true, true);
+                    ofSaveImage(grabber.getColorPixels(), "photos/" + ofGetTimestampString() + ".jpg");
+                }
+            }
         }
     } else {
         stageAmp = ofClamp(stageAmp+dt*0.5, 0, 1.);

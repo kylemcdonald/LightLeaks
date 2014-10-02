@@ -62,6 +62,7 @@ public:
     
     //Tracking
     ofxBlackMagic grabber;
+    int photoCounter;
     cv::Mat grabberSmall, grabberThresholded;
     
     ofxCv::RunningBackground cameraBackground;
@@ -72,5 +73,5 @@ public:
     int setCorner;
     
     //OSC
-    ofxOscSender oscSender;;
+    ofxOscSender oscSender;
 };
