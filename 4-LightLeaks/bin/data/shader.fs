@@ -23,6 +23,14 @@ uniform int stage;
 
 const vec3 center = vec3(0.1, 0.25, 0.5);
 
+vec2 rotate(vec2 position, float amount) {
+    mat2 rotation = mat2(
+                         vec2( cos(amount),  sin(amount)),
+                         vec2(-sin(amount),  cos(amount))
+                         );
+    return rotation * position;
+}
+
 void main() {
     vec2 projectionOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
     vec3 position = texture2DRect(xyzMap, gl_TexCoord[0].st + projectionOffset).xyz;
@@ -45,18 +53,19 @@ void main() {
     time = elapsedTime + sin(elapsedTime); // step time
     
     // handle space
-    float positionAngle = atan(centered.y, centered.z) + PI + HALF_PI;
-    
     if(stage == 0) {
         //Lighthouse beam
-        
-        if(abs(positionAngle - beamAngle) < beamWidth
-           || abs(positionAngle - TWO_PI - beamAngle) < beamWidth
-           || abs(positionAngle + TWO_PI - beamAngle) < beamWidth){
-            b = 1.;
-        } else {
-            b = 0.;
-        }
+        vec2 rotated = rotate(centered.yz, beamAngle);
+        float positionAngle = atan(rotated.y, rotated.x);
+        b = 1. - ((positionAngle + PI) / TWO_PI);
+//        b = positionAngle - beamAngle; // is this always positive?
+//        if(abs(positionAngle - beamAngle) < beamWidth
+//           || abs(positionAngle - TWO_PI - beamAngle) < beamWidth
+//           || abs(positionAngle + TWO_PI - beamAngle) < beamWidth){
+//            b = 1.;
+//        } else {
+//            b = 0.;
+//        }
     }
     else if(stage == 1){
         //Spotlight
@@ -66,7 +75,7 @@ void main() {
             b = 0.;
         }
     } else if(stage == 2) {
-        float substage = mod(elapsedTime / 10., 4.);
+        float substage = mod(elapsedTime / 15., 4.);
         if(substage < 1) {
             // fast rising stripes
             b = mod(position.x * 10. - time * 1.5, 1.);

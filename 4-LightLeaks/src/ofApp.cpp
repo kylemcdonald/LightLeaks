@@ -9,10 +9,10 @@ const int foregroundDilate = 5; // connect disconnected parts. will fail to sepa
 const float contourFinderThreshold = 32; // higher blur calls for lower threshold
 const float minAreaRadius = 5; // after scaling by trackScale
 const float maxAreaRadius = 80; // after scaling by trackScale
-const float lighthouseSpeed = .1; // should be 1
+const float lighthouseSpeed = 3;
 
-const float durationIntermezzo = 10;
-const float intervalIntermezzo = 45;
+const float durationIntermezzo = 15;
+const float intervalIntermezzo = 20;
 const float delaySpotlight = 1; // in and out delay
 const int photoFrequency = 10; // every 10 spotlights
 
