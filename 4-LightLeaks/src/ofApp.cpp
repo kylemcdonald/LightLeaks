@@ -3,6 +3,17 @@
 const float trackScale = .25; // actual resizing on the image data
 const float previewScale = .25; // presentation on the screen for calibration
 const ofVec2f previewOffset(440, 248); // placement of debug image for calibration
+const float backgroundLearningTime = 4; // in frames
+const int foregroundBlur = 15; // after scaling by trackScale
+const int foregroundDilate = 5; // connect disconnected parts. will fail to separate a big group of people.
+const float contourFinderThreshold = 32; // higher blur calls for lower threshold
+const float minAreaRadius = 5; // after scaling by trackScale
+const float maxAreaRadius = 80; // after scaling by trackScale
+const float lighthouseSpeed = 1;
+
+const float durationIntermezzo = 10;
+const float intervalIntermezzo = 45;
+const float delaySpotlight = .5; // in and out delay
 
 float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, float valueChange = 1.0){
     float t = time;
@@ -16,10 +27,19 @@ float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, flo
     return c/2.*(t*t*t + 2.) + b;
 }
 
+string getStageName(int stage) {
+    switch(stage) {
+        case 0: return "Lighthouse";
+        case 1: return "Spotlight";
+        case 2: return "Intermezzo";
+        default: return "Unknown";
+    }
+}
+
 void ofApp::setup() {
-	ofSetLogLevel(OF_LOG_VERBOSE);
-	ofSetVerticalSync(true);
-	ofSetFrameRate(120);
+    ofSetLogLevel(OF_LOG_VERBOSE);
+    ofSetVerticalSync(true);
+    ofSetFrameRate(120);
     ofEnableAlphaBlending();
     
     
@@ -27,14 +47,14 @@ void ofApp::setup() {
     settings.load("settings.xml");
     
     debugMode = true;
-
+    
     previousTime = 0;
     
     //Shader
-	shader.setup("shader");
+    shader.setup("shader");
     
     
-	xyzMap.loadImage("../../../SharedData/xyzMap.exr");
+    xyzMap.loadImage("../../../SharedData/xyzMap.exr");
     normalMap.loadImage("../../../SharedData/normalMap.exr");
     confidenceMap.loadImage("../../../SharedData/confidenceMap.exr");
     
@@ -42,9 +62,6 @@ void ofApp::setup() {
     
     //Spotlight setup
     spotlightPosition.setFc(0.01); //Low pass biquad filter - allow only slow frequencies
-    
-    //Intermezzo setup
-    intermezzoTimer = 10;
     
     setupSpeakers();
     setupTracker();
@@ -84,12 +101,9 @@ void ofApp::setupSpeakers() {
 void ofApp::setupTracker() {    //Tracker
     grabber.setup(1920, 1080, 25);
     
-    
-    
-    contourFinder.setMinAreaRadius(20);
-    contourFinder.setMaxAreaRadius(200);
-    contourFinder.setUseTargetColor(false);
-    
+    contourFinder.setSortBySize(true); // makes sorting consistent
+    contourFinder.setMinAreaRadius(minAreaRadius);
+    contourFinder.setMaxAreaRadius(maxAreaRadius);
     
     cameraCalibrationCorners[0] = ofVec2f(settings.getValue("corner0x",0),
                                           settings.getValue("corner0y",0));
@@ -114,45 +128,62 @@ void ofApp::update() {
     
     stageAge += dt;
     
-//    //Go to intermezzo now and then
-//  if(stage != Intermezzo){
-//        intermezzoTimer -= dt;
-//        
-//        if(intermezzoTimer < 0){
-//            stageGoal = Intermezzo;
-//            intermezzoTimer = 10;
-//        }
-//    }
-//   else {
-//   //Go back to lighhouse after some seconds
-//       if(stageAge > 5){
-//           stageGoal = Lighthouse;
-//       }
-//   }
-    
-    //Go to spotlight when there are contours to track
-    if(stage != Spotlight){
-        if(spotlightThresholder > 1){
-            stageGoal = Spotlight;
+    // if we're not on intermezzo
+    if(stage != Intermezzo){
+        // and enough time has passed since last stage change
+        if(stageAge > intervalIntermezzo){
+            // go to intermezzo
+            stageGoal = Intermezzo;
         }
-    } else {
-        //Go back to lighhouse after some seconds
-        if(stageAge > 5){
+    }
+    // if we're on intermezzo
+    else {
+        // but it's run its duration
+        if(stageAge > durationIntermezzo){
+            // and we're due for a spotlight
+            if(spotlightThresholder == delaySpotlight){
+                // go to spotlight
+                stageGoal = Spotlight;
+            }
+            // if we're not due for a spotlight, return to lighthouse
+            else {
+                // go to lighthouse
+                stageGoal = Lighthouse;
+            }
+        }
+    }
+    
+    // if we're not already in spotlight
+    if(stage != Spotlight){
+        // and there are contours for enough time
+        if(spotlightThresholder == delaySpotlight){
+            // and we're not in intermezzo
+            if(stage != Intermezzo) {
+                // go to spotlight
+                stageGoal = Spotlight;
+            }
+        }
+    }
+    // if we're on spotlight
+    else {
+        // and there haven't been contours for enough time
+        if(spotlightThresholder == 0) {
+            // go back to lighthouse
             stageGoal = Lighthouse;
-            spotlightThresholder = 0;
         }
     }
     
     if(stage == Lighthouse){
-        lighthouseAngle += dt * cubicEaseInOut(stageAmp) * (3 + sin(ofGetElapsedTimeMillis() / 5000.));
+        lighthouseAngle += dt * cubicEaseInOut(stageAmp) * lighthouseSpeed;
     }
     
     if(stage != stageGoal){
         stageAmp -= dt*0.5;
-        if(stageAmp < 0){
-            stage = stageGoal;
+        if(stageAmp <= 0){
             stageAmp = 0;
             stageAge = 0;
+            stage = stageGoal;
+            startStage(stage);
         }
     } else {
         stageAmp = ofClamp(stageAmp+dt*0.5, 0, 1.);
@@ -174,36 +205,34 @@ void ofApp::updateTracker() {
         ofPixels& pixels = grabber.getGrayPixels();
         if(pixels.getWidth()>0){
             ofxCv::resize(pixels, grabberSmall, trackScale, trackScale, cv::INTER_AREA);
-            cv::Mat mat = ofxCv::toCv(grabberSmall);
-            
-            cameraBackground.setDifferenceMode(ofxCv::RunningBackground::BRIGHTER);
-            cameraBackground.update(mat, grabberThresholded);
-            
-            if(firstFrame){
+//            cameraBackground.setDifferenceMode(ofxCv::RunningBackground::BRIGHTER); // works on floor, but not walls or if couches are white
+            cameraBackground.setLearningTime(backgroundLearningTime);
+            cameraBackground.update(grabberSmall, grabberThresholded);
+            if(firstFrame){ // first frame from ofxBlackMagic is useless
                 cameraBackground.reset();
             }
-            
-            ofxCv::blur(grabberThresholded, 5);
-            
-            contourFinder.setThreshold(128);
+            ofxCv::blur(grabberThresholded, foregroundBlur);
+            ofxCv::dilate(grabberThresholded, foregroundDilate);
+            contourFinder.setThreshold(contourFinderThreshold);
             contourFinder.findContours(grabberThresholded);
             
             if(contourFinder.getContours().size() > 0){
-                ofRectangle rect =  ofxCv::toOf(contourFinder.getBoundingRect(0));
-                ofVec2f point = ofVec2f(rect.x, rect.y+rect.height*0.5);
+                ofRectangle rect = ofxCv::toOf(contourFinder.getBoundingRect(0));
+                ofVec2f point = rect.getTopLeft(); // corresponds to feet due to angle of camera
                 point /= trackScale;
                 spotlightPosition.update(cameraCalibration.inversetransform(point));
             }
             
             firstFrame = false;
         }
-        
-        if(contourFinder.getContours().size() > 0){
-            spotlightThresholder += dt;
-        } else {
-            spotlightThresholder -= dt;
-        }
     }
+    
+    if(contourFinder.getContours().size() > 0){
+        spotlightThresholder += dt;
+    } else {
+        spotlightThresholder -= dt;
+    }
+    spotlightThresholder = ofClamp(spotlightThresholder, 0, delaySpotlight);
 }
 
 void ofApp::draw() {
@@ -214,44 +243,43 @@ void ofApp::draw() {
     //Lighthouse parameters
     float beamWidth = 0;
     if(stage == Lighthouse){
-        beamWidth = 0.3 * cubicEaseInOut(stageAmp);
+        // lighthouse is small most of the time, comes and goes from 0
+        beamWidth = ofMap(cubicEaseInOut(stageAmp), 0, 1, 0, .3);
     }
     float spotlightSize = 0.1;
     if(stage == Spotlight){
         spotlightSize = 0.1 * cubicEaseInOut(stageAmp);
     }
     
-    shader.begin();{
+    shader.begin(); {
         shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
         shader.setUniform1f("beamAngle", fmodf(lighthouseAngle, TWO_PI));
         shader.setUniform1f("beamWidth", beamWidth);
-//        shader.setUniform2f("spotlightPos", (float)ofGetMouseX() / ofGetWidth(), (float)ofGetMouseY()/ofGetHeight());
-        shader.setUniform2f("spotlightPos", (float) spotlightPosition.value().x, (float)spotlightPosition.value().y);
+        // convert where x is the long side of the room, y is short
+        // into the model's coordinates where z is the long side, y is short
+        shader.setUniform3f("spotlightPos",
+                            0,
+                            spotlightPosition.value().y,
+                            spotlightPosition.value().x);
         shader.setUniform1f("spotlightSize", spotlightSize);
-        
         shader.setUniform1i("stage", stage);
-        
         shader.setUniformTexture("xyzMap", xyzMap, 0);
         shader.setUniformTexture("normalMap", normalMap, 2);
         shader.setUniformTexture("confidenceMap", confidenceMap, 3);
         shader.setUniform1i("useConfidence", 1);
-        
         xyzMap.draw(0, 0);
-    }shader.end();
-    
+    } shader.end();
 
+    
     //Debug text
     if(debugMode){
         ofSetColor(0,100);
         ofRect(410, 0, 250, 100);
         ofSetColor(255);
-        ofDrawBitmapString("Stage "+ofToString(stage)+" goal "+ofToString(stageGoal)+"  amp "+ofToString(stageAmp)+ " fps "+ofToString(ofGetFrameRate(),0), 10, 30);
+        ofDrawBitmapString(getStageName(stage)+" -> "+getStageName(stageGoal)+"  @ "+ofToString(stageAmp)+ " fps:"+ofToString(ofGetFrameRate(),0), 20, 40);
     }
     
-    
-    //
     //Speaker sampling code
-    //
     speakerFbo.begin(); {
         shader.begin();
         shader.setUniformTexture("xyzMap", speakerXYZMap, 0);
@@ -259,8 +287,8 @@ void ofApp::draw() {
         speakerXYZMap.draw(0,0);
         shader.end();
     } speakerFbo.end();
-
-
+    
+    
     //Read back the fbo, and average it on the CPU
     speakerFbo.getTextureReference().readToPixels(speakerPixels);
     
@@ -282,21 +310,8 @@ void ofApp::draw() {
         speakerXYZMap.draw(0,0);
         speakerFbo.draw(10,0);
         
-        ofDrawBitmapString("Speaker "+ofToString(speakerAmp[0])+" "+ofToString(speakerAmp[1])+" "+ofToString(speakerAmp[2])+" "+ofToString(speakerAmp[3]), 20,45);
+        ofDrawBitmapString("Speaker "+ofToString(speakerAmp[0])+" "+ofToString(speakerAmp[1])+" "+ofToString(speakerAmp[2])+" "+ofToString(speakerAmp[3]), 20, 20);
     }
-    
-
-
-    //The simple scattering algorithm behind the speaker thingy visualized
-    /*  ofSetColor(255,0,0);
-    for(int i=0;i<100;i++){
-        float x = 100 + sin(i * TWO_PI / 20) * i;
-        float y = 100 + cos(i * TWO_PI / 20) * i;
-        
-        ofCircle(x, y, 5);
-        
-    }*/
-    
     
     //Tracker
     if(debugMode){
@@ -315,42 +330,38 @@ void ofApp::draw() {
         ofxCv::drawMat(grabberThresholded, 0, 0);
         ofPopStyle();
         
+        contourFinder.draw();
         ofPopMatrix();
         
         ofPushStyle();
+        ofSetColor(ofColor::yellow);
         ofNoFill();
-        ofSetColor(255, 0, 0);
-        //        for(int i = 0; i < contourFinder.getContours().size(); i++) {
-        { int i=0;
-            if(contourFinder.getContours().size() > i){
-                ofRectangle rect =  ofxCv::toOf(contourFinder.getBoundingRect(i));
-                ofVec2f point = ofVec2f(rect.x, rect.y+rect.height*0.5);
-             //   point = cameraCalibration.inversetransform(point);
-                ofCircle(point.x, point.y, 20);
-            }
-        }
-        
-        ofSetColor(255, 255, 0);
-        glBegin(GL_LINE_STRIP);
+        ofBeginShape();
         for(int i=0;i<4;i++){
-            glVertex2d(cameraCalibrationCorners[i].x, cameraCalibrationCorners[i].y);
+            ofVertex(cameraCalibrationCorners[i].x, cameraCalibrationCorners[i].y);
         }
-        glVertex2d(cameraCalibrationCorners[0].x, cameraCalibrationCorners[0].y);
-        glEnd();
+        ofVertex(cameraCalibrationCorners[0].x, cameraCalibrationCorners[0].y);
+        ofEndShape(true);
         ofPopStyle();
-
         ofPopMatrix();
         
-        ofDrawBitmapString("Spotlight pos "+ofToString(spotlightPosition.value().x,1)+" "+ofToString(spotlightPosition.value().y,1), 20, 65);
+        ofDrawBitmapString("Spotlight pos "+ofToString(spotlightPosition.value().x,1)+" "+ofToString(spotlightPosition.value().y,1), 20, 60);
     }
-
+    
 }
 
+void ofApp::startStage(Stage stage) {
+    ofxOscMessage msg;
+    msg.setAddress("/audio/scene_change_event");
+    msg.addIntArg(stage);
+    oscSender.sendMessage(msg);
+}
 
 void ofApp::updateCameraCalibration(){
     ofVec2f inputCorners[4];
-    inputCorners[0] = ofVec2f(0,0.5);
-    inputCorners[1] = ofVec2f(1,0.5);
+    // these x,y correspond to the z,y of the 3d model
+    inputCorners[0] = ofVec2f(0,.5);
+    inputCorners[1] = ofVec2f(1,.5);
     inputCorners[2] = ofVec2f(1,0);
     inputCorners[3] = ofVec2f(0,0);
     
@@ -362,7 +373,7 @@ void ofApp::exit() {
 }
 
 void ofApp::keyPressed(int key) {
-	if(key == ' ') {
+    if(key == ' ') {
         debugMode = !debugMode;
     }
     if(key == 'f'){

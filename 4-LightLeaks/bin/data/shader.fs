@@ -16,10 +16,10 @@ uniform float beamAngle;
 uniform float beamWidth;
 
 //Spotlight
-uniform float spotlightSize = 0.2;
-uniform vec2 spotlightPos = vec2(0.5,0.5);
+uniform float spotlightSize;
+uniform vec3 spotlightPos;
 
-uniform int stage = 0;
+uniform int stage;
 
 const vec3 center = vec3(0.1, 0.25, 0.5);
 
@@ -45,70 +45,57 @@ void main() {
     time = elapsedTime + sin(elapsedTime); // step time
     
     // handle space
-    vec2 positionNorm = position.xy;
-    float positionAngle = atan((positionNorm.y - 0.25) , (positionNorm.x-0.5)) + PI + HALF_PI;
+    float positionAngle = atan(centered.y, centered.z) + PI + HALF_PI;
     
-//    if(stage == 0) {
-//        //Lighthouse beam
-//        
-//        if(abs(positionAngle - beamAngle) < beamWidth
-//           || abs(positionAngle - TWO_PI - beamAngle) < beamWidth
-//           || abs(positionAngle + TWO_PI - beamAngle) < beamWidth){
-//            b = 1.;
-//        } else {
-//            b = 0.;
-//        }
-//        
-//      //  if(confidence < .01) discard;
-//    }
-//    else if(stage == 1){
-//        //Spotlight
-//        if( position.z > 0.15 &&
-//           length(positionNorm.xy - spotlightPos) < spotlightSize){
-//            b = 1.;
-//        } else {
-//            b = 0.;
-//        }
-//    }
-//    else if(stage == 2){
-    
-    float substage = mod(elapsedTime / 10., 4.);
-    if(substage < 1) {
-        // fast rising stripes
-        b = mod(position.x * 10. - time * 1.5, 1.);
-        b *= b;
-    } else if(substage < 2) {
-        // glittering floor
-        float t = sin(time)*.5;
-        vec2 rot = vec2(sin(t), cos(t)) * (1. + sin(time) * .5) + time;
-        b = sin(50. * dot(rot, centered.yz));
-    } else if(substage < 3) {
-        // concentric spheres
-        b = sin(500.*mod(length(centered)+(0.02*sin(time*1.)), 10.));
-    } else if(substage < 4) {
-        // unstable floor
-        float t = sin(time)*.1;
-        vec2 rot = vec2(sin(t), cos(t));
-        b = sin(50.*dot(rot, centered.yz));
-    } else if(substage < 5) {
-        // checkerboard (needs to be animated)
-        vec3 modp = mod(position.xyz * 24, 2.);
-        if(modp.x > 1) {
-            b = (modp.z < 1 || modp.y > 1) ? 1 : 0;
+    if(stage == 0) {
+        //Lighthouse beam
+        
+        if(abs(positionAngle - beamAngle) < beamWidth
+           || abs(positionAngle - TWO_PI - beamAngle) < beamWidth
+           || abs(positionAngle + TWO_PI - beamAngle) < beamWidth){
+            b = 1.;
         } else {
-            b = (modp.z > 1 || modp.y < 1) ? 1 : 0;
+            b = 0.;
+        }
+    }
+    else if(stage == 1){
+        //Spotlight
+        if(length(position - spotlightPos) < spotlightSize){
+            b = 1.;
+        } else {
+            b = 0.;
+        }
+    } else if(stage == 2) {
+        float substage = mod(elapsedTime / 10., 4.);
+        if(substage < 1) {
+            // fast rising stripes
+            b = mod(position.x * 10. - time * 1.5, 1.);
+            b *= b;
+        } else if(substage < 2) {
+            // glittering floor
+            float t = sin(time)*.5;
+            vec2 rot = vec2(sin(t), cos(t)) * (1. + sin(time) * .5) + time;
+            b = sin(50. * dot(rot, centered.yz));
+        } else if(substage < 3) {
+            // concentric spheres
+            b = sin(500.*mod(length(centered)+(0.02*sin(time*1.)), 10.));
+        } else if(substage < 4) {
+            // unstable floor
+            float t = sin(time)*.1;
+            vec2 rot = vec2(sin(t), cos(t));
+            b = sin(50.*dot(rot, centered.yz));
+        } else if(substage < 5) {
+            // checkerboard (needs to be animated)
+            vec3 modp = mod(position.xyz * 24, 2.);
+            if(modp.x > 1) {
+                b = (modp.z < 1 || modp.y > 1) ? 1 : 0;
+            } else {
+                b = (modp.z > 1 || modp.y < 1) ? 1 : 0;
+            }
         }
     }
     
-//    }
-    
-    
-    // threshold
-//    if(bw) {
-//        b = b > .5 ? 1 : 0;
-//    }
-    
-//    b *= confidence; // for previs
+    //    b *= confidence; // for previs
     gl_FragColor = vec4(vec3(b), 1.);
 }
 

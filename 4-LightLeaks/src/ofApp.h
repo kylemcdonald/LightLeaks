@@ -14,7 +14,7 @@ enum Stage {
     Lighthouse=0,
     Spotlight,
     Intermezzo
-} ;
+};
 
 class ofApp : public ofBaseApp {
 public:
@@ -40,6 +40,7 @@ public:
     //Settings
     ofxXmlSettings settings;
     
+    void startStage(Stage stage);
     Stage stage;
     Stage stageGoal;
     
@@ -49,9 +50,6 @@ public:
     //Lighthouse
     float lighthouseAngle;
 
-    //Intermezzo
-    float intermezzoTimer;
-    
     //Spotlight
     float spotlightThresholder;
     ofxBiquadFilter2f spotlightPosition;
@@ -60,8 +58,6 @@ public:
     ofFloatImage speakerXYZMap;
     ofFbo speakerFbo;
     ofFloatPixels speakerPixels;
-
-    
     float speakerAmp[4];
     
     //Tracking
