@@ -47,8 +47,12 @@ void ofApp::setup() {
     
     //Settings
     settings.load("settings.xml");
-    
-    debugMode = true;
+    config.load("config.xml");
+    debugMode = config.getBoolValue("debugMode");
+    ofSetWindowPosition(config.getIntValue("window/x"), config.getIntValue("window/y"));
+    if(config.getBoolValue("fullscreen")) {
+        ofSetFullscreen(true);
+    }
     
     previousTime = 0;
     
@@ -189,8 +193,8 @@ void ofApp::update() {
             if(stage == Spotlight) {
                 photoCounter = (photoCounter + 1) % photoFrequency;
                 if(photoCounter == 0) {
-                    ofDirectory::createDirectory("photos", true, true);
-                    ofSaveImage(grabber.getColorPixels(), "photos/" + ofGetTimestampString() + ".jpg");
+                    ofDirectory::createDirectory("photos", true, true)	;
+                    ofSaveImage(grabber.getColorPixels(), "photos/" + ofGetTimestampString() + ".jpg", OF_IMAGE_QUALITY_MEDIUM);
                 }
             }
         }

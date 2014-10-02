@@ -39,6 +39,7 @@ public:
     
     //Settings
     ofxXmlSettings settings;
+    ofXml config;
     
     void startStage(Stage stage);
     Stage stage;
