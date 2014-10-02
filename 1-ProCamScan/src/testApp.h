@@ -20,7 +20,7 @@ public:
     
     int horizontalBits, verticalBits, camWidth, camHeight, proWidth, proHeight, proCount;
     cv::Mat camConfidence, binaryCodedHorizontal, binaryCodedVertical, minImage, maxImage;
-    ofImage cameraMask;
+    ofImage cameraMask, projectorMask;
     
     cv::Mat proConfidence, proMap;
     

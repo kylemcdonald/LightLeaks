@@ -6,7 +6,7 @@ using namespace ofxCv;
 using namespace cv;
 
 #define USE_GDC
-#define SAVE_DEBUG
+//#define SAVE_DEBUG
 
 bool natural(const ofFile& a, const ofFile& b) {
 	string aname = a.getBaseName(), bname = b.getBaseName();
@@ -70,6 +70,19 @@ void testApp::setup() {
 	ofSetFrameRate(120);
     setCalibrationDataPathRoot();
     ofSetLogLevel(OF_LOG_VERBOSE);
+    
+    // projector mask
+    Mat projectorMaskMat;
+    ofFile projectorMaskFile("mask.png");
+    if(projectorMaskFile.exists()){
+        ofLogVerbose() << "Projector mask loaded";
+        projectorMask.loadImage(projectorMaskFile);
+        projectorMask.setImageType(OF_IMAGE_GRAYSCALE);
+        copy(projectorMask, projectorMaskMat, CV_32FC1);
+        ofLogVerbose() << "Built mask with " << projectorMaskMat.cols << "x" << projectorMaskMat.rows;
+    } else {
+        ofLogVerbose() << "No file called mask.png in SharedData/ folder. Continuing without a projector mask";
+    }
 
     vector<ofFile> scans = getScanNames();
     for(int scan=0;scan<scans.size();scan++){
@@ -309,6 +322,10 @@ void testApp::setup() {
                         camConfidence,
                         proConfidence,
                         proMap);
+                
+            if(!projectorMaskMat.empty()) {
+                cv::multiply(projectorMaskMat, proConfidence, proConfidence);
+            }
 
             saveImage(proConfidence, path+"/proConfidence.exr");
             saveImage(proMap, path+"/proMap.png");
