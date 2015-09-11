@@ -504,7 +504,7 @@ void ofApp::drawOverlay() {
 	referenceImage.draw(0, 0);
 	ofPopStyle();
 	
-	if(ofGetKeyPressed('`')) {
+	if(ofGetKeyPressed('o')) {
 		fboPositions.begin();
 		ofClear(0);
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
