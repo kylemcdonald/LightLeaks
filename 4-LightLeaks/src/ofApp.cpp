@@ -39,9 +39,13 @@ string getStageName(int stage) {
 
 void ofApp::setup() {
     ofSetLogLevel(OF_LOG_VERBOSE);
-    ofSetVerticalSync(true);
+    ofSetVerticalSync(false);
     ofSetFrameRate(120);
     ofEnableAlphaBlending();
+    
+    ofSetWindowPosition(1680,0);
+    ofSetWindowShape(1920*3, 1200);
+
     
     photoCounter = 0;
     
@@ -49,9 +53,9 @@ void ofApp::setup() {
     settings.load("settings.xml");
     config.load("config.xml");
     debugMode = config.getBoolValue("debugMode");
-    ofSetWindowPosition(config.getIntValue("window/x"), config.getIntValue("window/y"));
+    //ofSetWindowPosition(config.getIntValue("window/x"), config.getIntValue("window/y"));
     if(config.getBoolValue("fullscreen")) {
-        ofSetFullscreen(true);
+        //ofSetFullscreen(true);
     }
     
     previousTime = 0;
@@ -70,7 +74,7 @@ void ofApp::setup() {
     spotlightPosition.setFc(0.01); //Low pass biquad filter - allow only slow frequencies
     
     setupSpeakers();
-    setupTracker();
+    //setupTracker();
     
     oscSender.setup("localhost", 7777);
 }
@@ -228,7 +232,7 @@ void ofApp::updateOsc() {
 }
 
 void ofApp::updateTracker() {
-    bool newFrame = grabber.update();
+    /*bool newFrame = grabber.update();
     
     if(newFrame ) {
         ofPixels& pixels = grabber.getGrayPixels();
@@ -261,7 +265,7 @@ void ofApp::updateTracker() {
     } else {
         spotlightThresholder -= dt;
     }
-    spotlightThresholder = ofClamp(spotlightThresholder, 0, delaySpotlight);
+    spotlightThresholder = ofClamp(spotlightThresholder, 0, delaySpotlight);*/
 }
 
 void ofApp::draw() {
@@ -343,7 +347,7 @@ void ofApp::draw() {
     }
     
     //Tracker
-    if(debugMode){
+    /*if(debugMode){
         ofPushMatrix();
         ofTranslate(previewOffset);
         ofScale(previewScale, previewScale);
@@ -375,7 +379,10 @@ void ofApp::draw() {
         ofPopMatrix();
         
         ofDrawBitmapString("Spotlight pos "+ofToString(spotlightPosition.value().x,1)+" "+ofToString(spotlightPosition.value().y,1), 20, 60);
-    }
+    }*/
+    
+    ofSetColor(255);
+    ofDrawBitmapString(ofToString(ofGetFrameRate()), 20,80);
     
 }
 
@@ -436,21 +443,21 @@ void ofApp::keyPressed(int key) {
 }
 
 void ofApp::mouseMoved(int x, int y){
-    if(setCorner != -1 ){
+  /*  if(setCorner != -1 ){
         cameraCalibrationCorners[setCorner] = (ofVec2f(x, y) - previewOffset) / previewScale;
         updateCameraCalibration();
         
-    }
+    }*/
 }
 
 void ofApp::mousePressed( int x, int y, int button ){
-    if(setCorner != -1){
+   /* if(setCorner != -1){
         settings.setValue("corner"+ofToString(setCorner)+"x", int(cameraCalibrationCorners[setCorner].x));
         settings.setValue("corner"+ofToString(setCorner)+"y", int(cameraCalibrationCorners[setCorner].y));
         settings.save("settings.xml");
         
         setCorner = -1;
-    }
+    }*/
 }
 
 
