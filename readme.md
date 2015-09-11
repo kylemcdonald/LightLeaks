@@ -8,7 +8,9 @@
 
 ## Calibration Process
 
-0. Capture multiple structured light calibration patterns using `ProCamSample` with `EdsdkOsc`. Make sure the projector size and OSC hosts match your configuration in `settings.xml`.
+Before doing any calibration, it's essential to measure the room and produce a `model.dae` file that includes all the geometry you want to project on. We usually build this file in SketchUp with a laser rangefinder for measurements, then save with "export two-sided faces" enabled, and finally load the model into MeshLab and save it again. MeshLab changes the order of the axes, and saves the geometry in a way that makes it easier to load into OpenFrameworks.
+
+0. Capture multiple structured light calibration patterns using `ProCamSample` with `EdsdkOsc`. Make sure the projector size and OSC hosts match your configuration in `settings.xml`. If the camera has image stabilization, make sure to turn it off.
 0. Place the resulting data in a folder called `scan/cameraImages/` in `SharedData/`. Run `ProCamScan` and this will generate `proConfidence.exr` and `proMap.png`.
 0. Place your `model.dae` and a `referenceImage.jpg` of the well lit space in `camamok/bin/data/`. Run `camamok` on your reference image. Hit the (back tick key) to generate the normals, then press the `saveXyzMap` button to save the normals.
 0. Place the resulting `xyzMap.exr` and `normalMap.exr` inside `SharedData/scan/`.
@@ -29,6 +31,11 @@
 * iMac
 * 1280x1024 with TH2G on projectiondesign F32 sx+ (native 1400x1050) inset on the sensor
 * When calibrating, create a network from the calibration computer that shares the ethernet and therefore provides DHCP.
+
+## Scopitone Festival (2015)
+
+* Mitsubishi UD8350U 6500 lumens, 1920x1080
+
 
 ## Redesign
 

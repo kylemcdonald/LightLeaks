@@ -27,6 +27,7 @@ public:
     void mousePressed( int x, int y, int button );
     
     void updateCameraCalibration();
+    void logAudience();
     
     bool debugMode;
     
@@ -44,6 +45,7 @@ public:
     void startStage(Stage stage);
     Stage stage;
     Stage stageGoal;
+    int substage;
     
     float stageAge;
     float stageAmp;

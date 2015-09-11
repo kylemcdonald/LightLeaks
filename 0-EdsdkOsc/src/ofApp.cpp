@@ -1,6 +1,6 @@
-#include "testApp.h"
+#include "ofApp.h"
 
-void testApp::setup() {
+void ofApp::setup() {
 	ofXml settings;
 	settings.load("../../../SharedData/settings.xml");
 	
@@ -16,7 +16,11 @@ void testApp::setup() {
 	camera.setup();
 }
 
-void testApp::update() {
+void ofApp::exit() {
+    camera.close();
+}
+
+void ofApp::update() {
 	ofxOscMessage msgIn;
 	while(oscIn.getNextMessage(&msgIn)) {
 		if(msgIn.getAddress() == "/takePhoto") {
@@ -64,7 +68,7 @@ void testApp::update() {
 	oscOut.sendMessage(msgOut);
 }
 
-void testApp::draw() {
+void ofApp::draw() {
 	ofBackground(0);
 	ofSetColor(255);
 	
@@ -77,15 +81,17 @@ void testApp::draw() {
 	ofDrawBitmapStringHighlight("capturing: " + ofToString(capturing), 10, 60);
     ofDrawBitmapStringHighlight("press 'p' to take a preview image", 10, 80);
     ofDrawBitmapStringHighlight("press ' ' to start the scan", 10, 100);
-    ofDrawBitmapStringHighlight("press '`' to re-send confirmation", 10, 120);
-
+    ofDrawBitmapStringHighlight("press '`' to re-send photo confirmation", 10, 120);
 }
 
-void testApp::keyPressed(int key) {
+void ofApp::keyPressed(int key) {
 	if(key == 'p') {
 		camera.takePhoto();
 		manual = true;
 	}
+    if(key == 'f') {
+        ofToggleFullscreen();
+    }
     if(key == ' ') {
         ofxOscMessage msgOut;
         msgOut.setAddress("/start");

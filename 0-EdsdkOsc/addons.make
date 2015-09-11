@@ -1,0 +1,2 @@
+ofxEdsdk
+ofxOsc

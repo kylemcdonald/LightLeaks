@@ -19,6 +19,7 @@
 		271DDE8719DA07D4004D3723 /* OscPrintReceivedElements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 271DDE7819DA07D4004D3723 /* OscPrintReceivedElements.cpp */; };
 		271DDE8819DA07D4004D3723 /* OscReceivedElements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 271DDE7A19DA07D4004D3723 /* OscReceivedElements.cpp */; };
 		271DDE8919DA07D4004D3723 /* OscTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 271DDE7C19DA07D4004D3723 /* OscTypes.cpp */; };
+		2739985519F323AD0020E079 /* ofxProCamToolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2739985319F323AD0020E079 /* ofxProCamToolkit.cpp */; };
 		2781BBC719DCA279007D9476 /* CoordWarp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2781BBC119DCA279007D9476 /* CoordWarp.cpp */; };
 		2781BBC819DCA279007D9476 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2781BBC319DCA279007D9476 /* main.cpp */; };
 		2781BBC919DCA279007D9476 /* ofApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2781BBC419DCA279007D9476 /* ofApp.cpp */; };
@@ -168,12 +169,15 @@
 		271DDE7B19DA07D4004D3723 /* OscReceivedElements.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OscReceivedElements.h; sourceTree = "<group>"; };
 		271DDE7C19DA07D4004D3723 /* OscTypes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OscTypes.cpp; sourceTree = "<group>"; };
 		271DDE7D19DA07D4004D3723 /* OscTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OscTypes.h; sourceTree = "<group>"; };
+		2739985119F323AD0020E079 /* LightLeaksUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LightLeaksUtilities.h; sourceTree = "<group>"; };
+		2739985219F323AD0020E079 /* ofAutoShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofAutoShader.h; sourceTree = "<group>"; };
+		2739985319F323AD0020E079 /* ofxProCamToolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxProCamToolkit.cpp; sourceTree = "<group>"; };
+		2739985419F323AD0020E079 /* ofxProCamToolkit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxProCamToolkit.h; sourceTree = "<group>"; };
 		2781BBC119DCA279007D9476 /* CoordWarp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoordWarp.cpp; sourceTree = "<group>"; };
 		2781BBC219DCA279007D9476 /* CoordWarp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoordWarp.h; sourceTree = "<group>"; };
 		2781BBC319DCA279007D9476 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		2781BBC419DCA279007D9476 /* ofApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofApp.cpp; sourceTree = "<group>"; };
 		2781BBC519DCA279007D9476 /* ofApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofApp.h; sourceTree = "<group>"; };
-		2781BBC619DCA279007D9476 /* ofAutoShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofAutoShader.h; sourceTree = "<group>"; };
 		2781BBCC19DCA28D007D9476 /* ofxBiquadFilter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBiquadFilter.cpp; sourceTree = "<group>"; };
 		2781BBCD19DCA28D007D9476 /* ofxBiquadFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxBiquadFilter.h; sourceTree = "<group>"; };
 		2781BBCE19DCA28D007D9476 /* ofxBiquadFilterInstance.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBiquadFilterInstance.cpp; sourceTree = "<group>"; };
@@ -585,6 +589,18 @@
 				271DDE7D19DA07D4004D3723 /* OscTypes.h */,
 			);
 			path = osc;
+			sourceTree = "<group>";
+		};
+		2739985019F323AD0020E079 /* SharedCode */ = {
+			isa = PBXGroup;
+			children = (
+				2739985119F323AD0020E079 /* LightLeaksUtilities.h */,
+				2739985219F323AD0020E079 /* ofAutoShader.h */,
+				2739985319F323AD0020E079 /* ofxProCamToolkit.cpp */,
+				2739985419F323AD0020E079 /* ofxProCamToolkit.h */,
+			);
+			name = SharedCode;
+			path = ../SharedCode;
 			sourceTree = "<group>";
 		};
 		2781BBCA19DCA28D007D9476 /* ofxBiquadFilter */ = {
@@ -1352,6 +1368,7 @@
 			children = (
 				E4B6FCAD0C3E899E008CF71C /* openFrameworks-Info.plist */,
 				E4EB6923138AFD0F00A09F29 /* Project.xcconfig */,
+				2739985019F323AD0020E079 /* SharedCode */,
 				E4B69E1C0A3A1BDC003C02F2 /* src */,
 				E4EEC9E9138DF44700A80321 /* openFrameworks */,
 				BB4B014C10F69532006C3DED /* addons */,
@@ -1370,7 +1387,6 @@
 				2781BBC319DCA279007D9476 /* main.cpp */,
 				2781BBC419DCA279007D9476 /* ofApp.cpp */,
 				2781BBC519DCA279007D9476 /* ofApp.h */,
-				2781BBC619DCA279007D9476 /* ofAutoShader.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -1484,6 +1500,7 @@
 				2781BC8C19DCA2A0007D9476 /* ofxAssimpMeshHelper.cpp in Sources */,
 				2781BC3D19DCA299007D9476 /* guiTypeVairableLister.cpp in Sources */,
 				2781BBE819DCA292007D9476 /* ColorConversion.cpp in Sources */,
+				2739985519F323AD0020E079 /* ofxProCamToolkit.cpp in Sources */,
 				2781BDE119DCA2B0007D9476 /* ofxXmlSettings.cpp in Sources */,
 				2781BD9819DCA2A6007D9476 /* ofxCvColorImage.cpp in Sources */,
 				2781BD9E19DCA2A6007D9476 /* ofxCvShortImage.cpp in Sources */,

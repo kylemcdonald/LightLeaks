@@ -20,15 +20,23 @@ uniform float spotlightSize;
 uniform vec3 spotlightPos;
 
 uniform int stage;
+uniform int substage;
+uniform float stageAmp;
 
 const vec3 center = vec3(0.1, 0.25, 0.5);
 
 vec2 rotate(vec2 position, float amount) {
-    mat2 rotation = mat2(
-                         vec2( cos(amount),  sin(amount)),
-                         vec2(-sin(amount),  cos(amount))
-                         );
+    mat2 rotation = mat2(vec2( cos(amount),  sin(amount)),
+                         vec2(-sin(amount),  cos(amount)));
     return rotation * position;
+}
+
+float smoothStep(float x) {
+    return 3.*(x*x)-2.*(x*x*x);
+}
+
+float sinp(float x) {
+    return 1 + sin(x) * .5;
 }
 
 void main() {
@@ -58,24 +66,20 @@ void main() {
         vec2 rotated = rotate(centered.yz, beamAngle);
         float positionAngle = atan(rotated.y, rotated.x);
         b = 1. - ((positionAngle + PI) / TWO_PI);
-//        b = positionAngle - beamAngle; // is this always positive?
-//        if(abs(positionAngle - beamAngle) < beamWidth
-//           || abs(positionAngle - TWO_PI - beamAngle) < beamWidth
-//           || abs(positionAngle + TWO_PI - beamAngle) < beamWidth){
-//            b = 1.;
-//        } else {
-//            b = 0.;
-//        }
     }
     else if(stage == 1){
         //Spotlight
-        if(length(position - spotlightPos) < spotlightSize){
-            b = 1.;
-        } else {
-            b = 0.;
+        float spotlightDistance = length(position - spotlightPos) / spotlightSize;
+        b = 0;
+        if(spotlightDistance < 1) {
+            b += smoothStep(1. - spotlightDistance);
         }
+        float stripe = sin(elapsedTime * -3. + spotlightDistance * 10.);
+        if(stripe > .9) {
+            b += 1.;
+        }
+        b = min(b, 1.);
     } else if(stage == 2) {
-        float substage = mod(elapsedTime / 15., 4.);
         if(substage < 1) {
             // fast rising stripes
             b = mod(position.x * 10. - time * 1.5, 1.);
@@ -104,7 +108,8 @@ void main() {
         }
     }
     
-    //    b *= confidence; // for previs
+//    b *= smoothStep(stageAmp); // should be more like fast in/out near 0
+//    b *= confidence; // for previs
     gl_FragColor = vec4(vec3(b), 1.);
 }
 

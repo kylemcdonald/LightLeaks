@@ -13,8 +13,9 @@ const float lighthouseSpeed = 3;
 
 const float durationIntermezzo = 15;
 const float intervalIntermezzo = 20;
+const int intermezzoCount = 4;
 const float delaySpotlight = 1; // in and out delay
-const int photoFrequency = 10; // every 10 spotlights
+const int photoFrequency = 1; // every 1 spotlights
 
 float cubicEaseInOut(float time, float duration=1.0, float startValue = 0.0, float valueChange = 1.0){
     float t = time;
@@ -59,12 +60,16 @@ void ofApp::setup() {
     //Shader
     shader.setup("shader");
     
-    
     xyzMap.loadImage("../../../SharedData/xyzMap.exr");
     normalMap.loadImage("../../../SharedData/normalMap.exr");
     confidenceMap.loadImage("../../../SharedData/confidenceMap.exr");
     
+    xyzMap.getTextureReference().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    normalMap.getTextureReference().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    confidenceMap.getTextureReference().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    
     stage = Lighthouse;
+    substage = 0;
     
     //Spotlight setup
     spotlightPosition.setFc(0.01); //Low pass biquad filter - allow only slow frequencies
@@ -83,12 +88,11 @@ void ofApp::setupSpeakers() {
     speakers[2] = ofVec3f(.2,0,0);
     speakers[3] = ofVec3f(.2,.5,0);
     
-    
     speakerXYZMap.allocate(4, 100, OF_IMAGE_COLOR_ALPHA);
     
     float speakerAreaSize = 0.01;
     
-    float * pixels = speakerXYZMap.getPixels();
+    float* pixels = speakerXYZMap.getPixels();
     for(int y=0;y<speakerXYZMap.getHeight();y++){
         for(int x=0;x<speakerXYZMap.getWidth();x++){
             pixels[0] = speakers[x].x;
@@ -197,6 +201,9 @@ void ofApp::update() {
                     ofSaveImage(grabber.getColorPixels(), "photos/" + ofGetTimestampString() + ".jpg", OF_IMAGE_QUALITY_MEDIUM);
                 }
             }
+            if(stage == Intermezzo) {
+                substage = (substage + 1) % intermezzoCount;
+            }
         }
     } else {
         stageAmp = ofClamp(stageAmp+dt*0.5, 0, 1.);
@@ -246,6 +253,7 @@ void ofApp::updateTracker() {
             contourFinder.findContours(grabberThresholded);
             
             if(contourFinder.getContours().size() > 0){
+                logAudience();
                 ofRectangle rect = ofxCv::toOf(contourFinder.getBoundingRect(0));
                 ofVec2f point = rect.getTopLeft(); // corresponds to feet due to angle of camera
                 point /= trackScale;
@@ -264,6 +272,27 @@ void ofApp::updateTracker() {
     spotlightThresholder = ofClamp(spotlightThresholder, 0, delaySpotlight);
 }
 
+#include "Poco/DateTimeFormat.h"
+string buildContourLogLine(ofxCv::ContourFinder& finder) {
+    int n = finder.size();
+    vector<string> record;
+    record.push_back(ofGetTimestampString(Poco::DateTimeFormat::ISO8601_FRAC_FORMAT));
+    record.push_back(ofToString(n));
+    for(int i = 0; i < n; i++) {
+        stringstream str;
+        cv::Rect rect = finder.getBoundingRect(i);
+        str << rect.x << " " << rect.y << " " << rect.width << " " << rect.height;
+        record.push_back(str.str());
+    }
+    return ofJoinString(record, "\t");
+}
+
+void ofApp::logAudience() {
+    string logLine = buildContourLogLine(contourFinder);
+    ofFile out("log.txt", ofFile::Append);
+    out << logLine << endl;
+}
+
 void ofApp::draw() {
     ofBackground(0);
     ofEnableAlphaBlending();
@@ -275,11 +304,8 @@ void ofApp::draw() {
         // lighthouse is small most of the time, comes and goes from 0
         beamWidth = ofMap(cubicEaseInOut(stageAmp), 0, 1, 0, .3);
     }
-    float spotlightSize = 0.1;
-    if(stage == Spotlight){
-        spotlightSize = 0.1 * cubicEaseInOut(stageAmp);
-    }
-    
+    float spotlightSize = 0.2 * cubicEaseInOut(stageAmp);
+
     shader.begin(); {
         shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
         shader.setUniform1f("beamAngle", fmodf(lighthouseAngle, TWO_PI));
@@ -292,6 +318,8 @@ void ofApp::draw() {
                             spotlightPosition.value().x);
         shader.setUniform1f("spotlightSize", spotlightSize);
         shader.setUniform1i("stage", stage);
+        shader.setUniform1i("substage", substage);
+        shader.setUniform1f("stageAmp", stageAmp);
         shader.setUniformTexture("xyzMap", xyzMap, 0);
         shader.setUniformTexture("normalMap", normalMap, 2);
         shader.setUniformTexture("confidenceMap", confidenceMap, 3);
@@ -302,10 +330,18 @@ void ofApp::draw() {
     
     //Debug text
     if(debugMode){
-        ofSetColor(0,100);
-        ofRect(410, 0, 250, 100);
         ofSetColor(255);
-        ofDrawBitmapString(getStageName(stage)+" -> "+getStageName(stageGoal)+"  @ "+ofToString(stageAmp)+ " fps:"+ofToString(ofGetFrameRate(),0), 20, 40);
+        ofDrawBitmapStringHighlight(ofToString(ofGetFrameRate(), 0), 5, ofGetHeight() - 5);
+        
+        ofPushStyle();
+        ofPushMatrix();
+        ofTranslate(10, 120);
+        ofRect(0, 0, 4, stageAmp * 100);
+        ofTranslate(14, 8);
+        ofDrawBitmapStringHighlight(getStageName(stageGoal), 0, 0);
+        ofDrawBitmapStringHighlight(getStageName(stage), 0, 100);
+        ofPopMatrix();
+        ofPopStyle();
     }
     
     //Speaker sampling code
@@ -339,7 +375,13 @@ void ofApp::draw() {
         speakerXYZMap.draw(0,0);
         speakerFbo.draw(10,0);
         
-        ofDrawBitmapString("Speaker "+ofToString(speakerAmp[0])+" "+ofToString(speakerAmp[1])+" "+ofToString(speakerAmp[2])+" "+ofToString(speakerAmp[3]), 20, 20);
+        ofPushMatrix();
+        ofTranslate(20, 0);
+        for(int i = 0; i < 4; i++) {
+            ofRect(0, 0, 4, 100 * speakerAmp[i]);
+            ofTranslate(4, 0);
+        }
+        ofPopMatrix();
     }
     
     //Tracker
@@ -374,7 +416,7 @@ void ofApp::draw() {
         ofPopStyle();
         ofPopMatrix();
         
-        ofDrawBitmapString("Spotlight pos "+ofToString(spotlightPosition.value().x,1)+" "+ofToString(spotlightPosition.value().y,1), 20, 60);
+        ofDrawBitmapString("Spotlight pos "+ofToString(spotlightPosition.value().x,1)+" "+ofToString(spotlightPosition.value().y,1), 20, ofGetHeight() - 20);
     }
     
 }
@@ -408,17 +450,6 @@ void ofApp::keyPressed(int key) {
     if(key == 'f'){
         ofToggleFullscreen();
     }
-    
-    if(key == OF_KEY_BACKSPACE){
-        if(setCorner != -1){
-            cameraCalibrationCorners[setCorner] = ofVec2f(settings.getValue("corner"+ofToString(setCorner)+"x",0),
-                                                          settings.getValue("corner"+ofToString(setCorner)+"y",0));
-            
-            updateCameraCalibration();
-        }
-        setCorner = -1;
-    }
-    
     if(debugMode){
         if(key == '1'){
             setCorner = 0;
@@ -431,6 +462,21 @@ void ofApp::keyPressed(int key) {
         }
         if(key == '4'){
             setCorner = 3;
+        }
+        if(key == OF_KEY_BACKSPACE){
+            if(setCorner != -1){
+                cameraCalibrationCorners[setCorner] = ofVec2f(settings.getValue("corner"+ofToString(setCorner)+"x",0),
+                                                              settings.getValue("corner"+ofToString(setCorner)+"y",0));
+                
+                updateCameraCalibration();
+            }
+            setCorner = -1;
+        }
+        if(key == '\t') {
+            float x = ofMap(mouseX, 0, ofGetWidth(), 0, 1);
+            float y = ofMap(mouseY, 0, ofGetHeight(), 0, .5);
+            spotlightPosition.update(ofVec2f(x, y));
+            spotlightThresholder = delaySpotlight;
         }
     }
 }

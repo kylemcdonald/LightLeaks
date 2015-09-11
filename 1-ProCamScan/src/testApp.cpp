@@ -6,7 +6,7 @@ using namespace ofxCv;
 using namespace cv;
 
 #define USE_GDC
-//#define SAVE_DEBUG
+#define SAVE_DEBUG
 
 bool natural(const ofFile& a, const ofFile& b) {
 	string aname = a.getBaseName(), bname = b.getBaseName();
