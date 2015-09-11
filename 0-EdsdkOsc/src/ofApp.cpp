@@ -8,10 +8,9 @@ void ofApp::setup() {
     
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
-//	ofSetLogLevel(OF_LOG_VERBOSE);
+	ofSetLogLevel(OF_LOG_VERBOSE);
 	oscIn.setup(9000);
 	oscOut.setup(remoteComputer, 9001);
-	capturing = false;
 	manual = false;
 	camera.setup();
 }
@@ -21,51 +20,30 @@ void ofApp::exit() {
 }
 
 void ofApp::update() {
-	ofxOscMessage msgIn;
-	while(oscIn.getNextMessage(&msgIn)) {
-		if(msgIn.getAddress() == "/takePhoto") {
+    camera.update();
+    
+    ofxOscMessage msgIn;
+    while(oscIn.getNextMessage(msgIn)) {
+        if(msgIn.getAddress() == "/takeAndSavePhoto") {
+            savePath = msgIn.getArgAsString(0);
+            ofLog() << "Taking and saving photo to " << savePath;
 			camera.takePhoto();
-			capturing = true;
-		}
-		if(msgIn.getAddress() == "/savePhoto") {
-			savePath = msgIn.getArgAsString(0);
-			camera.savePhoto(savePath);
-            preview.loadImage(savePath);
-		}
-		if(msgIn.getAddress() == "/update") {
-			camera.update();
-		}
-		if(msgIn.getAddress() == "/setup") {
-			camera.setup();
-		}
-		if(msgIn.getAddress() == "/createDirectory") {
-			string directory = msgIn.getArgAsString(0);
-            cout<<"Create folder "<<directory<<endl;
-			ofDirectory::createDirectory(directory, true, true);
 		}
 	}
 	
 	if(camera.isPhotoNew()) {
-		if(manual) {
+        if(manual) {
+            manual = false;
             savePath = "out.jpg";
-			camera.savePhoto(savePath);
-			manual = false;
-            preview.loadImage(savePath);
-		} else {
+        } else {
 			ofxOscMessage msgOut;
-			msgOut.setAddress("/newPhoto");
+            msgOut.setAddress("/newPhoto");
+            msgOut.addStringArg(savePath);
 			oscOut.sendMessage(msgOut);
-		}
+        }
+        camera.savePhoto(savePath);
+        preview.load(savePath);
 	}
-	
-	ofxOscMessage msgOut;
-	msgOut.setAddress("/capturing");
-	if(!capturing) {
-		msgOut.addIntArg(0);
-	} else {
-		msgOut.addIntArg(1);
-	}
-	oscOut.sendMessage(msgOut);
 }
 
 void ofApp::draw() {
@@ -78,16 +56,15 @@ void ofApp::draw() {
     
 	ofDrawBitmapStringHighlight("savePath: " + savePath, 10, 20);
     ofDrawBitmapStringHighlight("remote computer: " + remoteComputer, 10, 40);
-	ofDrawBitmapStringHighlight("capturing: " + ofToString(capturing), 10, 60);
-    ofDrawBitmapStringHighlight("press 'p' to take a preview image", 10, 80);
-    ofDrawBitmapStringHighlight("press ' ' to start the scan", 10, 100);
-    ofDrawBitmapStringHighlight("press '`' to re-send photo confirmation", 10, 120);
+    ofDrawBitmapStringHighlight("press 'p' to take a preview image", 10, 60);
+    ofDrawBitmapStringHighlight("press ' ' to start the scan", 10, 80);
+    ofDrawBitmapStringHighlight("press 'tab' to continue broken communication", 10, 100);
 }
 
 void ofApp::keyPressed(int key) {
-	if(key == 'p') {
+    if(key == 'p') {
+        manual = true;
 		camera.takePhoto();
-		manual = true;
 	}
     if(key == 'f') {
         ofToggleFullscreen();
@@ -97,9 +74,10 @@ void ofApp::keyPressed(int key) {
         msgOut.setAddress("/start");
         oscOut.sendMessage(msgOut);
     }
-    if(key == '`') {
+    if(key == '\t') {
         ofxOscMessage msgOut;
         msgOut.setAddress("/newPhoto");
+        // in this case, lastPath is empty, and the same pattern is re-shot
         oscOut.sendMessage(msgOut);
     }
 }

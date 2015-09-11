@@ -2,9 +2,11 @@
 	<projectors>
 		<count>3</count>
 		<width>1920</width>
-		<height>1080</height>
+		<height>1200</height>
 	</projectors>
-
+	<sample>
+		<singlepass>true</singlepass>
+	</sample>
 	<osc>
 		<camera>kyle.local</camera>
 		<projector>halfdanj.local</projector>
