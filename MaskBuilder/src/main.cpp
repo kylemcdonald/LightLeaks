@@ -1,7 +1,7 @@
 #include "ofMain.h"
-#include "ofAppGlutWindow.h"
+#include "ofAppGLFWWindow.h"
 
-int sw = 1920, sh = 1080, sc = 2;
+int sw = 1920*3, sh = 1200, sc = 1;
 
 class ofApp : public ofBaseApp {
 public:
@@ -18,6 +18,10 @@ public:
 		ofClear(0, 255);
 		fbo.end();
 		ofHideCursor();
+        
+        ofSetWindowPosition(1680,0);
+        ofSetWindowShape(1920*3, 1200);
+
 	}
 	void update() {
 		fbo.begin();
@@ -82,6 +86,9 @@ public:
 
 int main() {
 //	ofSetupOpenGL(1280, 720, OF_WINDOW);
-	ofSetupOpenGL(ofPtr<ofAppBaseWindow>(new ofAppGlutWindow()), sw * sc, sh, OF_FULLSCREEN);
+    ofAppGLFWWindow win;
+    win.setMultiDisplayFullscreen(true); //this makes the fullscreen window span across all your monitors
+    ofSetupOpenGL(&win, 1280, 720, OF_FULLSCREEN);
+
 	ofRunApp(new ofApp());
 }

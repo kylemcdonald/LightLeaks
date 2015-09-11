@@ -5,33 +5,33 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>C38887E9-CAB1-4E6C-B0FF-E2B6AE818FD2</string>
+	<string>615500B0-1C95-4DCA-B1BC-A31833A54214</string>
 	<key>IDESourceControlProjectName</key>
 	<string>ofApp</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>1C2CD247-58FC-4CE3-B4C1-C25628CEC7AD</key>
+		<key>03E909CB-6CED-4D19-81D1-5B6E03843A40</key>
 		<string>ssh://github.com/kylemcdonald/openFrameworks.git</string>
 		<key>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</key>
 		<string>github.com:kylemcdonald/openFrameworks.git</string>
 		<key>311230CAB78E521A7FB11ECA42EEFA8819284098</key>
-		<string>https://github.com/kylemcdonald/ofxControlPanel.git</string>
+		<string>github.com:kylemcdonald/ofxControlPanel.git</string>
 		<key>37526DA425E5430474A14FBFA1BC4525160B5FC1</key>
-		<string>https://github.com/kylemcdonald/ofxCv.git</string>
+		<string>github.com:kylemcdonald/ofxCv.git</string>
 		<key>474EC532BB7E81F6DD5A5B4226C9AA507F28B025</key>
+		<string>github.com:kylemcdonald/LightLeaks.git</string>
+		<key>7776A343-CAF3-40E3-BE3A-7268412AE902</key>
 		<string>https://github.com/kylemcdonald/LightLeaks.git</string>
-		<key>6DC33806-DDB5-4349-9A3E-7CF7EA0CD6A9</key>
+		<key>D1330788-C5EE-40E2-AD9E-5601DC6E23F8</key>
 		<string>ssh://github.com/kylemcdonald/ofxControlPanel.git</string>
-		<key>872A0E4C-4095-408A-8B24-5DF803D3D11E</key>
+		<key>DEF0C85C-3808-4973-9E35-E6A797165303</key>
 		<string>ssh://github.com/kylemcdonald/ofxCv.git</string>
-		<key>F0672D21-A6F9-4FF5-9BEF-35623FD45843</key>
-		<string>https://github.com/kylemcdonald/LightLeaks.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>3-BuildXyzMap/ofApp.xcodeproj</string>
+	<string>2-camamok/ofApp.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>1C2CD247-58FC-4CE3-B4C1-C25628CEC7AD</key>
+		<key>03E909CB-6CED-4D19-81D1-5B6E03843A40</key>
 		<string>../../../../openFrameworks</string>
 		<key>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</key>
 		<string>../../../..</string>
@@ -41,15 +41,15 @@
 		<string>../../../../addons/ofxCv</string>
 		<key>474EC532BB7E81F6DD5A5B4226C9AA507F28B025</key>
 		<string>../../..</string>
-		<key>6DC33806-DDB5-4349-9A3E-7CF7EA0CD6A9</key>
-		<string>../../../../openFrameworks/addons/ofxControlPanel</string>
-		<key>872A0E4C-4095-408A-8B24-5DF803D3D11E</key>
-		<string>../../../../openFrameworks/addons/ofxCv</string>
-		<key>F0672D21-A6F9-4FF5-9BEF-35623FD45843</key>
+		<key>7776A343-CAF3-40E3-BE3A-7268412AE902</key>
 		<string>../../../..</string>
+		<key>D1330788-C5EE-40E2-AD9E-5601DC6E23F8</key>
+		<string>../../../../openFrameworks/addons/ofxControlPanel</string>
+		<key>DEF0C85C-3808-4973-9E35-E6A797165303</key>
+		<string>../../../../openFrameworks/addons/ofxCv</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>https://github.com/kylemcdonald/LightLeaks.git</string>
+	<string>github.com:kylemcdonald/LightLeaks.git</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
@@ -60,7 +60,7 @@
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>F0672D21-A6F9-4FF5-9BEF-35623FD45843</string>
+			<string>7776A343-CAF3-40E3-BE3A-7268412AE902</string>
 			<key>IDESourceControlWCCName</key>
 			<string></string>
 		</dict>
@@ -84,6 +84,14 @@
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>D1330788-C5EE-40E2-AD9E-5601DC6E23F8</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxControlPanel</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>311230CAB78E521A7FB11ECA42EEFA8819284098</string>
 			<key>IDESourceControlWCCName</key>
 			<string>ofxControlPanel</string>
@@ -92,9 +100,9 @@
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>6DC33806-DDB5-4349-9A3E-7CF7EA0CD6A9</string>
+			<string>DEF0C85C-3808-4973-9E35-E6A797165303</string>
 			<key>IDESourceControlWCCName</key>
-			<string>ofxControlPanel</string>
+			<string>ofxCv</string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
@@ -108,15 +116,7 @@
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>872A0E4C-4095-408A-8B24-5DF803D3D11E</string>
-			<key>IDESourceControlWCCName</key>
-			<string>ofxCv</string>
-		</dict>
-		<dict>
-			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
-			<string>public.vcs.git</string>
-			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>1C2CD247-58FC-4CE3-B4C1-C25628CEC7AD</string>
+			<string>03E909CB-6CED-4D19-81D1-5B6E03843A40</string>
 			<key>IDESourceControlWCCName</key>
 			<string>openFrameworks</string>
 		</dict>

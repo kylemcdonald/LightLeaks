@@ -10,6 +10,7 @@ protected:
 	ofxOscSender oscOut;
 	bool newPhoto;
 	int width, height;
+    string lastPath;
     
 	
 	void sendMessage(string address) {
@@ -20,12 +21,15 @@ protected:
 	
 public:
     bool start;
+    bool error;
 
 	EdsdkOsc()
 	:newPhoto(false),
 	width(1056),
 	height(704),
-    start(false){
+    start(false),
+    lastPath(""),
+    error(false){
 	}
     
 	void setup() {
@@ -40,7 +44,18 @@ public:
 		ofxOscMessage msgIn;
 		while(oscIn.getNextMessage(&msgIn)) {
 			if(msgIn.getAddress() == "/newPhoto") {
+                cout<<"Take photo receipt "<<endl;
+
 				newPhoto = true;
+                if(msgIn.getNumArgs() >= 1){
+                    if(lastPath != msgIn.getArgAsString(0)){
+                        error = true;
+                        cout<<"Error path not correct "<<endl;
+                    }
+                } else {
+                    error = true;
+                    cout<<"Error path not set "<<endl;
+                }
 			}
             if(msgIn.getAddress() == "/start") {
                 start = true;
@@ -54,17 +69,18 @@ public:
 		oscOut.sendMessage(msgOut);
 	}
 	void update() {
-		sendMessage("/update");
+		//sendMessage("/update");
 	}
-	void takePhoto() {
-		sendMessage("/takePhoto");
+	void takePhoto(string filename) {
+        cout<<"Take photo "<<filename<<endl;
+        error = false;
+        lastPath = filename;
+        ofxOscMessage msgOut;
+        msgOut.setAddress("/takeAndSavePhoto");
+        msgOut.addStringArg(filename);
+        oscOut.sendMessage(msgOut);
 	}
-	void savePhoto(string filename) {
-		ofxOscMessage msgOut;
-		msgOut.setAddress("/savePhoto");
-		msgOut.addStringArg(filename);
-		oscOut.sendMessage(msgOut);
-	}
+	
 	void draw(float x, float y) {
 		ofPushMatrix();
 		ofPushStyle();

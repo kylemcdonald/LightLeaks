@@ -12,6 +12,7 @@ void ofApp::setup() {
 	oscIn.setup(9000);
 	oscOut.setup(remoteComputer, 9001);
 	manual = false;
+    camera.setLiveView(false);
 	camera.setup();
 }
 

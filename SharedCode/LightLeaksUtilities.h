@@ -53,7 +53,7 @@ vector<ofFile> getScanNames(){
     
     vector<ofFile> ret;
     for(int i=0;i<rootDir.size();i++){
-        if(rootDir.getPath(i)[0] != '_'){
+        if(rootDir.getName(i)[0] != '_' && rootDir.getName(i)[0] != '.'){
             ret.push_back(ofFile(rootDir.getPath(i)));
         }
     }

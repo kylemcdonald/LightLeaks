@@ -1,5 +1,5 @@
 #include "ofMain.h"
-#include "ofAppGlutWindow.h"
+#include "ofAppGLFWWindow.h"
 #include "EdsdkOsc.h"
 #include "GrayCodeGenerator.h"
 
@@ -29,7 +29,7 @@ public:
     
     bool generated;
     string timestamp;
-	
+    
 	void generate() {
 		generator.setSize(tw, th);
 		generator.setOrientation(direction == 0 ? PatternGenerator::VERTICAL : PatternGenerator::HORIZONTAL);
@@ -80,9 +80,11 @@ public:
             ofEnableAlphaBlending();
             ofBackground(0);
         }
-		ofSetLogLevel(OF_LOG_VERBOSE);
-		camera.setup();
         
+        ofSetWindowPosition(1680,0);
+        ofSetWindowShape(1920*3, 1200);
+		ofSetLogLevel(OF_LOG_VERBOSE);
+        camera.setup();
 	}
 	
 	void update() {
@@ -91,7 +93,15 @@ public:
             
             if(camera.start){
                 camera.start = false;
-                camera.takePhoto();
+                
+                pattern = 0;
+                projector = 0;
+                direction = 0;
+                inverse = 0;
+                
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg");
+                });
                 
                 timestamp = ofToString(ofGetHours())+ofToString(ofGetMinutes());
                 generate();
@@ -100,56 +110,68 @@ public:
             }
 		}
 		if(camera.isPhotoNew()) {
-			if(referenceImage) {
-				camera.savePhoto("referenceImage.jpg");
-			} else {
-				camera.savePhoto(curDirectory + ofToString(pattern) + ".jpg");
-				if(nextState()) {
-					captureTime = ofGetElapsedTimeMillis();
-					needToCapture = true;
-				} else {
-					capturing = false;
-				}
-			}
+            if(camera.error){
+                captureTime = ofGetElapsedTimeMillis();
+                needToCapture = true;
+            } else {
+                if(nextState()) {
+                    captureTime = ofGetElapsedTimeMillis();
+                    needToCapture = true;
+                } else {
+                    cout<<"Done taking photos. Huray!"<<endl;
+                    capturing = false;
+                }
+            }
+            
 		}
 	}
 	
 	void draw() {
 		ofSetColor(255);
-        if(generated){
-            generator.get(pattern).draw(projector * tw, 0);
-        }
-		if(mask.getWidth() > 0) {
-			mask.draw(0, 0);
-		}
+       
 		if(!capturing) {
-			ofPushMatrix();
+
+			/*ofPushMatrix();
 			ofScale(.25, .25);
 			camera.draw(0, 0);
-			ofPopMatrix();
-		}
+			ofPopMatrix();*/
+            
+            ofSetColor(255,0,0);
+            ofRect(0, 0, tw/3, th);
+            ofSetColor(0,255,0);
+            ofRect(tw/3, 0, tw/3, th);
+            ofSetColor(0,0,255);
+            ofRect(2*tw/3, 0, tw/3, th);
+        } else {
+            if(generated){
+                generator.get(pattern).draw(projector * tw, 0);
+            }
+            if(mask.getWidth() > 0) {
+                mask.draw(0, 0);
+            }
+        }
 		if(needToCapture && (ofGetElapsedTimeMillis() - captureTime) > bufferTime) {
-			camera.takePhoto();
+			camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg");
 			needToCapture = false;
 		}
 	}
 	
 	void keyPressed(int key) {
-		if(key == ']') {
+		if(key == OF_KEY_RIGHT) {
 			pattern++;
 		}
-		if(key == '[') {
+        if(key == OF_KEY_LEFT) {
 			pattern--;
 		}
 		if(key == ' ') {
             timestamp = ofToString(ofGetHours())+ofToString(ofGetMinutes());
             generate();
             
-			camera.takePhoto();
+			camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg");
 			capturing = true;
 		}
 		if(key == 'r') {
-			camera.takePhoto();
+			camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg");
 			referenceImage = true;
 		}
 		if(key == 'f') {
@@ -172,7 +194,11 @@ int main() {
         totalProjectors = 1;
     }
 	
-	ofAppGlutWindow window;
-	ofSetupOpenGL(&window, totalProjectors * tw, th, OF_FULLSCREEN);
+    ofAppGLFWWindow win;
+    
+    win.setMultiDisplayFullscreen(true); //this makes the fullscreen window span across all your monitors
+    
+    ofSetupOpenGL(&win, 1280, 720, OF_FULLSCREEN);
+	//ofSetupOpenGL(&win, totalProjectors * tw, th, OF_FULLSCREEN);
 	ofRunApp(new testApp());
 }
