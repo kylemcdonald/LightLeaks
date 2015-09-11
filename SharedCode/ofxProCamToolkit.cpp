@@ -503,7 +503,10 @@ int exportPlyVertices(ostream& ply, ofMesh& cloud) {
 			ply.write(reinterpret_cast<char*>(&(surface[i].y)), sizeof(float));
 			ply.write(reinterpret_cast<char*>(&(surface[i].z)), sizeof(float));
 			if(colors.size() > 0) {
-				unsigned char color[3] = {colors[i].r * 255, colors[i].g * 255, colors[i].b * 255};
+				unsigned char color[3] = {
+                    (unsigned char) (255 * colors[i].r),
+                    (unsigned char) (255 * colors[i].g),
+                    (unsigned char) (255 * colors[i].b)};
 				ply.write((char*) color, sizeof(char) * 3);
 			}
 			total++;

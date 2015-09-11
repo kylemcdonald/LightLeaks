@@ -1,4 +1,4 @@
-#include "testApp.h"
+#include "ofApp.h"
 
 #include "LightLeaksUtilities.h"
 
@@ -65,7 +65,7 @@ void processGraycodeLevel(int i, int n, int dimensions, const Mat& cameraMask, M
 //    cout << "cur variation: " << curVariation << endl;
 }
 
-void testApp::setup() {
+void ofApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
     setCalibrationDataPathRoot();
@@ -76,7 +76,7 @@ void testApp::setup() {
     ofFile projectorMaskFile("mask.png");
     if(projectorMaskFile.exists()){
         ofLogVerbose() << "Projector mask loaded";
-        projectorMask.loadImage(projectorMaskFile);
+        projectorMask.load(projectorMaskFile);
         projectorMask.setImageType(OF_IMAGE_GRAYSCALE);
         copy(projectorMask, projectorMaskMat, CV_32FC1);
         ofLogVerbose() << "Built mask with " << projectorMaskMat.cols << "x" << projectorMaskMat.rows;
@@ -149,7 +149,7 @@ void testApp::setup() {
             }
             
             //Camera mask
-            bool maskLoaded = cameraMask.loadImage(camMaskPath);
+            bool maskLoaded = cameraMask.load(camMaskPath);
             cameraMask.setImageType(OF_IMAGE_GRAYSCALE);
             if(!maskLoaded){
                 ofLogVerbose() << "No file called mask.png in SharedData/"+scanName+" folder. Continuing without a camera mask";
@@ -158,7 +158,7 @@ void testApp::setup() {
             }
             
             ofImage prototype;
-            prototype.loadImage(path + "cameraImages/horizontal/normal/0.jpg");
+            prototype.load(path + "cameraImages/horizontal/normal/0.jpg");
             camWidth = prototype.getWidth(), camHeight = prototype.getHeight();
             
             camConfidence = Mat::zeros(camHeight, camWidth, CV_32FC1);
@@ -199,8 +199,8 @@ void testApp::setup() {
                     imgI->setUseTexture(false);
                     
                     // ofLogVerbose() <<"Load "+hnFiles[i].path()<<endl;
-                    img->loadImage(hnFiles[i].path());
-                    imgI->loadImage(hiFiles[i].path());
+                    img->load(hnFiles[i].path());
+                    imgI->load(hiFiles[i].path());
                     
                     img->setImageType(OF_IMAGE_GRAYSCALE);
                     imgI->setImageType(OF_IMAGE_GRAYSCALE);
@@ -247,8 +247,8 @@ void testApp::setup() {
                     ofImage * imgI = new ofImage();
                     imgI->setUseTexture(false);
                     
-                    img->loadImage(vnFiles[i].path());
-                    imgI->loadImage(viFiles[i].path());
+                    img->load(vnFiles[i].path());
+                    imgI->load(viFiles[i].path());
                     
                     img->setImageType(OF_IMAGE_GRAYSCALE);
                     imgI->setImageType(OF_IMAGE_GRAYSCALE);
@@ -335,10 +335,10 @@ void testApp::setup() {
     ofLogVerbose() <<" Done in "+ofToString(ofGetElapsedTimef())+" seconds";
 }
 
-void testApp::update() {
+void ofApp::update() {
 }
 
-void testApp::draw() {
+void ofApp::draw() {
     ofBackground(30);
     ofSetColor(200);
     ofDrawBitmapString("I'm done....\nIt took me "+ofToString(time)+" seconds", ofPoint(10,20));
