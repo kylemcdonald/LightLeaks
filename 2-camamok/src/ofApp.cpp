@@ -207,8 +207,8 @@ void ofApp::render() {
 	glEnable(GL_DEPTH_TEST);
 	if(useShader) {
 		ofFile fragFile("shader.frag"), vertFile("shader.vert");
-		Poco::Timestamp fragTimestamp = fragFile.getPocoFile().getLastModified();
-		Poco::Timestamp vertTimestamp = vertFile.getPocoFile().getLastModified();
+        time_t fragTimestamp = filesystem::last_write_time(fragFile);
+        time_t vertTimestamp = filesystem::last_write_time(vertFile);
 		if(fragTimestamp != lastFragTimestamp || vertTimestamp != lastVertTimestamp) {
 			bool validShader = shader.load("shader");
 			setb("validShader", validShader);
