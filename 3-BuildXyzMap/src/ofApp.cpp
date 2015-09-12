@@ -11,7 +11,7 @@ template <class T>
 void removeIslands(ofPixels_<T>& img) {
 	int w = img.getWidth(), h = img.getHeight();
 	int ia1=-w-1,ia2=-w-0,ia3=-w+1,ib1=-0-1,ib3=-0+1,ic1=+w-1,ic2=+w-0,ic3=+w+1;
-	T* p = img.getPixels();
+	T* p = img.getData();
 	for(int y = 1; y + 1 < h; y++) {
 		for(int x = 1; x + 1 < w; x++) {
 			int i = y * w + x;
@@ -102,20 +102,20 @@ void ofApp::setup() {
 			ofShortImage proMap;
 			
             
-            proConfidence.loadImage(path + "/proConfidence.exr");
-            proMap.loadImage(path + "/proMap.png");
+            proConfidence.load(path + "/proConfidence.exr");
+            proMap.load(path + "/proMap.png");
             
             Mat proConfidenceMat = toCv(proConfidence);
             Mat proMapMat = toCv(proMap);
 
-            xyzMap.loadImage(path + "/xyzMap.exr");
-            normalMap.loadImage(path + "/normalMap.exr");
+            xyzMap.load(path + "/xyzMap.exr");
+            normalMap.load(path + "/normalMap.exr");
 
             if(!xyzMap.isAllocated()){
-                cout<<"No xyzmap for "<<scanName<<endl;
+                cout << "No xyzmap for " << scanName.getBaseName() << endl;
                 
                 ofImage referenceImage;
-                referenceImage.loadImage(path+"/maxImage.png");
+                referenceImage.load(path+"/maxImage.png");
                 
                 ofFbo::Settings settings;
                 settings.width = referenceImage.getWidth()/scaleFactor;
@@ -274,7 +274,7 @@ void ofApp::setup() {
                 debugFbo.begin();
                 ofClear(0);
                 ofSetColor(0,0,0);
-                ofRect(0,0,debugFbo.getWidth(), debugFbo.getHeight());
+                ofDrawRectangle(0,0,debugFbo.getWidth(), debugFbo.getHeight());
                 ofSetColor(255,255,255);
                 referenceImage.draw(0,0,debugFbo.getWidth(), debugFbo.getHeight());
                 
@@ -282,13 +282,13 @@ void ofApp::setup() {
                 int jj = 0;
                 for(int j=0;j<imagePoints.size();j+=jump){
                     ofSetColor(255,0,0);
-                    ofCircle(imagePoints[j].x,imagePoints[j].y,4);
+                    ofDrawCircle(imagePoints[j].x,imagePoints[j].y,4);
 
                     ofSetColor(255,255,0);
-                    ofCircle(imagePoints2[jj].x,imagePoints2[jj].y,4);
+                    ofDrawCircle(imagePoints2[jj].x,imagePoints2[jj].y,4);
                     
                     ofSetColor(0,100,100);
-                    ofLine(imagePoints[j].x,imagePoints[j].y, imagePoints2[jj].x,imagePoints2[jj].y);
+                    ofDrawLine(imagePoints[j].x,imagePoints[j].y, imagePoints2[jj].x,imagePoints2[jj].y);
                     jj++;
                 }
              
@@ -367,8 +367,8 @@ void ofApp::setup() {
                 normalFbo.readToPixels(pix);
                 ofSaveImage(pix, path+"/_normalMap.exr");
 
-                xyzMap.loadImage(path + "/_xyzMap.exr");
-                normalMap.loadImage(path + "/_normalMap.exr");
+                xyzMap.load(path + "/_xyzMap.exr");
+                normalMap.load(path + "/_normalMap.exr");
             }
             
             
@@ -440,7 +440,7 @@ void ofApp::draw() {
     
     /*xyzFbo.begin(); {
         //                  ofSetColor(0,0,0);
-        //                    ofRect(0,0,xyzFbo.getWidth(), xyzFbo.getHeight());
+        //                    ofDrawRect(0,0,xyzFbo.getWidth(), xyzFbo.getHeight());
         ofClear(0,0,0,255);
         ofSetColor(255,255,255);
         
