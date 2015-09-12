@@ -4,11 +4,16 @@
 #include "ofxAssimpModelLoader.h"
 #include "ofxCv.h"
 #include "ofAutoShader.h"
-#include "ofxBlackMagic.h"
 #include "CoordWarp.h"
 #include "ofxXmlSettings.h"
 #include "ofxBiquadFilter.h"
 #include "ofxOsc.h"
+
+//#define USE_CAMERA
+
+#ifdef USE_CAMERA
+#include "ofxBlackMagic.h"
+#endif
 
 enum Stage {
     Lighthouse=0,
@@ -18,16 +23,13 @@ enum Stage {
 
 class ofApp : public ofBaseApp {
 public:
-    void setup(), setupSpeakers(), setupTracker();
-    void update(), updateTracker(), updateOsc();
+    void setup(), setupSpeakers();
+    void update(), updateOsc();
 	void draw();
     void exit();
 	void keyPressed(int key);
     void mouseMoved(int x, int y);
     void mousePressed( int x, int y, int button );
-    
-    void updateCameraCalibration();
-    void logAudience();
     
     bool debugMode;
     
@@ -63,6 +65,11 @@ public:
     ofFloatPixels speakerPixels;
     float speakerAmp[4];
     
+#ifdef USE_CAMERA
+    void setupTracker(), updateTracker();
+    void updateCameraCalibration();
+    void logAudience();
+    
     //Tracking
     ofxBlackMagic grabber;
     int photoCounter;
@@ -74,6 +81,7 @@ public:
     ofVec2f cameraCalibrationCorners[4];
     bool firstFrame;
     int setCorner;
+#endif
     
     //OSC
     ofxOscSender oscSender;
