@@ -17,7 +17,7 @@ public:
     ofxAssimpModelLoader model;
     ofVboMesh objectMesh;
     ofShader xyzShader;
-    ofShader normalShader;
+    //ofShader normalShader;
     
     float range;
     ofVec3f zero;
@@ -35,5 +35,6 @@ public:
     ofFbo xyzFbo, normalFbo, debugFbo;
     
 
+    ofImage debugViewOutput;
 
 };

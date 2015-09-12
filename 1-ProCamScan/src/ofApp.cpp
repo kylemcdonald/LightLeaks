@@ -293,13 +293,13 @@ void ofApp::setup() {
 #ifdef SAVE_DEBUG
             ofLogVerbose() << "saving debug results";
             saveImage(camConfidence, path+"/camConfidence.exr");
-            saveImage(minImage, path+"/minImage.png");
-            saveImage(maxImage, path+"/maxImage.png");
+            saveImage(minImage, path+"/minImage.jpg", OF_IMAGE_QUALITY_LOW);
+            saveImage(maxImage, path+"/maxImage.jpg", OF_IMAGE_QUALITY_LOW);
 #endif
             ofLogVerbose() << "building and saving reference image";
             Mat referenceImage;
             ofxCv::equalizeHist(minImage, referenceImage);
-            saveImage(referenceImage, path+"/referenceImage.jpg");
+            saveImage(referenceImage, path+"/referenceImage.jpg", OF_IMAGE_QUALITY_LOW);
             
             Mat binaryCoded, emptyChannel;
             emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);

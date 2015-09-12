@@ -48,7 +48,7 @@ void ofApp::setup() {
 	ofSetFrameRate(120);
     
     xyzShader.load("xyz.vs", "xyz.fs");
-    normalShader.load("normal.vs", "normal.fs");
+    //normalShader.load("normal.vs", "normal.fs");
 
     
     setCalibrationDataPathRoot();
@@ -109,13 +109,13 @@ void ofApp::setup() {
             Mat proMapMat = toCv(proMap);
 
             xyzMap.load(path + "/xyzMap.exr");
-            normalMap.load(path + "/normalMap.exr");
+            //normalMap.load(path + "/normalMap.exr");
 
             if(!xyzMap.isAllocated()){
                 cout << "No xyzmap for " << scanName.getBaseName() << endl;
                 
                 ofImage referenceImage;
-                referenceImage.load(path+"/maxImage.png");
+                referenceImage.load(path+"/maxImage.jpg");
                 
                 ofFbo::Settings settings;
                 settings.width = referenceImage.getWidth()/scaleFactor;
@@ -124,7 +124,7 @@ void ofApp::setup() {
                 settings.internalformat = GL_RGBA32F_ARB;
 
                 xyzFbo.allocate(settings);
-                normalFbo.allocate(settings);
+                //normalFbo.allocate(settings);
                 debugFbo.allocate(settings);
                 
                 
@@ -183,9 +183,8 @@ void ofApp::setup() {
                         vector<vector<Point3f> >  _referencePoints(1);
                         vector<vector<Point2f> > _imagePoints(1);
                         vector<Mat> rvecs, tvecs;
-                        cv::Mat rvec, tvec;
                         Mat distCoeffs;
-                        
+
                         _referencePoints[0].clear();
                         _imagePoints[0].clear();
                         int jump = k;
@@ -194,12 +193,9 @@ void ofApp::setup() {
                             _imagePoints[0].push_back(imagePoints[j]);
                         }
                         
-                        
                         calibrateCamera(_referencePoints, _imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs, flags);
-                        rvec = rvecs[0];
-                        tvec = tvecs[0];
-                        intrinsics.setup(cameraMatrix, imageSize);
-                        modelMatrix = makeMatrix(rvec, tvec);
+                        cv::Mat rvec = rvecs[0];
+                        cv::Mat tvec = tvecs[0];
                         
                         vector<Point2f>  imagePoints2(0);
                         projectPoints(_referencePoints[0], rvec, tvec, cameraMatrix, distCoeffs, imagePoints2);
@@ -302,7 +298,7 @@ void ofApp::setup() {
                 debugFbo.readToPixels(debugPix);
                 ofSaveImage(debugPix, path+"/_debug.png");
 
-                
+                /*
                 normalFbo.begin();{
                     ofClear(0,0,0,255);
                     ofSetColor(255,255,255);
@@ -326,7 +322,7 @@ void ofApp::setup() {
                     
                     glDisable(GL_DEPTH_TEST);
                     glDisable(GL_CULL_FACE);
-                } normalFbo.end();
+                } normalFbo.end();*/
                 
                 
                 xyzFbo.begin(); {
@@ -364,21 +360,22 @@ void ofApp::setup() {
                 ofFloatPixels pix;
                 xyzFbo.readToPixels(pix);
                 ofSaveImage(pix, path+"/_xyzMap.exr");
-                normalFbo.readToPixels(pix);
-                ofSaveImage(pix, path+"/_normalMap.exr");
+                //normalFbo.readToPixels(pix);
+                //ofSaveImage(pix, path+"/_normalMap.exr");
 
                 xyzMap.load(path + "/_xyzMap.exr");
-                normalMap.load(path + "/_normalMap.exr");
+                //normalMap.load(path + "/_normalMap.exr");
             }
             
             
             Mat xyzMapMat = toCv(xyzMap);
-            Mat normalMapMat = toCv(normalMap);
+            //Mat normalMapMat = toCv(normalMap);
             
             if(proXyzCombined.cols == 0) {
                 proXyzCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
-                proNormalCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
+                //proNormalCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
                 proConfidenceCombined = Mat::zeros(proConfidenceMat.rows, proConfidenceMat.cols, CV_32FC1);
+                debugViewOutput.allocate(proMapMat.cols, proMapMat.rows, OF_IMAGE_COLOR);
             }
             
             int w = proXyzCombined.cols, h = proXyzCombined.rows;
@@ -390,7 +387,9 @@ void ofApp::setup() {
                         Vec3w cur = proMapMat.at<Vec3w>(y, x);
                         Vec4f xyz = xyzMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
                         proXyzCombined.at<Vec4f>(y, x) = xyz;
-                        proNormalCombined.at<Vec4f>(y, x) = normalMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
+                        //proNormalCombined.at<Vec4f>(y, x) = normalMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
+                        
+                        debugViewOutput.setColor( x,y,colors[i%10]);
                         
                         mesh.addColor(colors[i%10]);
                         mesh.addVertex(ofVec3f(xyz[0],xyz[1],xyz[2])*range);
@@ -404,7 +403,7 @@ void ofApp::setup() {
 	ofLogVerbose() << "saving results";
 	ofFloatPixels proMapFinal, proNormalFinal, proConfidenceFinal;
 	toOf(proXyzCombined, proMapFinal);
-	toOf(proNormalCombined, proNormalFinal);
+	//toOf(proNormalCombined, proNormalFinal);
 	toOf(proConfidenceCombined, proConfidenceFinal);
 	
 	removeIslands(proConfidenceFinal);
@@ -416,12 +415,14 @@ void ofApp::setup() {
 		for(int x = 0; x < w; x++) {
 			if(!proConfidenceCombined.at<float>(y, x)) {
 				proXyzCombined.at<Vec4f>(y, x) = Vec4f(0, 0, 0, 0);
-				proNormalCombined.at<Vec4f>(y, x) = Vec4f(0, 0, 0, 0);
+				//proNormalCombined.at<Vec4f>(y, x) = Vec4f(0, 0, 0, 0);
             }
 		}
 	}
 	ofSaveImage(proMapFinal, "xyzMap.exr");
-	ofSaveImage(proNormalFinal, "normalMap.exr");
+    
+    ofSaveImage(debugViewOutput, "_BuildXYZDebug.jpg", OF_IMAGE_QUALITY_BEST);
+	//ofSaveImage(proNormalFinal, "normalMap.exr");
     
 
 }
@@ -434,53 +435,8 @@ void ofApp::draw() {
     ofBackground(128);
 
     ofSetColor(255);
-    debugFbo.draw(0,0,500,500);
-
-    
-    
-    /*xyzFbo.begin(); {
-        //                  ofSetColor(0,0,0);
-        //                    ofDrawRect(0,0,xyzFbo.getWidth(), xyzFbo.getHeight());
-        ofClear(0,0,0,255);
-        ofSetColor(255,255,255);
-        
-        glPushAttrib(GL_ALL_ATTRIB_BITS);
-        glPushMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glMatrixMode(GL_MODELVIEW);
-        intrinsics.loadProjectionMatrix(10, 2000);
-        applyMatrix(modelMatrix);
-        
-         cam.begin();
-        
-        ofSetColor(100,100,100);
-        objectMesh.drawWireframe();
-        
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        
-        //   intrinsics.loadProjectionMatrix(10, 2000);
-        // applyMatrix(modelMatrix);
-        
-        
-               glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        mesh.draw();
-
-          cam.end();
-        ofSetColor(255, 255, 255);
-        //ofLine(0,0,100,0);
-        
-        
-    }xyzFbo.end();
-*/
-    
-    
-    xyzFbo.draw(500,0,500,500);
-    
-    
+    //debugFbo.draw(0,0,500,500);
+    //xyzFbo.draw(500,0,500,500);
     
     cam.begin();
     
@@ -492,16 +448,6 @@ void ofApp::draw() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-
-//   intrinsics.loadProjectionMatrix(10, 2000);
-  //  applyMatrix(modelMatrix);
-
-    
-  /* xyzShader.begin();
-    xyzShader.setUniform1f("range", range);
-    xyzShader.setUniform3fv("zero", zero.getPtr());
-    objectMesh.drawFaces();
-    xyzShader.end();*/
     
     glPointSize(3);
 
