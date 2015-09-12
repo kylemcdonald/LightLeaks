@@ -41,8 +41,7 @@ void buildProMap(int proWidth, int proHeight,
 }
 
 void setCalibrationDataPathRoot(){
-    ofSetDataPathRoot(ofToDataPath("",true)+"../../../SharedData/");
-
+    ofSetDataPathRoot("../../../../../SharedData");
     return ;
 }
 
