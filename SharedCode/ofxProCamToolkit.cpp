@@ -56,7 +56,7 @@ void grayDecode(string path, Mat& binaryCoded, Mat& cam, GrayCodeMode mode) {
 		*/
 		for(int i = 0; i < n; i++) {
 			ofLogVerbose() << "loading " << dir.getPath(i);
-			image.load(dir.getPath(i));
+			image.loadImage(dir.getPath(i));
 			image.setImageType(OF_IMAGE_GRAYSCALE);
 			Mat cur = toCv(image);
 			imitate(cam, image);
@@ -80,8 +80,8 @@ void grayDecode(string path, Mat& binaryCoded, Mat& cam, GrayCodeMode mode) {
 		thresholded.resize(n);
 		ofImage imageNormal, imageInverse;
 		for(int i = 0; i < n; i++) {
-			imageNormal.load(dirNormal.getPath(i));
-			imageInverse.load(dirInverse.getPath(i));
+			imageNormal.loadImage(dirNormal.getPath(i));
+			imageInverse.loadImage(dirInverse.getPath(i));
 			imageNormal.setImageType(OF_IMAGE_GRAYSCALE);
 			imageInverse.setImageType(OF_IMAGE_GRAYSCALE);
 			imitate(cam, imageNormal);
@@ -196,7 +196,7 @@ void drawChessboardCorners(cv::Size patternSize, const vector<Point2f>& centers)
 				return;
 			}
 			ofVec2f cur = toOf(centers[i++]);
-			ofDrawCircle(cur, radius);
+			ofCircle(cur, radius);
 			crosses.addVertex(cur - firstCross);
 			crosses.addVertex(cur + firstCross);
 			crosses.addVertex(cur - secondCross);
@@ -313,13 +313,13 @@ void drawLabeledAxes(float size) {
 	ofScale(size, size, size);
 	ofSetLineWidth(3);
 	ofSetColor(ofColor::red);
-	ofDrawLine(0, 0, 0, 1, 0, 0);
+	ofLine(0, 0, 0, 1, 0, 0);
 	ofDrawBitmapString("+x", 1, 0, 0);
 	ofSetColor(ofColor::green);
-	ofDrawLine(0, 0, 0, 0, 1, 0);
+	ofLine(0, 0, 0, 0, 1, 0);
 	ofDrawBitmapString("+y", 0, 1, 0);
 	ofSetColor(ofColor::blue);
-	ofDrawLine(0, 0, 0, 0, 0, 1);
+	ofLine(0, 0, 0, 0, 0, 1);
 	ofDrawBitmapString("+z", 0, 0, 1);
 	ofPopStyle();
 	ofPopMatrix();
@@ -335,7 +335,7 @@ void drawImagePoints(Mat camMatrix, vector<Point2f>& imagePoints, float scale) {
 		Point2f& curPoint = imagePoints[i];
 		Mat1d h = (Mat1d(3,1) << curPoint.x, curPoint.y, 1);
 		Mat1d w = camInv * h;
-		ofDrawLine(0, 0, 0, w(0), w(1), w(2));
+		ofLine(0, 0, 0, w(0), w(1), w(2));
 		ofDrawBitmapString(ofToString(i), w(0), w(1), w(2));
 	}
 	ofPopStyle(); 
@@ -369,7 +369,7 @@ void drawObjectPoints(vector<Point3f>& points, Mat rotation, Mat translation) {
 		ofPushMatrix();
 		ofTranslate(wpt(0), wpt(1), wpt(2));
 		ofNoFill();
-		ofDrawCircle(0, 0, 6);
+		ofCircle(0, 0, 6);
 		ofPopMatrix();
 	}
 	ofPopStyle();

@@ -183,11 +183,8 @@
 		273B61CE19D9AEB80054A3E7 /* OscTypes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OscTypes.cpp; sourceTree = "<group>"; };
 		273B61CF19D9AEB80054A3E7 /* OscTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OscTypes.h; sourceTree = "<group>"; };
 		277AA94F1814958800B45F3D /* .gitkeep */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
-		277AA9501814958800B45F3D /* confidenceMap.exr */ = {isa = PBXFileReference; lastKnownFileType = file; path = confidenceMap.exr; sourceTree = "<group>"; };
-		277AA9511814958800B45F3D /* normalMap.exr */ = {isa = PBXFileReference; lastKnownFileType = file; path = normalMap.exr; sourceTree = "<group>"; };
 		277AA9521814958800B45F3D /* shader.fs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = shader.fs; sourceTree = "<group>"; };
 		277AA9531814958800B45F3D /* shader.vs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = shader.vs; sourceTree = "<group>"; };
-		277AA9541814958800B45F3D /* xyzMap.exr */ = {isa = PBXFileReference; lastKnownFileType = file; path = xyzMap.exr; sourceTree = "<group>"; };
 		27B1EB8C1738A54B004BC322 /* ofApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofApp.cpp; sourceTree = "<group>"; };
 		27B1EB8D1738A54B004BC322 /* ofApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofApp.h; sourceTree = "<group>"; };
 		27B60BAD189DDA8D00E068E0 /* LightLeaksUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LightLeaksUtilities.h; sourceTree = "<group>"; };
@@ -294,6 +291,7 @@
 		DD6C871419D9560F0065A9B1 /* DeckLinkAPITypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeckLinkAPITypes.h; sourceTree = "<group>"; };
 		DD6C871519D9560F0065A9B1 /* DeckLinkAPIVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeckLinkAPIVersion.h; sourceTree = "<group>"; };
 		DD6C871719D9560F0065A9B1 /* DeckLinkAPIDispatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeckLinkAPIDispatch.cpp; sourceTree = "<group>"; };
+		DD81E1FC1BA4125B00683744 /* ofAutoShader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofAutoShader.h; sourceTree = "<group>"; };
 		DDA5D44919C48D690066B686 /* guiBaseObject.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = guiBaseObject.cpp; sourceTree = "<group>"; };
 		DDA5D44A19C48D690066B686 /* guiBaseObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = guiBaseObject.h; sourceTree = "<group>"; };
 		DDA5D44B19C48D690066B686 /* guiCallback.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = guiCallback.cpp; sourceTree = "<group>"; };
@@ -690,11 +688,8 @@
 			isa = PBXGroup;
 			children = (
 				277AA94F1814958800B45F3D /* .gitkeep */,
-				277AA9501814958800B45F3D /* confidenceMap.exr */,
-				277AA9511814958800B45F3D /* normalMap.exr */,
 				277AA9521814958800B45F3D /* shader.fs */,
 				277AA9531814958800B45F3D /* shader.vs */,
-				277AA9541814958800B45F3D /* xyzMap.exr */,
 			);
 			name = data;
 			path = bin/data;
@@ -703,6 +698,7 @@
 		27B60BAC189DDA8D00E068E0 /* SharedCode */ = {
 			isa = PBXGroup;
 			children = (
+				DD81E1FC1BA4125B00683744 /* ofAutoShader.h */,
 				27B60BAD189DDA8D00E068E0 /* LightLeaksUtilities.h */,
 				27B60BAE189DDA8D00E068E0 /* ofxProCamToolkit.cpp */,
 				27B60BAF189DDA8D00E068E0 /* ofxProCamToolkit.h */,

@@ -115,7 +115,7 @@ void ofApp::setup() {
                 cout<<"No xyzmap for "<<scanName<<endl;
                 
                 ofImage referenceImage;
-                referenceImage.loadImage(path+"/referenceImage.jpg");
+                referenceImage.loadImage(path+"/maxImage.png");
                 
                 ofFbo::Settings settings;
                 settings.width = referenceImage.getWidth()/scaleFactor;
@@ -135,7 +135,7 @@ void ofApp::setup() {
                 for(int y = 0; y < h; y++) {
                     for(int x = 0; x < w; x++) {
                         float cur = proConfidenceMat.at<float>(y, x);
-                        if(cur > threshold) {
+                        if(cur > 0.5) {
                             Vec4f xyz = proXyzCombined.at<Vec4f>(y, x);
                             
                             if(xyz[0] != 0 || xyz[1] != 0  || xyz[2] != 0 ){
@@ -154,11 +154,6 @@ void ofApp::setup() {
                 
                 // Prepare for camera calibration
                 
-                vector<vector<Point3f> >  _referencePoints(1);
-                vector<vector<Point2f> > _imagePoints(1);
-                vector<Mat> rvecs, tvecs;
-                cv::Mat rvec, tvec;
-                Mat distCoeffs;
                 
                 Size2i imageSize(referenceImage.getWidth()/scaleFactor, referenceImage.getHeight()/scaleFactor);
 
@@ -170,52 +165,73 @@ void ofApp::setup() {
                 int flags = CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_FIX_ASPECT_RATIO | CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3;
                 
                 // Run calibrate multiple times to find the best match
-                float bestDistance = -1;
-                int bestJump=2;
+                __block float bestDistance = -1;
+                __block int bestJump=2;
                 
-                int minPoints = 100;
-                for(int k=2;k<imagePoints.size()/minPoints;k++){
-                    Mat1d cameraMatrix = (Mat1d(3, 3) <<
-                                          f, 0, c.x,
-                                          0, f, c.y,
-                                          0, 0, 1);
-                    
-                    _referencePoints[0].clear();
-                    _imagePoints[0].clear();
-                    int jump = k;
-                    for(int j=0;j<imagePoints.size();j+=jump){
-                        _referencePoints[0].push_back(referencePoints[j]);
-                        _imagePoints[0].push_back(imagePoints[j]);
+                int minPoints = 10;
+                int stride = 100;
+                dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
+                dispatch_apply((imagePoints.size()/minPoints-4)/stride, queue, ^(size_t i) {
+                    for(int k = 4+i*stride;k<4+i*stride+stride;k++){
+                        
+               // for(int k=4;k<imagePoints.size()/minPoints;k++){
+                        Mat1d cameraMatrix = (Mat1d(3, 3) <<
+                                              f, 0, c.x,
+                                              0, f, c.y,
+                                              0, 0, 1);
+                        
+                        vector<vector<Point3f> >  _referencePoints(1);
+                        vector<vector<Point2f> > _imagePoints(1);
+                        vector<Mat> rvecs, tvecs;
+                        cv::Mat rvec, tvec;
+                        Mat distCoeffs;
+                        
+                        _referencePoints[0].clear();
+                        _imagePoints[0].clear();
+                        int jump = k;
+                        for(int j=0;j<imagePoints.size();j+=jump){
+                            _referencePoints[0].push_back(referencePoints[j]);
+                            _imagePoints[0].push_back(imagePoints[j]);
+                        }
+                        
+                        
+                        calibrateCamera(_referencePoints, _imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs, flags);
+                        rvec = rvecs[0];
+                        tvec = tvecs[0];
+                        intrinsics.setup(cameraMatrix, imageSize);
+                        modelMatrix = makeMatrix(rvec, tvec);
+                        
+                        vector<Point2f>  imagePoints2(0);
+                        projectPoints(_referencePoints[0], rvec, tvec, cameraMatrix, distCoeffs, imagePoints2);
+                        
+                        float projectionDistance = 0;
+                        for(int j=0;j<imagePoints2.size();j++){
+                            float xx = imagePoints2[j].x - _imagePoints[0][j].x;
+                            float yy = imagePoints2[j].y - _imagePoints[0][j].y;
+                            projectionDistance += sqrt(xx*xx + yy*yy);
+                            //                    cout<<imagePoints2[j]<<"  "<<_imagePoints[0][j]<<endl;
+                            //cout<<imagePoints2[j]<<"  "<<_imagePoints[0][j]<<"  "<<sqrt(xx*xx + yy*yy)<<"  "<<projectionDistance<<endl;
+                        }
+                        projectionDistance /= imagePoints2.size();
+                        cout<<(floor(100*k/(imagePoints.size()/minPoints)))<<"% - Jump "<<k<<" Projection error with "<<_imagePoints[0].size()<<" points: "<<projectionDistance<<endl;
+                        
+                        if(bestDistance == -1 || bestDistance > projectionDistance){
+                            bestDistance = projectionDistance;
+                            bestJump = k;
+                        }
                     }
-                    
-                    calibrateCamera(_referencePoints, _imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs, flags);
-                    rvec = rvecs[0];
-                    tvec = tvecs[0];
-                    intrinsics.setup(cameraMatrix, imageSize);
-                    modelMatrix = makeMatrix(rvec, tvec);
-                    
-                    vector<Point2f>  imagePoints2;
-                    projectPoints(_referencePoints[0], rvec, tvec, cameraMatrix, distCoeffs, imagePoints2);
-                    
-                    float projectionDistance = 0;
-                    for(int j=0;j<imagePoints2.size();j++){
-                        float xx = imagePoints2[j].x - _imagePoints[0][j].x;
-                        float yy = imagePoints2[j].y - _imagePoints[0][j].y;
-                        projectionDistance += sqrt(xx*xx + yy*yy);
-                        //                    cout<<imagePoints2[j]<<"  "<<_imagePoints[0][j]<<endl;
-                    }
-                    projectionDistance /= imagePoints2.size();
-                    cout<<(floor(100*k/(imagePoints.size()/minPoints)))<<"% - Projection error with "<<_imagePoints[0].size()<<" points: "<<projectionDistance<<endl;
-                    
-                    if(bestDistance == -1 || bestDistance > projectionDistance){
-                        bestDistance = projectionDistance;
-                        bestJump = k;
-                    }
-                }
+                });
+                
+                
                 
                 cout<<"Best distance "<<bestDistance<<" (jump="<<bestJump<<")"<<endl;
                 
-                
+                vector<vector<Point3f> >  _referencePoints(1);
+                vector<vector<Point2f> > _imagePoints(1);
+                vector<Mat> rvecs, tvecs;
+                cv::Mat rvec, tvec;
+                Mat distCoeffs;
+
                 int jump = bestJump;
 
                 for(int j=0;j<imagePoints.size();j+=jump){
@@ -241,6 +257,18 @@ void ofApp::setup() {
                 
                 vector<Point2f>  imagePoints2;
                 projectPoints(_referencePoints[0], rvec, tvec, cameraMatrix, distCoeffs, imagePoints2);
+                
+                cout<<endl<<endl<<endl;
+            
+                float projectionDistance = 0;
+                for(int j=0;j<imagePoints2.size();j++){
+                    float xx = imagePoints2[j].x - _imagePoints[0][j].x;
+                    float yy = imagePoints2[j].y - _imagePoints[0][j].y;
+                    projectionDistance += sqrt(xx*xx + yy*yy);
+                                    cout<<imagePoints2[j]<<"  "<<_imagePoints[0][j]<<"  "<<sqrt(xx*xx + yy*yy)<<"  "<<projectionDistance<<endl;
+                }
+                projectionDistance /= imagePoints2.size();
+                cout<<"Final Projection error with "<<_imagePoints[0].size()<<" points: "<<projectionDistance<<endl;
                 
                 
                 debugFbo.begin();
