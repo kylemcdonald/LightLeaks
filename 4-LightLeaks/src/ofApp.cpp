@@ -46,9 +46,6 @@ void ofApp::setup() {
     
     ofSetWindowPosition(1680,0);
     ofSetWindowShape(1920*3, 1200);
-
-    
-    photoCounter = 0;
     
     //Settings
     settings.load("settings.xml");
@@ -64,13 +61,13 @@ void ofApp::setup() {
     //Shader
     shader.setup("shader");
     
-    xyzMap.loadImage("../../../SharedData/xyzMap.exr");
-    normalMap.loadImage("../../../SharedData/normalMap.exr");
-    confidenceMap.loadImage("../../../SharedData/confidenceMap.exr");
+    xyzMap.load("../../../SharedData/xyzMap.exr");
+    normalMap.load("../../../SharedData/normalMap.exr");
+    confidenceMap.load("../../../SharedData/confidenceMap.exr");
     
-    xyzMap.getTextureReference().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
-    normalMap.getTextureReference().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
-    confidenceMap.getTextureReference().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    xyzMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    normalMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    confidenceMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
     
     stage = Lighthouse;
     substage = 0;
@@ -79,7 +76,10 @@ void ofApp::setup() {
     spotlightPosition.setFc(0.01); //Low pass biquad filter - allow only slow frequencies
     
     setupSpeakers();
-    //setupTracker();
+#ifdef USE_CAMERA
+    photoCounter = 0;
+    setupTracker();
+#endif
     
     oscSender.setup("localhost", 7777);
 }
@@ -96,7 +96,7 @@ void ofApp::setupSpeakers() {
     
     float speakerAreaSize = 0.01;
     
-    float* pixels = speakerXYZMap.getPixels();
+    float* pixels = speakerXYZMap.getPixels().getData();
     for(int y=0;y<speakerXYZMap.getHeight();y++){
         for(int x=0;x<speakerXYZMap.getWidth();x++){
             pixels[0] = speakers[x].x;
@@ -110,28 +110,6 @@ void ofApp::setupSpeakers() {
     
     speakerFbo.allocate(speakerXYZMap.getWidth(), speakerXYZMap.getHeight());
     speakerPixels.allocate(speakerXYZMap.getWidth(), speakerXYZMap.getHeight(),4);
-}
-
-void ofApp::setupTracker() {    //Tracker
-    grabber.setup(1920, 1080, 25);
-    
-    contourFinder.setSortBySize(true); // makes sorting consistent
-    contourFinder.setMinAreaRadius(minAreaRadius);
-    contourFinder.setMaxAreaRadius(maxAreaRadius);
-    
-    cameraCalibrationCorners[0] = ofVec2f(settings.getValue("corner0x",0),
-                                          settings.getValue("corner0y",0));
-    cameraCalibrationCorners[1] = ofVec2f(settings.getValue("corner1x",1920),
-                                          settings.getValue("corner1y",0));
-    cameraCalibrationCorners[2] = ofVec2f(settings.getValue("corner2x",1920),
-                                          settings.getValue("corner2y",1080));
-    cameraCalibrationCorners[3] = ofVec2f(settings.getValue("corner3x",0),
-                                          settings.getValue("corner3y",1080));
-    
-    setCorner = -1;
-    firstFrame = true;
-    
-    updateCameraCalibration();
 }
 
 void ofApp::update() {
@@ -198,6 +176,7 @@ void ofApp::update() {
             stageAge = 0;
             stage = stageGoal;
             startStage(stage);
+#ifdef USE_CAMERA
             if(stage == Spotlight) {
                 photoCounter = (photoCounter + 1) % photoFrequency;
                 if(photoCounter == 0) {
@@ -205,6 +184,7 @@ void ofApp::update() {
                     ofSaveImage(grabber.getColorPixels(), "photos/" + ofGetTimestampString() + ".jpg", OF_IMAGE_QUALITY_MEDIUM);
                 }
             }
+#endif
             if(stage == Intermezzo) {
                 substage = (substage + 1) % intermezzoCount;
             }
@@ -212,8 +192,9 @@ void ofApp::update() {
     } else {
         stageAmp = ofClamp(stageAmp+dt*0.5, 0, 1.);
     }
-    
+#ifdef USE_CAMERA
     updateTracker();
+#endif
     updateOsc();
 }
 
@@ -238,8 +219,43 @@ void ofApp::updateOsc() {
     }
 }
 
+#ifdef USE_CAMERA
+void ofApp::updateCameraCalibration(){
+    ofVec2f inputCorners[4];
+    // these x,y correspond to the z,y of the 3d model
+    inputCorners[0] = ofVec2f(0,.5);
+    inputCorners[1] = ofVec2f(1,.5);
+    inputCorners[2] = ofVec2f(1,0);
+    inputCorners[3] = ofVec2f(0,0);
+    
+    cameraCalibration.calculateMatrix(inputCorners, cameraCalibrationCorners);
+}
+
+void ofApp::setupTracker() {
+    //Tracker
+    grabber.setup(1920, 1080, 25);
+    
+    contourFinder.setSortBySize(true); // makes sorting consistent
+    contourFinder.setMinAreaRadius(minAreaRadius);
+    contourFinder.setMaxAreaRadius(maxAreaRadius);
+    
+    cameraCalibrationCorners[0] = ofVec2f(settings.getValue("corner0x",0),
+                                          settings.getValue("corner0y",0));
+    cameraCalibrationCorners[1] = ofVec2f(settings.getValue("corner1x",1920),
+                                          settings.getValue("corner1y",0));
+    cameraCalibrationCorners[2] = ofVec2f(settings.getValue("corner2x",1920),
+                                          settings.getValue("corner2y",1080));
+    cameraCalibrationCorners[3] = ofVec2f(settings.getValue("corner3x",0),
+                                          settings.getValue("corner3y",1080));
+    
+    setCorner = -1;
+    firstFrame = true;
+    
+    updateCameraCalibration();
+}
+
 void ofApp::updateTracker() {
-    /*bool newFrame = grabber.update();
+    bool newFrame = grabber.update();
     
     if(newFrame ) {
         ofPixels& pixels = grabber.getGrayPixels();
@@ -258,7 +274,7 @@ void ofApp::updateTracker() {
             
             if(contourFinder.getContours().size() > 0){
                 logAudience();
-                ofRectangle rect = ofxCv::toOf(contourFinder.getBoundingRect(0));
+                ofDrawRectangleangle rect = ofxCv::toOf(contourFinder.getBoundingRect(0));
                 ofVec2f point = rect.getTopLeft(); // corresponds to feet due to angle of camera
                 point /= trackScale;
                 spotlightPosition.update(cameraCalibration.inversetransform(point));
@@ -273,7 +289,13 @@ void ofApp::updateTracker() {
     } else {
         spotlightThresholder -= dt;
     }
-    spotlightThresholder = ofClamp(spotlightThresholder, 0, delaySpotlight);*/
+    spotlightThresholder = ofClamp(spotlightThresholder, 0, delaySpotlight);
+}
+
+void ofApp::logAudience() {
+    string logLine = buildContourLogLine(contourFinder);
+    ofFile out("log.txt", ofFile::Append);
+    out << logLine << endl;
 }
 
 #include "Poco/DateTimeFormat.h"
@@ -290,12 +312,7 @@ string buildContourLogLine(ofxCv::ContourFinder& finder) {
     }
     return ofJoinString(record, "\t");
 }
-
-void ofApp::logAudience() {
-    string logLine = buildContourLogLine(contourFinder);
-    ofFile out("log.txt", ofFile::Append);
-    out << logLine << endl;
-}
+#endif
 
 void ofApp::draw() {
     ofBackground(0);
@@ -340,7 +357,7 @@ void ofApp::draw() {
         ofPushStyle();
         ofPushMatrix();
         ofTranslate(10, 120);
-        ofRect(0, 0, 4, stageAmp * 100);
+        ofDrawRectangle(0, 0, 4, stageAmp * 100);
         ofTranslate(14, 8);
         ofDrawBitmapStringHighlight(getStageName(stageGoal), 0, 0);
         ofDrawBitmapStringHighlight(getStageName(stage), 0, 100);
@@ -359,7 +376,7 @@ void ofApp::draw() {
     
     
     //Read back the fbo, and average it on the CPU
-    speakerFbo.getTextureReference().readToPixels(speakerPixels);
+    speakerFbo.getTexture().readToPixels(speakerPixels);
     
     ofxOscMessage brightnessMsg;
     brightnessMsg.setAddress("/audio/brightness");
@@ -382,7 +399,7 @@ void ofApp::draw() {
         ofPushMatrix();
         ofTranslate(20, 0);
         for(int i = 0; i < 4; i++) {
-            ofRect(0, 0, 4, 100 * speakerAmp[i]);
+            ofDrawRectangle(0, 0, 4, 100 * speakerAmp[i]);
             ofTranslate(4, 0);
         }
         ofPopMatrix();
@@ -434,19 +451,10 @@ void ofApp::startStage(Stage stage) {
     oscSender.sendMessage(msg);
 }
 
-void ofApp::updateCameraCalibration(){
-    ofVec2f inputCorners[4];
-    // these x,y correspond to the z,y of the 3d model
-    inputCorners[0] = ofVec2f(0,.5);
-    inputCorners[1] = ofVec2f(1,.5);
-    inputCorners[2] = ofVec2f(1,0);
-    inputCorners[3] = ofVec2f(0,0);
-    
-    cameraCalibration.calculateMatrix(inputCorners, cameraCalibrationCorners);
-}
-
 void ofApp::exit() {
+#ifdef USE_CAMERA
     grabber.close();
+#endif
 }
 
 void ofApp::keyPressed(int key) {
@@ -457,6 +465,7 @@ void ofApp::keyPressed(int key) {
         ofToggleFullscreen();
     }
     if(debugMode){
+#ifdef USE_CAMERA
         if(key == '1'){
             setCorner = 0;
         }
@@ -478,6 +487,7 @@ void ofApp::keyPressed(int key) {
             }
             setCorner = -1;
         }
+#endif
         if(key == '\t') {
             float x = ofMap(mouseX, 0, ofGetWidth(), 0, 1);
             float y = ofMap(mouseY, 0, ofGetHeight(), 0, .5);
