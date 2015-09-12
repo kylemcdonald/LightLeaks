@@ -35,5 +35,6 @@ public:
     ofFbo xyzFbo, normalFbo, debugFbo;
     
 
+    ofImage debugViewOutput;
 
 };

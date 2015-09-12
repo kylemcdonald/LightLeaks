@@ -68,7 +68,6 @@ void ofApp::setup() {
 
     
     model.loadModel("model.dae");
-    ofLog()<<ofToDataPath("model.dae",true);
     objectMesh = model.getMesh(0);
     
 
@@ -376,6 +375,7 @@ void ofApp::setup() {
                 proXyzCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
                 //proNormalCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
                 proConfidenceCombined = Mat::zeros(proConfidenceMat.rows, proConfidenceMat.cols, CV_32FC1);
+                debugViewOutput.allocate(proMapMat.cols, proMapMat.rows, OF_IMAGE_COLOR);
             }
             
             int w = proXyzCombined.cols, h = proXyzCombined.rows;
@@ -388,6 +388,8 @@ void ofApp::setup() {
                         Vec4f xyz = xyzMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
                         proXyzCombined.at<Vec4f>(y, x) = xyz;
                         //proNormalCombined.at<Vec4f>(y, x) = normalMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
+                        
+                        debugViewOutput.setColor( x,y,colors[i%10]);
                         
                         mesh.addColor(colors[i%10]);
                         mesh.addVertex(ofVec3f(xyz[0],xyz[1],xyz[2])*range);
@@ -418,6 +420,8 @@ void ofApp::setup() {
 		}
 	}
 	ofSaveImage(proMapFinal, "xyzMap.exr");
+    
+    ofSaveImage(debugViewOutput, "_BuildXYZDebug.jpg", OF_IMAGE_QUALITY_BEST);
 	//ofSaveImage(proNormalFinal, "normalMap.exr");
     
 
@@ -431,53 +435,8 @@ void ofApp::draw() {
     ofBackground(128);
 
     ofSetColor(255);
-    debugFbo.draw(0,0,500,500);
-
-    
-    
-    /*xyzFbo.begin(); {
-        //                  ofSetColor(0,0,0);
-        //                    ofDrawRect(0,0,xyzFbo.getWidth(), xyzFbo.getHeight());
-        ofClear(0,0,0,255);
-        ofSetColor(255,255,255);
-        
-        glPushAttrib(GL_ALL_ATTRIB_BITS);
-        glPushMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glMatrixMode(GL_MODELVIEW);
-        intrinsics.loadProjectionMatrix(10, 2000);
-        applyMatrix(modelMatrix);
-        
-         cam.begin();
-        
-        ofSetColor(100,100,100);
-        objectMesh.drawWireframe();
-        
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        
-        //   intrinsics.loadProjectionMatrix(10, 2000);
-        // applyMatrix(modelMatrix);
-        
-        
-               glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        mesh.draw();
-
-          cam.end();
-        ofSetColor(255, 255, 255);
-        //ofLine(0,0,100,0);
-        
-        
-    }xyzFbo.end();
-*/
-    
-    
-    xyzFbo.draw(500,0,500,500);
-    
-    
+    //debugFbo.draw(0,0,500,500);
+    //xyzFbo.draw(500,0,500,500);
     
     cam.begin();
     
@@ -489,16 +448,6 @@ void ofApp::draw() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-
-//   intrinsics.loadProjectionMatrix(10, 2000);
-  //  applyMatrix(modelMatrix);
-
-    
-  /* xyzShader.begin();
-    xyzShader.setUniform1f("range", range);
-    xyzShader.setUniform3fv("zero", zero.getPtr());
-    objectMesh.drawFaces();
-    xyzShader.end();*/
     
     glPointSize(3);
 
