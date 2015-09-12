@@ -30,6 +30,5 @@ build/
 *.mp3
 
 SharedData*/
-Music/
 2-camamok/bin/data/calibration-*
 LightLeaksRuntime

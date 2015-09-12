@@ -181,7 +181,6 @@ public:
 };
 
 int main() {
-	ofSetWorkingDirectoryToDefault();
 	ofXml settings;
 	settings.load("../../../SharedData/settings.xml");
 	totalProjectors = settings.getIntValue("projectors/count");
