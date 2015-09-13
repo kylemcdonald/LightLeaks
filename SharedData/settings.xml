@@ -7,6 +7,11 @@
 	<sample>
 		<singlepass>true</singlepass>
 	</sample>
+	<buildXyz>
+		<confidenceThreshold>0.1</confidenceThreshold>
+		<viewBetternes>1.5</viewBetternes>
+		<scaleFactor>4</scaleFactor>
+	</buildXyz>
 	<osc>
 		<camera>kyle.local</camera>
 		<projector>halfdanj.local</projector>

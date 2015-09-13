@@ -8,6 +8,12 @@ using namespace cv;
 #define USE_GDC
 #define SAVE_DEBUG
 
+// 180 is good with reflections that are about 30x30px
+// (similar to photoshop's "30px")
+// this should scale to match the size of the reflections in the image
+int blurSize = 300;
+int calibrationMode = INTER_CUBIC;
+
 bool natural(const ofFile& a, const ofFile& b) {
 	string aname = a.getBaseName(), bname = b.getBaseName();
 	int aint = ofToInt(aname), bint = ofToInt(bname);
@@ -40,22 +46,17 @@ void processGraycodeLevel(int i, int n, int dimensions, const Mat& cameraMask, M
 		max(maxMat, imageNormalGray, maxMat);
 		max(maxMat, imageInverseGray, maxMat);
 	}
-	float totalVariation = 0;
-	for(int j = 0; j < n; j++) {
-		totalVariation += 1 << (n - j - 1);
-	}
-	unsigned short curMask = 1 << (n - i - 1);
-	float curVariation = curMask / (dimensions * 255. * totalVariation);
-
+    
+    unsigned short curMask = 1 << (n - i - 1);
 	for(int y = 0; y < h; y++) {
 		for(int x = 0; x < w; x++) {
-			unsigned char normal = imageNormalGray.at<unsigned char>(y, x);
-			unsigned char inverse = imageInverseGray.at<unsigned char>(y, x);
+			const unsigned char& normal = imageNormalGray.at<unsigned char>(y, x);
+			const unsigned char& inverse = imageInverseGray.at<unsigned char>(y, x);
 			if(normal > inverse) {
 				binaryCoded.at<unsigned short>(y, x) |= curMask;
 			}
 			float range = fabsf((float) normal - (float) inverse);
-			confidence.at<float>(y, x) += curVariation * range;
+            confidence.at<float>(y, x) += range;
 		}
     }
     
@@ -63,6 +64,16 @@ void processGraycodeLevel(int i, int n, int dimensions, const Mat& cameraMask, M
 //    saveImage(imageInverseGray, "inverse-gray-" + ofToString(i) + ".jpg");
 //    saveImage(confidence, "confidence-" + ofToString(i) + ".exr");
 //    cout << "cur variation: " << curVariation << endl;
+}
+
+// allocates two 32f Mats each time
+void highpass(Mat img) {
+    Mat img32f, blur32f;
+    ofxCv::copy(img, img32f, CV_32FC1);
+    ofxCv::GaussianBlur(img32f, blur32f, blurSize);
+    img32f -= blur32f;
+    img32f += .5; // center on gray before conversion to 8 bit
+    ofxCv::copy(img32f, img, CV_8UC1);
 }
 
 void ofApp::setup() {
@@ -164,13 +175,14 @@ void ofApp::setup() {
             camWidth = prototype.getWidth(), camHeight = prototype.getHeight();
             
             camConfidence = Mat::zeros(camHeight, camWidth, CV_32FC1);
+//            camConfidence = Mat::ones(camHeight, camWidth, CV_32FC1);
             binaryCodedHorizontal = Mat::zeros(camHeight, camWidth, CV_16UC1);
             binaryCodedVertical = Mat::zeros(camHeight, camWidth, CV_16UC1);
             
             Mat cameraMaskMat;
             if(maskLoaded){
                 cameraMaskMat = toCv(cameraMask);
-                calibration.undistort(cameraMaskMat);
+                calibration.undistort(cameraMaskMat, calibrationMode);
             }
             
             cout << "converted to mat " << cameraMaskMat.rows << "x" << cameraMaskMat.cols << endl;
@@ -208,19 +220,17 @@ void ofApp::setup() {
                    img->setImageType(OF_IMAGE_GRAYSCALE);
                    imgI->setImageType(OF_IMAGE_GRAYSCALE);
                    
-                   
                    Mat bufferMat;
-                   Mat distortedMat = toCv(*img);
-                   imitate(bufferMat, distortedMat);
-                   copy(distortedMat, bufferMat);
                    
-                   calibration.undistort(bufferMat, distortedMat);
+                   Mat distortedMat = toCv(*img);
+                   highpass(distortedMat);
+                   copy(distortedMat, bufferMat);
+                   calibration.undistort(bufferMat, distortedMat, calibrationMode);
                    
                    Mat distortedMatI = toCv(*imgI);
+                   highpass(distortedMatI);
                    copy(distortedMatI, bufferMat);
-                   
-                   calibration.undistort(bufferMat, distortedMatI);
-                   
+                   calibration.undistort(bufferMat, distortedMatI, calibrationMode);
                    
                    hnImageNormal[i] = img;
                    hnImageInverse[i] = imgI;
@@ -272,16 +282,14 @@ void ofApp::setup() {
                     
                     Mat bufferMat;
                     Mat distortedMat = toCv(*img);
-                    imitate(bufferMat, distortedMat);
+                    highpass(distortedMat);
                     copy(distortedMat, bufferMat);
-                    
-                    calibration.undistort(bufferMat, distortedMat);
+                    calibration.undistort(bufferMat, distortedMat, calibrationMode);
 
                     Mat distortedMatI = toCv(*imgI);
+                    highpass(distortedMatI);
                     copy(distortedMatI, bufferMat);
-
-                    calibration.undistort(bufferMat, distortedMatI);
-
+                    calibration.undistort(bufferMat, distortedMatI, calibrationMode);
                     
                     viImageNormal[i] = img;
                     viImageInverse[i] = imgI;
@@ -317,6 +325,9 @@ void ofApp::setup() {
             viImageNormal.clear();  
 
  
+            // convert camConfidence to 0-1 range
+            camConfidence /= 255 * (horizontalBits + verticalBits);
+            
             grayToBinary(binaryCodedHorizontal, horizontalBits);
             grayToBinary(binaryCodedVertical, verticalBits);
             
