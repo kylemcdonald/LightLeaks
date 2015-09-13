@@ -57,7 +57,7 @@ void ofApp::setup() {
 	range = MAX(MAX(diagonal.x, diagonal.y), diagonal.z);
 	cout << "Using min " << min << " max " << max << " and range " << range << endl;
 	
-	referenceImage.loadImage("referenceImage.jpg");
+	referenceImage.load("referenceImage.jpg");
 	referenceImage.resize(referenceImage.getWidth() / 4, referenceImage.getHeight() / 4);
 	ofSetWindowShape(referenceImage.getWidth(), referenceImage.getHeight());
 	
