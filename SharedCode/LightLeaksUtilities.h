@@ -40,8 +40,8 @@ void buildProMap(int proWidth, int proHeight,
 	medianThreshold(proConfidence, .25);
 }
 
-void setCalibrationDataPathRoot(){
-    ofSetDataPathRoot("../../SharedData");
+void setCalibrationDataPathRoot() {
+    ofSetDataPathRoot(ofToDataPath("") + "/../../../SharedData");
     return ;
 }
 

@@ -325,8 +325,9 @@ void ofApp::setup() {
             channels.push_back(binaryCodedHorizontal);
             channels.push_back(emptyChannel);
             merge(channels, binaryCoded);
-            //ofLogVerbose() << "saving binaryCoded";
-            //saveImage(binaryCoded, "binaryCoded.png");
+
+//            ofLogVerbose() << "saving binaryCoded";
+//            saveImage(binaryCoded, path+"/binaryCoded.png");
             
             ofLogVerbose() << "Build Pro Map";
 			
