@@ -50,8 +50,12 @@ void ofApp::setup() {
     xyzShader.load("xyz.vs", "xyz.fs");
     //normalShader.load("normal.vs", "normal.fs");
 
-    
     setCalibrationDataPathRoot();
+
+    ofXml settings("settings.xml");
+    float confidenceThreshold = settings.getFloatValue("buildXyz/confidenceThreshold");
+    float viewBetternes = settings.getFloatValue("buildXyz/viewBetternes");
+    int scaleFactor = settings.getIntValue("buildXyz/scaleFactor");
 
     
     //----- Model stuff
@@ -88,15 +92,19 @@ void ofApp::setup() {
     
     ///----
 	
-	float threshold = 0.0;
-	int scaleFactor = 4;
-	
 	
 	vector<ofFile> scanNames = getScanNames();
 	for(int i = 0; i < scanNames.size(); i++) {
 		ofFile scanName = scanNames[i];
 		string path = scanName.path();
+        float confidenceMultiplier = 1.0;
+//        if(scanName.getFileName().substr(-7)
 		if(scanName.isDirectory() && path[0] != '_') {
+            ofLog()<<scanName.getFileName().substr(scanName.getFileName().size()-7);
+            if(scanName.getFileName().substr(scanName.getFileName().size()-7) == "lowconf"){
+                confidenceMultiplier = 0.5;
+            }
+            
 			ofLogVerbose() << "processing " << path;
 			ofFloatImage xyzMap, proConfidence, normalMap;
 			ofShortImage proMap;
@@ -135,14 +143,15 @@ void ofApp::setup() {
                 for(int y = 0; y < h; y++) {
                     for(int x = 0; x < w; x++) {
                         float cur = proConfidenceMat.at<float>(y, x);
-                        if(cur > 0.5) {
+                        if(cur > 0.1) {
                             Vec4f xyz = proXyzCombined.at<Vec4f>(y, x);
                             
+                          //  cout<<x<<"  "<<y<<"   "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
                             if(xyz[0] != 0 || xyz[1] != 0  || xyz[2] != 0 ){
                                 Vec3w cur = proMapMat.at<Vec3w>(y, x);
                                 //cout<<x<<"  "<<y<<"   "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<" --- "<<cur[0] / scaleFactor<<" "<<cur[1] / scaleFactor<<endl;
 
-                                referencePoints.push_back(Point3f(xyz[0],xyz[1],xyz[2])*range);
+                                referencePoints.push_back(Point3f(xyz[0],xyz[1],xyz[2])*range + Point3f(zero.x, zero.y, zero.z));
                                 imagePoints.push_back(Point2f(cur[0] / scaleFactor, cur[1] / scaleFactor));
                                 
                             }
@@ -162,13 +171,13 @@ void ofApp::setup() {
                 Point2f c = Point2f(imageSize) * (1. / 2);
                 
                 
-                int flags = CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_FIX_ASPECT_RATIO | CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3;
+                int flags = CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_FIX_ASPECT_RATIO | CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_PRINCIPAL_POINT;
                 
                 // Run calibrate multiple times to find the best match
                 __block float bestDistance = -1;
                 __block int bestJump=2;
                 
-                int minPoints = 10;
+                int minPoints = 50;
                 int stride = 100;
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
                 dispatch_apply((imagePoints.size()/minPoints-4)/stride, queue, ^(size_t i) {
@@ -211,7 +220,7 @@ void ofApp::setup() {
                         projectionDistance /= imagePoints2.size();
                         cout<<(floor(100*k/(imagePoints.size()/minPoints)))<<"% - Jump "<<k<<" Projection error with "<<_imagePoints[0].size()<<" points: "<<projectionDistance<<endl;
                         
-                        if(bestDistance == -1 || bestDistance > projectionDistance){
+                        if(bestDistance == -1 || bestDistance > projectionDistance ){
                             bestDistance = projectionDistance;
                             bestJump = k;
                         }
@@ -381,18 +390,20 @@ void ofApp::setup() {
             int w = proXyzCombined.cols, h = proXyzCombined.rows;
             for(int y = 0; y < h; y++) {
                 for(int x = 0; x < w; x++) {
-                    float cur = proConfidenceMat.at<float>(y, x);
-                    if(cur > proConfidenceCombined.at<float>(y, x) && cur > threshold) {
-                        proConfidenceCombined.at<float>(y, x) = proConfidenceMat.at<float>(y, x);
-                        Vec3w cur = proMapMat.at<Vec3w>(y, x);
-                        Vec4f xyz = xyzMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
+                    float curConfidence = proConfidenceMat.at<float>(y, x) * confidenceMultiplier;
+                    Vec3w cur = proMapMat.at<Vec3w>(y, x);
+                    Vec4f xyz = xyzMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
+                    if(curConfidence > proConfidenceCombined.at<float>(y, x)*viewBetternes && curConfidence > confidenceThreshold) {
+                        proConfidenceCombined.at<float>(y, x) = curConfidence;
                         proXyzCombined.at<Vec4f>(y, x) = xyz;
                         //proNormalCombined.at<Vec4f>(y, x) = normalMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
                         
-                        debugViewOutput.setColor( x,y,colors[i%10]);
-                        
+                      //  if(curConfidence > 0.5){
+                            debugViewOutput.setColor( x,y,colors[i%10]);
+                       // }
                         mesh.addColor(colors[i%10]);
-                        mesh.addVertex(ofVec3f(xyz[0],xyz[1],xyz[2])*range);
+                        mesh.addVertex(ofVec3f(xyz[0],xyz[1],xyz[2])*range + zero);
+                        
                     }
                 }
                 
@@ -440,7 +451,7 @@ void ofApp::draw() {
     
     cam.begin();
     
-    ofTranslate(-range*0.5,-range*0.25,-range*0.1);
+    //ofTranslate(-range*0.5,-range*0.25,-range*0.1);
     
     ofSetColor(100,100,100);
     objectMesh.drawWireframe();
