@@ -24,6 +24,7 @@ public:
     
     cv::Mat proConfidence, proMap;
     
+    ofxCv::Calibration calibration;
     int time;
 
 };

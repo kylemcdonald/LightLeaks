@@ -71,6 +71,8 @@ void ofApp::setup() {
     setCalibrationDataPathRoot();
     ofSetLogLevel(OF_LOG_VERBOSE);
     
+    calibration.loadLcp("_lensprofiles/5dmkii-28-105mm-jpg.lcp", 28/*, cv::Size(settings.width, settings.height)*/);
+    
     // projector mask
     Mat projectorMaskMat;
     ofFile projectorMaskFile("mask.png");
@@ -199,14 +201,22 @@ void ofApp::setup() {
                     imgI->setUseTexture(false);
                     
                     // ofLogVerbose() <<"Load "+hnFiles[i].path()<<endl;
-                    img->load(hnFiles[i].path());
-                    imgI->load(hiFiles[i].path());
-                    
-                    img->setImageType(OF_IMAGE_GRAYSCALE);
-                    imgI->setImageType(OF_IMAGE_GRAYSCALE);
-                    
-                    hnImageNormal[i] = img;
-                    hnImageInverse[i] = imgI;
+                   img->load(hnFiles[i].path());
+                   imgI->load(hiFiles[i].path());
+                   
+                   img->setImageType(OF_IMAGE_GRAYSCALE);
+                   imgI->setImageType(OF_IMAGE_GRAYSCALE);
+                   
+                   
+                   Mat distortedMat = toCv(*img);
+                   calibration.undistort(distortedMat);
+                   
+                   Mat distortedMatI = toCv(*imgI);
+                   calibration.undistort(distortedMatI);
+                   
+                   
+                   hnImageNormal[i] = img;
+                   hnImageInverse[i] = imgI;
                 }
 #ifdef USE_GDC
                 );
@@ -252,6 +262,13 @@ void ofApp::setup() {
                     
                     img->setImageType(OF_IMAGE_GRAYSCALE);
                     imgI->setImageType(OF_IMAGE_GRAYSCALE);
+                    
+                    Mat distortedMat = toCv(*img);
+                    calibration.undistort(distortedMat);
+                    
+                    Mat distortedMatI = toCv(*imgI);
+                    calibration.undistort(distortedMatI);
+
                     
                     viImageNormal[i] = img;
                     viImageInverse[i] = imgI;
