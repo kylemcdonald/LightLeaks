@@ -71,7 +71,7 @@ void ofApp::setup() {
     setCalibrationDataPathRoot();
     ofSetLogLevel(OF_LOG_VERBOSE);
     
-    calibration.loadLcp("_lensprofiles/5dmkii-28-105mm-jpg.lcp", 28/*, cv::Size(settings.width, settings.height)*/);
+    calibration.loadLcp("_lensprofiles/5dmkii-28-105mm-jpg.lcp", 28);
     
     // projector mask
     Mat projectorMaskMat;
@@ -170,6 +170,7 @@ void ofApp::setup() {
             Mat cameraMaskMat;
             if(maskLoaded){
                 cameraMaskMat = toCv(cameraMask);
+                calibration.undistort(cameraMaskMat);
             }
             
             cout << "converted to mat " << cameraMaskMat.rows << "x" << cameraMaskMat.cols << endl;
@@ -208,11 +209,17 @@ void ofApp::setup() {
                    imgI->setImageType(OF_IMAGE_GRAYSCALE);
                    
                    
+                   Mat bufferMat;
                    Mat distortedMat = toCv(*img);
-                   calibration.undistort(distortedMat);
+                   imitate(bufferMat, distortedMat);
+                   copy(distortedMat, bufferMat);
+                   
+                   calibration.undistort(bufferMat, distortedMat);
                    
                    Mat distortedMatI = toCv(*imgI);
-                   calibration.undistort(distortedMatI);
+                   copy(distortedMatI, bufferMat);
+                   
+                   calibration.undistort(bufferMat, distortedMatI);
                    
                    
                    hnImageNormal[i] = img;
@@ -263,11 +270,17 @@ void ofApp::setup() {
                     img->setImageType(OF_IMAGE_GRAYSCALE);
                     imgI->setImageType(OF_IMAGE_GRAYSCALE);
                     
+                    Mat bufferMat;
                     Mat distortedMat = toCv(*img);
-                    calibration.undistort(distortedMat);
+                    imitate(bufferMat, distortedMat);
+                    copy(distortedMat, bufferMat);
                     
+                    calibration.undistort(bufferMat, distortedMat);
+
                     Mat distortedMatI = toCv(*imgI);
-                    calibration.undistort(distortedMatI);
+                    copy(distortedMatI, bufferMat);
+
+                    calibration.undistort(bufferMat, distortedMatI);
 
                     
                     viImageNormal[i] = img;
