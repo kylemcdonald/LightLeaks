@@ -31,7 +31,7 @@ void buildProMap(int proWidth, int proHeight,
                 Vec3w curProMap(cx, cy, 0);
                 float& curProConfidence = proConfidence.at<float>(py, px);
                 if(curCamConfidence > curProConfidence) {
-                    proConfidence.at<float>(py, px) = curCamConfidence;
+                    curProConfidence = curCamConfidence;
                     proMap.at<Vec3w>(py, px) = curProMap;
                 }
             }

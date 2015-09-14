@@ -13,76 +13,50 @@ void lookupCamPosition(ofShortImage& proMap,
     cy = camColor[1];
 }
 
-void buildProMapStep(const Mat& binaryCoded,
+bool inside(const unsigned short& x,
+            const unsigned short& y,
+            const int& w,
+            const int& h) {
+    return x >= 0 && x < w && y >= 0 && y < h;
+}
+
+void buildProMapLerp(const Mat& binaryCoded,
                      const Mat& camConfidence,
-                     int proWidth, int proHeight,
                      Mat& proConfidence,
-                     Mat& proMap,
-                     int bshifted) {
-    int camWidth = camConfidence.cols, camHeight = camConfidence.rows;
-    float confidenceNorm = 1. / (bshifted + 1); // could also try checking distance for norm
-    for(int cy = 0; cy < camHeight; cy++) {
-        for(int cx = 0; cx < camWidth; cx++) {
-            const Vec3w& globalpxy = binaryCoded.at<Vec3w>(cy, cx);
-            const unsigned short& gpx = globalpxy[0];
-            const unsigned short& gpy = globalpxy[1];
-            unsigned short px = gpx >> bshifted;
-            unsigned short py = gpy >> bshifted;
-            if(gpx < proWidth && gpy < proHeight) {
-                Vec3w curProMap(cx, cy, 0);
-                float& curProConfidence = proConfidence.at<float>(py, px);
-                float curCamConfidence = camConfidence.at<float>(cy, cx);
-                float confidenceNorm = 1. / (bshifted + 1);
-                curCamConfidence *= confidenceNorm;
-                if(curCamConfidence > curProConfidence) {
-                    curProConfidence = curCamConfidence;
-                    proMap.at<Vec3w>(py, px) = curProMap;
+                     Mat& proMap) {
+    proConfidence.setTo(0);
+    proMap.setTo(0);
+    
+    int ph = proConfidence.rows;
+    int pw = proConfidence.cols;
+    int ch = camConfidence.rows;
+    int cw = camConfidence.cols;
+    for(int cy = 0; cy < ch-1; cy++) {
+        for(int cx = 0; cx < cw-1; cx++) {
+            const float& c00conf = camConfidence.at<float>(cy, cx);
+            const Vec3w& c00map = binaryCoded.at<Vec3w>(cy, cx);
+            const unsigned short& p00x = c00map[0], p00y = c00map[1];
+            
+            const float& c10conf = camConfidence.at<float>(cy, cx+1);
+            const Vec3w& c10map = binaryCoded.at<Vec3w>(cy, cx+1);
+            const unsigned short& p10x = c10map[0], p10y = c10map[1];
+            
+            const float& c01conf = camConfidence.at<float>(cy+1, cx);
+            const Vec3w& c01map = binaryCoded.at<Vec3w>(cy+1, cx);
+            const unsigned short& p01x = c01map[0], p01y = c01map[1];
+            
+            if(inside(p00x, p00y, pw, ph)) {
+                if(inside(p10x, p10y, pw, ph)) {
+                    short dx = (short) p00x - (short) p10x;
+                    short dy = (short) p00y - (short) p10y;
+                }
+                if(inside(p01x, p01y, pw, ph)) {
+                    short dx = (short) p00x - (short) p01x;
+                    short dy = (short) p00y - (short) p01y;
                 }
             }
         }
     }
-}
-
-int getBits(int n) {
-    return ceil(log2(n));
-}
-
-// start with a 1/(2^steps) (e.g., steps = 3, 1/8th) sized projection and work up
-void buildProMapPyr(const Mat& binaryCoded,
-                    const Mat& camConfidence,
-                    Mat& proConfidence,
-                    Mat& proMap,
-                    int steps) {
-    int ph = proConfidence.rows;
-    int pw = proConfidence.cols;
-    int pxb = getBits(pw);
-    int pyb = getBits(ph);
-    int pbw = 1 << pxb;
-    int pbh = 1 << pyb;
-    Mat proConfidencePyr, proConfidencePyrBuffer;
-    Mat proMapPyr, proMapPyrBuffer;
-    for(int step = 0; step < steps; step++) {
-        int bshifted = steps - (step + 1);
-        int curw = pbw >> bshifted;
-        int curh = pbh >> bshifted;
-        ofLog() << "Running for projector size of " << curw << "x" << curh << " at step " << step << " with bshift " << bshifted;
-        if(step == 0) {
-            proConfidencePyr = Mat::zeros(curh, curw, CV_32FC1);
-            proMapPyr = Mat::zeros(curh, curw, CV_16UC3);
-        } else {
-            // copy and upscale on the next iteration
-            copy(proConfidencePyr, proConfidencePyrBuffer);
-            copy(proMapPyr, proMapPyrBuffer);
-            cv::resize(proConfidencePyrBuffer, proConfidencePyr, cv::Size(), 2, 2, INTER_NEAREST);
-            cv::resize(proMapPyrBuffer, proMapPyr, cv::Size(), 2, 2, INTER_NEAREST);
-        }
-        buildProMapStep(binaryCoded, camConfidence, pw, ph, proConfidencePyr, proMapPyr, bshifted);
-        ofxCv::saveImage(proConfidencePyr, ofToString(step) + "-proConfidencePyr.exr");
-        ofxCv::saveImage(proMapPyr, ofToString(step) + "-proMapPyr.png");
-    }
-    //    copy(proConfidencePyr, proConfidence);
-    //    copy(proMapPyr, proMap);
-    // need to crop this into the other
 }
 
 void buildProMapDist(const Mat& binaryCoded,
@@ -131,10 +105,40 @@ void buildProMapDist(const Mat& binaryCoded,
             }
         }
     }
-    ofxCv::saveImage(proConfidence, "proConfidence.exr");
-    ofxCv::saveImage(proMap, "proMap.png");
 }
 
+void buildProMapBlur(const Mat& binaryCodedIn,
+                     const Mat& camConfidenceIn,
+                     Mat& proConfidence,
+                     Mat& proMap) {
+    int ph = proConfidence.rows;
+    int pw = proConfidence.cols;
+    int ch = camConfidenceIn.rows;
+    int cw = camConfidenceIn.cols;
+    proConfidence.setTo(0);
+    proMap.setTo(0);
+    
+    Mat camConfidence, binaryCoded;
+    int k = 3;
+    cv::blur(camConfidenceIn, camConfidence, cv::Size(k, k));
+    cv::blur(binaryCodedIn, binaryCoded, cv::Size(k, k));
+    
+    for(int cy = 0; cy < ch; cy++) {
+        for(int cx = 0; cx < cw; cx++) {
+            float curCamConfidence = camConfidence.at<float>(cy, cx);
+            const Vec3w& pxy = binaryCoded.at<Vec3w>(cy, cx);
+            const unsigned short& px = pxy[0], py = pxy[1];
+            if(px < pw && py < ph) {
+                Vec3w curProMap(cx, cy, 0);
+                float& curProConfidence = proConfidence.at<float>(py, px);
+                if(curCamConfidence > curProConfidence) {
+                    curProConfidence = curCamConfidence;
+                    proMap.at<Vec3w>(py, px) = curProMap;
+                }
+            }
+        }
+    }
+}
 
 class ofApp : public ofBaseApp {
 public:
@@ -214,12 +218,12 @@ public:
         proMap.allocate(proWidth, proHeight, OF_IMAGE_COLOR);
         Mat proConfidenceMat = toCv(proConfidence);
         Mat proMapMat = toCv(proMap);
-        buildProMapDist(toCv(binaryCoded), toCv(camConfidence),
-                        proConfidenceMat, proMapMat,
-                        2);
+        buildProMapBlur(toCv(binaryCoded), toCv(camConfidence),
+                        proConfidenceMat, proMapMat);
         proConfidence.update();
         proMap.update();
-        //        proMap.save("proMap.png");
+        proConfidence.save("proConfidence.exr");
+        proMap.save("proMap.png");
     }
     void dragEvent(ofDragInfo dragInfo) {
         if(dragInfo.files.size() == 1) {

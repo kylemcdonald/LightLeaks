@@ -175,7 +175,6 @@ void ofApp::setup() {
             camWidth = prototype.getWidth(), camHeight = prototype.getHeight();
             
             camConfidence = Mat::zeros(camHeight, camWidth, CV_32FC1);
-//            camConfidence = Mat::ones(camHeight, camWidth, CV_32FC1);
             binaryCodedHorizontal = Mat::zeros(camHeight, camWidth, CV_16UC1);
             binaryCodedVertical = Mat::zeros(camHeight, camWidth, CV_16UC1);
             
@@ -350,8 +349,8 @@ void ofApp::setup() {
             channels.push_back(emptyChannel);
             merge(channels, binaryCoded);
 
-//            ofLogVerbose() << "saving binaryCoded";
-//            saveImage(binaryCoded, path+"/binaryCoded.png");
+            ofLogVerbose() << "saving binaryCoded";
+            saveImage(binaryCoded, path+"/binaryCoded.png");
             
             ofLogVerbose() << "Build Pro Map";
 			
