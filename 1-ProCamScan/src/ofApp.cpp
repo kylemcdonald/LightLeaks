@@ -349,8 +349,8 @@ void ofApp::setup() {
             channels.push_back(emptyChannel);
             merge(channels, binaryCoded);
 
-            ofLogVerbose() << "saving binaryCoded";
-            saveImage(binaryCoded, path+"/binaryCoded.png");
+//            ofLogVerbose() << "saving binaryCoded";
+//            saveImage(binaryCoded, path+"/binaryCoded.png");
             
             ofLogVerbose() << "Build Pro Map";
 			
@@ -358,11 +358,17 @@ void ofApp::setup() {
             proWidth = settings.getIntValue("projectors/width");
 			proHeight = settings.getIntValue("projectors/height");
 			proCount = settings.getIntValue("projectors/count");
-            buildProMap(proCount * proWidth, proHeight,
+//            buildProMap(proCount * proWidth, proHeight,
+//                        binaryCoded,
+//                        camConfidence,
+//                        proConfidence,
+//                        proMap);
+            buildProMapDist(proCount * proWidth, proHeight,
                         binaryCoded,
                         camConfidence,
                         proConfidence,
-                        proMap);
+                        proMap,
+                        3);
                 
             if(!projectorMaskMat.empty()) {
                 cv::multiply(projectorMaskMat, proConfidence, proConfidence);

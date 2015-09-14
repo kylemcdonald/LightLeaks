@@ -59,11 +59,24 @@ void buildProMapLerp(const Mat& binaryCoded,
     }
 }
 
-void buildProMapDist(const Mat& binaryCoded,
-                     const Mat& camConfidence,
+void medianThreshold(cv::Mat& src, float thresholdValue) {
+    cv::Mat thresholded, filtered;
+    ofxCv::threshold(src, thresholded, thresholdValue);
+    ofxCv::medianBlur(thresholded, filtered, 3);
+    thresholded &= filtered;
+    min(src, thresholded, src);
+}
+
+void buildProMapDist(const Mat& binaryCodedIn,
+                     const Mat& camConfidenceIn,
                      Mat& proConfidence,
                      Mat& proMap,
                      int k) {
+    Mat camConfidence;
+    Mat binaryCoded;
+    cv::blur(camConfidenceIn, camConfidence, cv::Size(k, k));
+    cv::blur(binaryCodedIn, binaryCoded, cv::Size(k, k));
+    
     proConfidence.setTo(0);
     proMap.setTo(0);
     int n = 1 + k * 2;
@@ -105,12 +118,14 @@ void buildProMapDist(const Mat& binaryCoded,
             }
         }
     }
+    medianThreshold(proConfidence, .25);
 }
 
 void buildProMapBlur(const Mat& binaryCodedIn,
                      const Mat& camConfidenceIn,
                      Mat& proConfidence,
-                     Mat& proMap) {
+                     Mat& proMap,
+                     int k) {
     int ph = proConfidence.rows;
     int pw = proConfidence.cols;
     int ch = camConfidenceIn.rows;
@@ -118,8 +133,8 @@ void buildProMapBlur(const Mat& binaryCodedIn,
     proConfidence.setTo(0);
     proMap.setTo(0);
     
-    Mat camConfidence, binaryCoded;
-    int k = 3;
+    Mat camConfidence;
+    Mat binaryCoded;
     cv::blur(camConfidenceIn, camConfidence, cv::Size(k, k));
     cv::blur(binaryCodedIn, binaryCoded, cv::Size(k, k));
     
@@ -138,6 +153,7 @@ void buildProMapBlur(const Mat& binaryCodedIn,
             }
         }
     }
+    medianThreshold(proConfidence, .25);
 }
 
 class ofApp : public ofBaseApp {
@@ -218,8 +234,8 @@ public:
         proMap.allocate(proWidth, proHeight, OF_IMAGE_COLOR);
         Mat proConfidenceMat = toCv(proConfidence);
         Mat proMapMat = toCv(proMap);
-        buildProMapBlur(toCv(binaryCoded), toCv(camConfidence),
-                        proConfidenceMat, proMapMat);
+        buildProMapDist(toCv(binaryCoded), toCv(camConfidence),
+                        proConfidenceMat, proMapMat, 3);
         proConfidence.update();
         proMap.update();
         proConfidence.save("proConfidence.exr");
