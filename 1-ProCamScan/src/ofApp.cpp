@@ -175,7 +175,6 @@ void ofApp::setup() {
             camWidth = prototype.getWidth(), camHeight = prototype.getHeight();
             
             camConfidence = Mat::zeros(camHeight, camWidth, CV_32FC1);
-//            camConfidence = Mat::ones(camHeight, camWidth, CV_32FC1);
             binaryCodedHorizontal = Mat::zeros(camHeight, camWidth, CV_16UC1);
             binaryCodedVertical = Mat::zeros(camHeight, camWidth, CV_16UC1);
             
@@ -359,11 +358,17 @@ void ofApp::setup() {
             proWidth = settings.getIntValue("projectors/width");
 			proHeight = settings.getIntValue("projectors/height");
 			proCount = settings.getIntValue("projectors/count");
-            buildProMap(proCount * proWidth, proHeight,
+//            buildProMap(proCount * proWidth, proHeight,
+//                        binaryCoded,
+//                        camConfidence,
+//                        proConfidence,
+//                        proMap);
+            buildProMapDist(proCount * proWidth, proHeight,
                         binaryCoded,
                         camConfidence,
                         proConfidence,
-                        proMap);
+                        proMap,
+                        3);
                 
             if(!projectorMaskMat.empty()) {
                 cv::multiply(projectorMaskMat, proConfidence, proConfidence);
