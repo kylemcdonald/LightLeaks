@@ -18,7 +18,8 @@
 enum Stage {
     Lighthouse=0,
     Spotlight,
-    Intermezzo
+    Intermezzo,
+    Linescan
 };
 
 class ofApp : public ofBaseApp {
@@ -32,6 +33,8 @@ public:
     void mousePressed( int x, int y, int button );
     
     bool debugMode;
+    int debugStage;
+    
     
     float dt, previousTime;
 	
@@ -64,6 +67,12 @@ public:
     ofFbo speakerFbo;
     ofFloatPixels speakerPixels;
     float speakerAmp[4];
+    
+    //Scanlines
+    int scanDir;
+    
+    bool setupCalled;
+    vector< shared_ptr<ofAppBaseWindow> > windows;
     
 #ifdef USE_CAMERA
     void setupTracker(), updateTracker();

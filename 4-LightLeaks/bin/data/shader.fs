@@ -23,6 +23,8 @@ uniform int stage;
 uniform int substage;
 uniform float stageAmp;
 
+uniform vec2 mouse;
+
 const vec3 center = vec3(0.1, 0.25, 0.5);
 
 vec2 rotate(vec2 position, float amount) {
@@ -107,6 +109,17 @@ void main() {
             }
         }
     }
+    else if(stage == 3){
+        // Linescan
+        float scan = mouse.x;
+        
+        float dist = abs(scan - position[substage]);
+        
+        if(dist < 0.1){
+            b = 1.0;
+        }
+    }
+
     
 //    b *= smoothStep(stageAmp); // should be more like fast in/out near 0
 //    b *= confidence; // for previs
