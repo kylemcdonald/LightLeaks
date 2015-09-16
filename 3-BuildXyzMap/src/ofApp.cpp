@@ -484,7 +484,7 @@ void ofApp::processScan(ofFile scanName){
         }
         if(scanName.getFileName().substr(scanName.getFileName().size()-5) == "total"){
             isTotal = true;
-            confidenceMultiplier = 0.5;
+           // confidenceMultiplier = 0.5;
             totalFound = true;
         }
         
@@ -564,7 +564,6 @@ void ofApp::saveResult(){
     
     removeIslands(proConfidenceFinal);
     
-    ofxCv::threshold(proConfidenceFinal, 0);
     int w = proXyzCombined.cols, h = proXyzCombined.rows;
     for(int y = 0; y < h; y++) {
         for(int x = 0; x < w; x++) {
