@@ -2,9 +2,10 @@
 
 "Light Leaks" is an immersive installation built from a pile of mirror balls and a few projectors, created for CLICK Festival 2013 in Elsinore, Denmark.
 
+The app is updated for openFrameworks 090
+
 * https://github.com/kylemcdonald/ofxCv (in addons)
 * https://github.com/kylemcdonald/ofxControlPanel (in addons)
-* https://github.com/YCAMInterlab/ProCamToolkit (in apps folder)
 
 ## Calibration Process
 
@@ -19,7 +20,7 @@ Before doing any calibration, it's essential to measure the room and produce a `
 
 # Install Notes
 
-* Each projector should be focused on the mirror balls, outputting native pixels (no scaling or keystoning) and framing the entire colleciton of mirror balls.
+* Each projector should be focused on the mirror balls, outputting native pixels (no scaling or keystoning) and framing the entire collection of mirror balls.
 
 ## Click Festival (2012)
 
@@ -31,10 +32,14 @@ Before doing any calibration, it's essential to measure the room and produce a `
 * iMac
 * 1280x1024 with TH2G on projectiondesign F32 sx+ (native 1400x1050) inset on the sensor
 * When calibrating, create a network from the calibration computer that shares the ethernet and therefore provides DHCP.
+* BlackMagic grabber and SDI camera for interaction
 
 ## Scopitone Festival (2015)
 
-* Mitsubishi UD8350U 6500 lumens, 1920x1080
+* Mac Pro (the bin)
+* Mitsubishi UD8350U 6500 lumens, 1920x1200
+* 2 projectors running through triplehead2go, the last directly form
+
 
 
 ## Redesign
@@ -47,3 +52,7 @@ Before doing any calibration, it's essential to measure the room and produce a `
 6. Start the LightLeaks app.
 
 
+# Future ideas
+* Auto calibrate from video taken with iPhone. Using BMC to encode the gray code signal. 
+* Auto create point mesh from images so 3d model is not needed, and camamok is not required. 
+* Change ProCamScan into a CLI that automatically is triggered by ProCamSample for live feedback on progress (highlight/hide points that have good confidence)
