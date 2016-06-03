@@ -3,7 +3,7 @@
 #include "EdsdkOsc.h"
 #include "GrayCodeGenerator.h"
 
-int totalProjectors, tw, th;
+int totalPhysicalProjectors, totalProjectors, tw, th;
 
 class testApp : public ofBaseApp {
 public:
@@ -136,12 +136,15 @@ public:
 			camera.draw(0, 0);
 			ofPopMatrix();*/
             
-            ofSetColor(255,0,0);
-            ofRect(0, 0, tw/3, th);
-            ofSetColor(0,255,0);
-            ofRect(tw/3, 0, tw/3, th);
-            ofSetColor(0,0,255);
-            ofRect(2*tw/3, 0, tw/3, th);
+            int singleWidth = tw / totalPhysicalProjectors;
+            for(int i = 0; i < totalPhysicalProjectors; i++) {
+                switch(i % 3) {
+                    case 0: ofSetColor(255,0,0); break;
+                    case 1: ofSetColor(0,255,0); break;
+                    case 2: ofSetColor(0,0,255); break;
+                }
+                ofDrawRectangle(i * singleWidth, 0, singleWidth, th);
+            }
         } else {
             if(generated){
                 generator.get(pattern).draw(projector * tw, 0);
@@ -184,6 +187,7 @@ int main() {
 	ofXml settings;
 	settings.load("../../../SharedData/settings.xml");
 	totalProjectors = settings.getIntValue("projectors/count");
+    totalPhysicalProjectors = totalProjectors;
 	tw = settings.getIntValue("projectors/width");
 	th = settings.getIntValue("projectors/height");
     

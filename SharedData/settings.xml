@@ -1,11 +1,11 @@
 <xml>
 	<projectors>
-		<count>3</count>
+		<count>2</count>
 		<width>1920</width>
 		<height>1200</height>
 	</projectors>
 	<sample>
-		<singlepass>true</singlepass>
+		<singlepass>1</singlepass>
 	</sample>
 	<buildXyz>
 		<confidenceThreshold>0.05</confidenceThreshold>
@@ -14,6 +14,6 @@
 	</buildXyz>
 	<osc>
 		<camera>kyle.local</camera>
-		<projector>halfdanj.local</projector>
+		<projector>lightleaks.local</projector>
 	</osc>
 </xml>
