@@ -72,7 +72,7 @@ public:
 		ofSetVerticalSync(true);
 		ofHideCursor();
 		if(ofFile::doesFileExist("../../../SharedData/mask.png")) {
-			mask.loadImage("../../../SharedData/mask.png");
+			mask.load("../../../SharedData/mask.png");
             ofLog() << "Loaded mask";
             ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
             ofBackground(255);

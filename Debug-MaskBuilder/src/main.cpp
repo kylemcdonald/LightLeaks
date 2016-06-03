@@ -1,7 +1,7 @@
 #include "ofMain.h"
 #include "ofAppGLFWWindow.h"
 
-int sw = 1920*3, sh = 1200, sc = 1;
+int sw = 1920*2, sh = 1200, sc = 1;
 
 class ofApp : public ofBaseApp {
 public:
@@ -19,13 +19,13 @@ public:
 		fbo.end();
 		ofHideCursor();
         
-        ofSetWindowPosition(1680,0);
-        ofSetWindowShape(1920*3, 1200);
+        ofSetWindowPosition(sh,0);
+        ofSetWindowShape(sw, sh);
 
 	}
 	void update() {
 		fbo.begin();
-		ofPushStyle();
+        ofPushStyle();
 		if(ofGetKeyPressed()) {
 			ofSetColor(0);
 		} else {
@@ -34,7 +34,7 @@ public:
 		if(ofGetMousePressed()) {
 			float length = mousePrev.distance(mouseCur);
 			for(int i = 0; i < length; i++) {
-				ofCircle(mousePrev.getInterpolated(mouseCur, i / length), radius);
+				ofDrawCircle(mousePrev.getInterpolated(mouseCur, i / length), radius);
 			}
 			mousePrev = mouseCur;
 		}
@@ -48,10 +48,10 @@ public:
 		ofPushStyle();
 		ofNoFill();
 		ofSetColor(255);
-		ofCircle(mouseCur, radius);
+		ofDrawCircle(mouseCur, radius);
 		ofFill();
 		ofSetColor(255, 64);
-		ofCircle(mouseCur, radius);
+		ofDrawCircle(mouseCur, radius);
 		ofPopStyle();
 	}
 	void mouseMoved(int x, int y) {

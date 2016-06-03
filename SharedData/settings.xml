@@ -13,7 +13,7 @@
 		<scaleFactor>4</scaleFactor>
 	</buildXyz>
 	<osc>
-		<camera>kyle.local</camera>
+		<camera>M01371.local</camera>
 		<projector>lightleaks.local</projector>
 	</osc>
 </xml>
