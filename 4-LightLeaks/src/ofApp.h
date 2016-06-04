@@ -41,7 +41,7 @@ public:
 	ofFloatImage xyzMap;
     ofFloatImage normalMap;
     ofFloatImage confidenceMap;
-	ofAutoShader shader;
+	ofShader shader;
     
     //Settings
     ofxXmlSettings settings;

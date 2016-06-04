@@ -57,7 +57,9 @@ void ofApp::setup() {
 	range = MAX(MAX(diagonal.x, diagonal.y), diagonal.z);
 	cout << "Using min " << min << " max " << max << " and range " << range << endl;
 	
-	referenceImage.load("referenceImage.jpg");
+	bool referenceImageLoaded = referenceImage.load("referenceImage.jpg");
+    if(!referenceImageLoaded) throw "referenceImage.jpg is needed";
+    
 	referenceImage.resize(referenceImage.getWidth() / 4, referenceImage.getHeight() / 4);
 	ofSetWindowShape(referenceImage.getWidth(), referenceImage.getHeight());
 	
@@ -68,6 +70,9 @@ void ofApp::setup() {
 	settings.internalformat = GL_RGBA32F_ARB;
 	fboPositions.allocate(settings);
 	fboNormals.allocate(settings);
+    
+    cam.setFarClip(100000000000000);
+    
 }
 
 void ofApp::update() {
@@ -125,7 +130,7 @@ void ofApp::draw() {
 		center /= 2;
 		center.x -= message.size() * 8 / 2;
 		center.y -= 8;
-		drawHighlightString(message, center);
+		ofDrawBitmapStringHighlight(message, center);
 		ofPopStyle();
 	}
 }
@@ -223,11 +228,11 @@ void ofApp::render() {
 	ofColor transparentBlack(0, 0, 0, 0);
 	switch(geti("drawMode")) {
 		case 0: // faces
-			if(useShader) shader.begin();
+			if(useShader) xyzShader.begin();
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 			objectMesh.drawFaces();
-			if(useShader) shader.end();
+			if(useShader) xyzShader.end();
 			break;
 		case 1: // fullWireframe
 			if(useShader) shader.begin();
@@ -332,7 +337,7 @@ void ofApp::setupControlPanel() {
 	
 	panel.addPanel("Interaction");
 	panel.addToggle("setupMode", true);
-	panel.addSlider("scale", 1, .1, 25);
+	panel.addSlider("scale", 1, .01, 2);
 	panel.addSlider("backgroundColor", 0, 0, 255, true);
 	panel.addMultiToggle("drawMode", 3, variadic("faces")("fullWireframe")("outlineWireframe")("occludedWireframe"));
 	panel.addMultiToggle("shading", 0, variadic("none")("lights")("shader"));
@@ -439,7 +444,7 @@ void ofApp::drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor
 	ofLine(position - ofVec2f(w,0), position + ofVec2f(w,0));
 	ofLine(position - ofVec2f(0,h), position + ofVec2f(0,h));
 	ofCircle(position, geti("selectedPointSize"));
-	drawHighlightString(ofToString(label), position + tooltipOffset, bg, fg);
+	ofDrawBitmapStringHighlight(ofToString(label), position + tooltipOffset, bg, fg);
 	glPopAttrib();
 	ofPopStyle();
 }
@@ -514,7 +519,7 @@ void ofApp::drawOverlay() {
 		glMatrixMode(GL_MODELVIEW);
 		
 		if(calibrationReady) {
-			intrinsics.loadProjectionMatrix(10, 2000);
+			intrinsics.loadProjectionMatrix(10, 20000000);
 			applyMatrix(modelMatrix);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
@@ -542,7 +547,7 @@ void ofApp::drawOverlay() {
 		glMatrixMode(GL_MODELVIEW);
 		
 		if(calibrationReady) {
-			intrinsics.loadProjectionMatrix(10, 2000);
+			intrinsics.loadProjectionMatrix(10, 20000000);
 			applyMatrix(modelMatrix);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
@@ -574,7 +579,7 @@ void ofApp::drawRenderMode() {
 	glMatrixMode(GL_MODELVIEW);
 	
 	if(calibrationReady) {
-		intrinsics.loadProjectionMatrix(10, 2000);
+		intrinsics.loadProjectionMatrix(10, 20000000);
 		applyMatrix(modelMatrix);
 		render();
 		if(getb("setupMode")) {

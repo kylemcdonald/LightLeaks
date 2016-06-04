@@ -42,6 +42,8 @@ string getStageName(int stage) {
 
 void ofApp::setup() {
     if(!setupCalled){
+        oscSender.setup("localhost", 7777);
+
         setupCalled = true;
         ofSetLogLevel(OF_LOG_VERBOSE);
         ofSetVerticalSync(false);
@@ -63,7 +65,7 @@ void ofApp::setup() {
         previousTime = 0;
         
         //Shader
-        shader.setup("shader");
+        shader.load("shader");
         
         xyzMap.load("../../../SharedData/xyzMap.exr");
         normalMap.load("../../../SharedData/normalMap.exr");
@@ -85,7 +87,6 @@ void ofApp::setup() {
         setupTracker();
 #endif
         
-        oscSender.setup("localhost", 7777);
     }
     
     int numWindows = windows.size();
@@ -99,7 +100,7 @@ void ofApp::setup() {
     if(curWindow == 0){
         
      //   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            ofSetWindowPosition(1600, 0);
+            ofSetWindowPosition(0, 0);
             ofSetWindowShape(1920, 1200);
             
      
@@ -107,7 +108,7 @@ void ofApp::setup() {
     }
     if(curWindow == 1){
 //        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            ofSetWindowPosition(1600+1920, 0);
+            ofSetWindowPosition(1920, 0);
             ofSetWindowShape(1920*2,  1200);
             
       //  });
@@ -146,6 +147,10 @@ void ofApp::setupSpeakers() {
 
 void ofApp::update() {
     
+    if(ofGetFrameNum() % 60 == 0){
+        shader.load("shader");
+    }
+    
     int numWindows = windows.size();
     int curWindow = -1;
     for(int i=0;i<numWindows;i++){
@@ -157,7 +162,7 @@ void ofApp::update() {
     if(curWindow == 0){
         
         //   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        ofSetWindowPosition(1600, 0);
+        ofSetWindowPosition(0, 0);
         ofSetWindowShape(1920, 1200);
         
         
@@ -165,8 +170,8 @@ void ofApp::update() {
     }
     if(curWindow == 1){
         //        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        ofSetWindowPosition(1600+1920, 0);
-        ofSetWindowShape(1920*2,  1200);
+        ofSetWindowPosition(0+1920, 0);
+        ofSetWindowShape(1920,  1200);
         
         //  });
     }
@@ -349,7 +354,7 @@ void ofApp::draw() {
         //xyzMap.drawSubsection(0, 0, ofGetWidth(), ofGetHeight(),curWindow * xyzMap.getWidth()/numWindows,0,xyzMap.getWidth()/numWindows, xyzMap.getHeight());
         
         // Special: Draw 1 projector in window 1, 2 projectors in window 2
-        xyzMap.drawSubsection(0, 0, ofGetWidth(), ofGetHeight(),curWindow * xyzMap.getWidth()/3,0,ofGetWidth(), xyzMap.getHeight());
+        xyzMap.drawSubsection(0, 0, ofGetWidth(), ofGetHeight(),curWindow * xyzMap.getWidth()/2,0,ofGetWidth(), xyzMap.getHeight());
     } shader.end();
     
     
@@ -465,6 +470,9 @@ void ofApp::keyPressed(int key) {
     }
     if(key == 'd'){
         debugMode = !debugMode;
+    }
+    if(key == 's'){
+        shader.load("shader");
     }
     if(debugMode){
 #ifdef USE_CAMERA

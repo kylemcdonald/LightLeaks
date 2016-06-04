@@ -54,7 +54,7 @@ int main() {
     settings.shareContextWith = ofGetMainLoop()->getCurrentWindow();
     
     shared_ptr<ofAppBaseWindow> win2 = ofCreateWindow(settings);
-    win2->setWindowTitle("Projector 2+3");
+    win2->setWindowTitle("Projector 2");
     win2->setVerticalSync(false);
     windows.push_back(win2);
 

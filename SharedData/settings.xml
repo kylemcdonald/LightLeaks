@@ -8,7 +8,7 @@
 		<singlepass>1</singlepass>
 	</sample>
 	<buildXyz>
-		<confidenceThreshold>0.05</confidenceThreshold>
+		<confidenceThreshold>0.01</confidenceThreshold>
 		<viewBetternes>1.0</viewBetternes>
 		<scaleFactor>4</scaleFactor>
 	</buildXyz>

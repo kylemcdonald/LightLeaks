@@ -83,7 +83,7 @@ void ofApp::setup() {
     ofSetLogLevel(OF_LOG_VERBOSE);
     
     //calibration.loadLcp("_lensprofiles/5dmkii-28-105mm-jpg.lcp", 28);
-    calibration.loadLcp("_lensprofiles/efs18-135.lcp", 18);
+    calibration.loadLcp("_lensprofiles/16-35mm.lcp", 18);
     
     
     // projector mask

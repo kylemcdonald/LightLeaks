@@ -25,7 +25,7 @@ uniform float stageAmp;
 
 uniform vec2 mouse;
 
-const vec3 center = vec3(0.1, 0.25, 0.5);
+const vec3 center = vec3(0.0, .5, 0.5);
 
 vec2 rotate(vec2 position, float amount) {
     mat2 rotation = mat2(vec2( cos(amount),  sin(amount)),
@@ -50,18 +50,18 @@ void main() {
     if(useConfidence == 0) {
         confidence = 1.;
     }
-    
+
     if(confidence < .1) {
         gl_FragColor = vec4(vec3(0), 1);
         return;
     }
-    
+
     float b = 0.;
-    
+
     // handle time
     float time = elapsedTime;
     time = elapsedTime + sin(elapsedTime); // step time
-    
+
     // handle space
     if(stage == 0) {
         //Lighthouse beam
@@ -112,17 +112,16 @@ void main() {
     else if(stage == 3){
         // Linescan
         float scan = mouse.x;
-        
+
         float dist = abs(scan - position[substage]);
-        
+
         if(dist < 0.1){
             b = 1.0;
         }
     }
 
-    
+
 //    b *= smoothStep(stageAmp); // should be more like fast in/out near 0
 //    b *= confidence; // for previs
     gl_FragColor = vec4(vec3(b), 1.);
 }
-
