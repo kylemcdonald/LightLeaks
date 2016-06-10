@@ -68,6 +68,8 @@ public:
     ofFloatPixels speakerPixels;
     float speakerAmp[4];
     
+    ofImage kl;
+    
     //Scanlines
     int scanDir;
     

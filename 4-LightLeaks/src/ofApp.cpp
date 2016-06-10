@@ -13,7 +13,7 @@ const float lighthouseSpeed = 3;
 
 const float durationIntermezzo = 30;
 const float intervalIntermezzo = 30;
-const int intermezzoCount = 7;
+const int intermezzoCount = 5;
 const float delaySpotlight = 1; // in and out delay
 const int photoFrequency = 1; // every 1 spotlights
 
@@ -80,6 +80,8 @@ void ofApp::setup() {
         
         //Spotlight setup
         spotlightPosition.setFc(0.01); //Low pass biquad filter - allow only slow frequencies
+        
+        kl.load("kl.jpg");
         
         setupSpeakers();
 #ifdef USE_CAMERA
@@ -345,6 +347,7 @@ void ofApp::draw() {
         shader.setUniformTexture("xyzMap", xyzMap, 0);
         //shader.setUniformTexture("normalMap", normalMap, 2);
         shader.setUniformTexture("confidenceMap", confidenceMap, 3);
+        shader.setUniformTexture("kl", kl, 4);
         shader.setUniform1i("useConfidence", 1);
         
         // DRaw all projectors in one window
