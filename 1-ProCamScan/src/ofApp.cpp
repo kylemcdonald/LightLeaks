@@ -8,10 +8,14 @@ using namespace cv;
 #define USE_GDC
 #define SAVE_DEBUG
 
+// Situations like capturing a lcd screen, highpass should be disabled since it blurs the image
+#define RUN_HIGHPASS
+
 // 180 is good with reflections that are about 30x30px
 // (similar to photoshop's "30px")
 // this should scale to match the size of the reflections in the image
-int blurSize = 300;
+int highpassBlurSize = 300;
+
 int calibrationMode = INTER_CUBIC;
 
 bool natural(const ofFile& a, const ofFile& b) {
@@ -68,12 +72,14 @@ void processGraycodeLevel(int i, int n, int dimensions, const Mat& cameraMask, M
 
 // allocates two 32f Mats each time
 void highpass(Mat img) {
+#ifdef RUN_HIGHPASS
     Mat img32f, blur32f;
     ofxCv::copy(img, img32f, CV_32FC1);
-    ofxCv::GaussianBlur(img32f, blur32f, blurSize);
+    ofxCv::GaussianBlur(img32f, blur32f, highpassBlurSize);
     img32f -= blur32f;
     img32f += .5; // center on gray before conversion to 8 bit
     ofxCv::copy(img32f, img, CV_8UC1);
+#endif
 }
 
 void ofApp::setup() {
