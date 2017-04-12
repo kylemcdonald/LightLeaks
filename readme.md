@@ -47,6 +47,8 @@ Before doing any calibration, it's essential to measure the room and produce a `
 
 20x15x4.4m room with 42 mirror balls on floor and 4 projectors at 3.25m high, 7.2m away from center of mirror balls.
 
+Temporarily used a laptop and Mac Pro together for calibration, leading to the "Primary" and "Secondary" ProCamSample instances. This solution doesn't really work because lost OSC messages to the Secondary machine cause irrecoverable problems.
+
 * Mac Pro with 4x [Apple Mini DisplayPort to Dual-Link Display Adapter, with USB Extension](https://www.apple.com/shop/product/MB571LL/A/mini-displayport-to-dual-link-dvi-adapter)
 * 4x [Christie D12HD-H 1DLP projectors](https://www.christiedigital.com/en-us/business/products/projectors/1-chip-dlp/h-series/Christie-D12HD-H) at 10,500 ANSI Lumens, all running at 1920x1080.
 * Additional monitor for debugging. Display arrangement was set so the monitor was the last screen to the right.
