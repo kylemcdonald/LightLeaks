@@ -7,6 +7,7 @@ using namespace cv;
 
 #define USE_GDC
 #define SAVE_DEBUG
+//#define USE_LCP
 
 // Situations like capturing a lcd screen, highpass should be disabled since it blurs the image
 #define RUN_HIGHPASS
@@ -88,9 +89,10 @@ void ofApp::setup() {
     setCalibrationDataPathRoot();
     ofSetLogLevel(OF_LOG_VERBOSE);
     
-    //calibration.loadLcp("_lensprofiles/5dmkii-28-105mm-jpg.lcp", 28);
-    calibration.loadLcp("_lensprofiles/16-35mm.lcp", 18);
-    
+#ifdef USE_LCP
+    string lcpRoot = "/Library/Application Support/Adobe/CameraRaw/LensProfiles/1.0/Canon/";
+    calibration.loadLcp(lcpRoot + "Canon EOS 50D (Canon EF-S 18-135mm f3.5-5.6 IS) - RAW.lcp", 18);
+#endif
     
     // projector mask
     Mat projectorMaskMat;
@@ -189,7 +191,9 @@ void ofApp::setup() {
             Mat cameraMaskMat;
             if(maskLoaded){
                 cameraMaskMat = toCv(cameraMask);
+#ifdef USE_LCP
                 calibration.undistort(cameraMaskMat, calibrationMode);
+#endif
             }
             
             cout << "converted to mat " << cameraMaskMat.rows << "x" << cameraMaskMat.cols << endl;
@@ -231,13 +235,17 @@ void ofApp::setup() {
                    
                    Mat distortedMat = toCv(*img);
                    highpass(distortedMat);
+#ifdef USE_LCP
                    copy(distortedMat, bufferMat);
                    calibration.undistort(bufferMat, distortedMat, calibrationMode);
+#endif
                    
                    Mat distortedMatI = toCv(*imgI);
                    highpass(distortedMatI);
+#ifdef USE_LCP
                    copy(distortedMatI, bufferMat);
                    calibration.undistort(bufferMat, distortedMatI, calibrationMode);
+#endif
                    
                    hnImageNormal[i] = img;
                    hnImageInverse[i] = imgI;
@@ -290,13 +298,17 @@ void ofApp::setup() {
                     Mat bufferMat;
                     Mat distortedMat = toCv(*img);
                     highpass(distortedMat);
+#ifdef USE_LCP
                     copy(distortedMat, bufferMat);
                     calibration.undistort(bufferMat, distortedMat, calibrationMode);
+#endif
 
                     Mat distortedMatI = toCv(*imgI);
                     highpass(distortedMatI);
+#ifdef USE_LCP
                     copy(distortedMatI, bufferMat);
                     calibration.undistort(bufferMat, distortedMatI, calibrationMode);
+#endif
                     
                     viImageNormal[i] = img;
                     viImageInverse[i] = imgI;

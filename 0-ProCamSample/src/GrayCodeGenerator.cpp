@@ -30,7 +30,7 @@ void GrayCodeGenerator::generate() {
 			single[i++] = value;
 		}
 		int sequencePosition = subdivisions - k - 1;
-		unsigned char* pixels = sequence[sequencePosition].getPixels();
+        unsigned char* pixels = sequence[sequencePosition].getPixels().getData();
 		if(orientation == VERTICAL) {
 			for(int y = 0; y < height; y++) {
 				memcpy(&pixels[y * width * 3], single, width * 3);

@@ -71,7 +71,7 @@ void ofApp::setup() {
 	fboPositions.allocate(settings);
 	fboNormals.allocate(settings);
     
-    cam.setFarClip(100000000000000);
+    cam.setFarClip(1000000);
     
 }
 
@@ -123,8 +123,8 @@ void ofApp::draw() {
 		ofPushStyle();
 		ofSetColor(magentaPrint);
 		ofSetLineWidth(8);
-		ofLine(0, 0, ofGetWidth(), ofGetHeight());
-		ofLine(ofGetWidth(), 0, 0, ofGetHeight());
+		ofDrawLine(0, 0, ofGetWidth(), ofGetHeight());
+		ofDrawLine(ofGetWidth(), 0, 0, ofGetHeight());
 		string message = "Shader failed to compile.";
 		ofVec2f center(ofGetWidth(), ofGetHeight());
 		center /= 2;
@@ -441,9 +441,9 @@ void ofApp::drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor
 	float h = ofGetHeight();
 	ofSetLineWidth(0);
 	ofNoFill();
-	ofLine(position - ofVec2f(w,0), position + ofVec2f(w,0));
-	ofLine(position - ofVec2f(0,h), position + ofVec2f(0,h));
-	ofCircle(position, geti("selectedPointSize"));
+	ofDrawLine(position - ofVec2f(w,0), position + ofVec2f(w,0));
+	ofDrawLine(position - ofVec2f(0,h), position + ofVec2f(0,h));
+	ofDrawCircle(position, geti("selectedPointSize"));
 	ofDrawBitmapStringHighlight(ofToString(label), position + tooltipOffset, bg, fg);
 	glPopAttrib();
 	ofPopStyle();
@@ -523,7 +523,7 @@ void ofApp::drawOverlay() {
 			applyMatrix(modelMatrix);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
+			glCullFace(GL_FRONT);
 			xyzShader.begin();
 			xyzShader.setUniform1f("range", range);
 			xyzShader.setUniform3fv("zero", zero.getPtr());
@@ -551,7 +551,7 @@ void ofApp::drawOverlay() {
 			applyMatrix(modelMatrix);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
+			glCullFace(GL_FRONT);
 			normalShader.begin();
 			objectMesh.drawFaces();
 			normalShader.end();
@@ -621,7 +621,7 @@ void ofApp::drawRenderMode() {
 			cur = Point2f(ofLerp(cur.x, mouseX, rate), ofLerp(cur.y, mouseY, rate));
 			drawLabeledPoint(choice, toOf(cur), yellowPrint, ofColor::white, ofColor::black);
 			ofSetColor(ofColor::black);
-			ofRect(toOf(cur), 1, 1);
+			ofDrawRectangle(toOf(cur), 1, 1);
 		} else {
 			// check to see if anything is selected
 			// draw hover magenta

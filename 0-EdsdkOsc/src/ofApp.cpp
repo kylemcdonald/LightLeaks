@@ -4,13 +4,15 @@ void ofApp::setup() {
 	ofXml settings;
 	settings.load("../../../SharedData/settings.xml");
 	
-    remoteComputer = settings.getValue("osc/projector");
+    remoteComputerPrimary = settings.getValue("osc/projector/primary");
+    remoteComputerSecondary = settings.getValue("osc/projector/secondary");
     
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	oscIn.setup(9000);
-	oscOut.setup(remoteComputer, 9001);
+    oscOutPrimary.setup(remoteComputerPrimary, 9001);
+    oscOutSecondary.setup(remoteComputerSecondary, 9001);
 	manual = false;
     camera.setLiveView(false);
 	camera.setup();
@@ -40,7 +42,8 @@ void ofApp::update() {
 			ofxOscMessage msgOut;
             msgOut.setAddress("/newPhoto");
             msgOut.addStringArg(savePath);
-			oscOut.sendMessage(msgOut);
+            oscOutPrimary.sendMessage(msgOut);
+            oscOutSecondary.sendMessage(msgOut);
         }
         camera.savePhoto(savePath);
         preview.load(savePath);
@@ -55,11 +58,12 @@ void ofApp::draw() {
         preview.draw(0, 0, ofGetWidth(), ofGetHeight());
     }
     
-	ofDrawBitmapStringHighlight("savePath: " + savePath, 10, 20);
-    ofDrawBitmapStringHighlight("remote computer: " + remoteComputer, 10, 40);
-    ofDrawBitmapStringHighlight("press 'p' to take a preview image", 10, 60);
-    ofDrawBitmapStringHighlight("press ' ' to start the scan", 10, 80);
-    ofDrawBitmapStringHighlight("press 'tab' to continue broken communication", 10, 100);
+    ofDrawBitmapStringHighlight("savePath: " + savePath, 10, 20);
+    ofDrawBitmapStringHighlight("remote computer primary: " + remoteComputerPrimary, 10, 40);
+    ofDrawBitmapStringHighlight("remote computer secondary: " + remoteComputerSecondary, 10, 60);
+    ofDrawBitmapStringHighlight("press 'p' to take a preview image", 10, 80);
+    ofDrawBitmapStringHighlight("press ' ' to start the scan", 10, 100);
+    ofDrawBitmapStringHighlight("press 'tab' to continue broken communication", 10, 120);
 }
 
 void ofApp::keyPressed(int key) {
@@ -73,12 +77,14 @@ void ofApp::keyPressed(int key) {
     if(key == ' ') {
         ofxOscMessage msgOut;
         msgOut.setAddress("/start");
-        oscOut.sendMessage(msgOut);
+        oscOutPrimary.sendMessage(msgOut);
+        oscOutSecondary.sendMessage(msgOut);
     }
     if(key == '\t') {
         ofxOscMessage msgOut;
         msgOut.setAddress("/newPhoto");
         // in this case, lastPath is empty, and the same pattern is re-shot
-        oscOut.sendMessage(msgOut);
+        oscOutPrimary.sendMessage(msgOut);
+        oscOutSecondary.sendMessage(msgOut);
     }
 }

@@ -10,6 +10,7 @@ uniform sampler2DRect confidenceMap;
 uniform int useConfidence;
 
 uniform float elapsedTime;
+uniform float timeSinceBeat;
 
 //Lighthouse
 uniform float beamAngle;
@@ -122,6 +123,8 @@ void main() {
             b = 1.0;
         }
     }
+    
+    b *= timeSinceBeat;
 
 
 //    b *= smoothStep(stageAmp); // should be more like fast in/out near 0

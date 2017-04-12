@@ -1,15 +1,16 @@
 #include "ofMain.h"
-#include "ofAppGLFWWindow.h"
 #include "EdsdkOsc.h"
 #include "GrayCodeGenerator.h"
 
+bool primary;
+int monitorWidth;
 int totalPhysicalProjectors, totalProjectors, tw, th;
 
 class testApp : public ofBaseApp {
 public:
 	ofImage mask;
 	EdsdkOsc camera;
-	
+    
 	GrayCodeGenerator generator;
 	bool capturing = false;
 	int totalDirection = 2;
@@ -81,8 +82,9 @@ public:
             ofBackground(0);
         }
         
-        ofSetWindowPosition(1680,0);
-        ofSetWindowShape(1920*3, 1200);
+        // this will need to be modified if running from computer with monitor vs no monitor
+        ofSetWindowPosition(monitorWidth, 0);
+        ofSetWindowShape(tw*totalPhysicalProjectors, th);
 		ofSetLogLevel(OF_LOG_VERBOSE);
         camera.setup();
 	}
@@ -100,7 +102,7 @@ public:
                 inverse = 0;
                 
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg");
+                    camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg", primary);
                 });
                 
                 timestamp = ofToString(ofGetHours())+ofToString(ofGetMinutes());
@@ -118,7 +120,7 @@ public:
                     captureTime = ofGetElapsedTimeMillis();
                     needToCapture = true;
                 } else {
-                    cout<<"Done taking photos. Huray!"<<endl;
+                    cout<<"Done taking photos. Hurray!"<<endl;
                     capturing = false;
                 }
             }
@@ -126,7 +128,14 @@ public:
 		}
 	}
 	
-	void draw() {
+    void draw() {
+        int singleWidth = tw / totalPhysicalProjectors;
+        
+        if(!primary) {
+            float offset = (totalPhysicalProjectors / 2) * singleWidth;
+            ofTranslate(-offset, 0);
+        }
+        
 		ofSetColor(255);
        
 		if(!capturing) {
@@ -136,13 +145,9 @@ public:
 			camera.draw(0, 0);
 			ofPopMatrix();*/
             
-            int singleWidth = tw / totalPhysicalProjectors;
             for(int i = 0; i < totalPhysicalProjectors; i++) {
-                switch(i % 3) {
-                    case 0: ofSetColor(255,0,0); break;
-                    case 1: ofSetColor(0,255,0); break;
-                    case 2: ofSetColor(0,0,255); break;
-                }
+                float hue = ofMap(i, 0, totalPhysicalProjectors, 0, 255);
+                ofSetColor(ofColor::fromHsb(hue, 255, 255));
                 ofDrawRectangle(i * singleWidth, 0, singleWidth, th);
             }
         } else {
@@ -154,7 +159,7 @@ public:
             }
         }
 		if(needToCapture && (ofGetElapsedTimeMillis() - captureTime) > bufferTime) {
-			camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg");
+            camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg", primary);
 			needToCapture = false;
 		}
 	}
@@ -170,11 +175,11 @@ public:
             timestamp = ofToString(ofGetHours())+ofToString(ofGetMinutes());
             generate();
             
-			camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg");
+			camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg", primary);
 			capturing = true;
 		}
 		if(key == 'r') {
-			camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg");
+			camera.takePhoto(curDirectory + ofToString(pattern) + ".jpg", primary);
 			referenceImage = true;
 		}
 		if(key == 'f') {
@@ -191,17 +196,22 @@ int main() {
 	tw = settings.getIntValue("projectors/width");
 	th = settings.getIntValue("projectors/height");
     
+    monitorWidth = settings.getIntValue("monitorWidth");
+    primary = settings.getBoolValue("primary");
+    cout << "running as primary: " << primary << endl;
+    
     if(settings.getBoolValue("sample/singlepass")) {
         ofLog() << "Using single pass sampling";
         tw *= totalProjectors;
         totalProjectors = 1;
     }
 	
-    ofAppGLFWWindow win;
+    ofGLFWWindowSettings win;
     
-    win.setMultiDisplayFullscreen(true); //this makes the fullscreen window span across all your monitors
+    win.width = 1024;
+    win.height = 768;
+    win.multiMonitorFullScreen = true;
     
-    ofSetupOpenGL(&win, 1280, 720, OF_FULLSCREEN);
-	//ofSetupOpenGL(&win, totalProjectors * tw, th, OF_FULLSCREEN);
-	ofRunApp(new testApp());
+    ofCreateWindow(win)->setFullscreen(true);
+    ofRunApp(new testApp());
 }

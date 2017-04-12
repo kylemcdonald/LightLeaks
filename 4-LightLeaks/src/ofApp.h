@@ -96,4 +96,6 @@ public:
     
     //OSC
     ofxOscSender oscSender;
+    ofxOscReceiver oscBeat;
+    float lastBeat;
 };

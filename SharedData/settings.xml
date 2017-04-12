@@ -1,19 +1,26 @@
 <xml>
+    <debugMode>0</debugMode>
+	<primary>0</primary>
+	<monitorWidth>1680</monitorWidth>
+
 	<projectors>
-		<count>2</count>
+		<count>4</count>
 		<width>1920</width>
-		<height>1200</height>
+		<height>1080</height>
 	</projectors>
 	<sample>
 		<singlepass>1</singlepass>
 	</sample>
 	<buildXyz>
-		<confidenceThreshold>0.01</confidenceThreshold>
+		<confidenceThreshold>0.05</confidenceThreshold>
 		<viewBetternes>1.0</viewBetternes>
 		<scaleFactor>4</scaleFactor>
 	</buildXyz>
 	<osc>
-		<camera>M01371.local</camera>
-		<projector>lightleaks.local</projector>
+		<camera>kyle.local</camera>
+		<projector>
+			<primary>lightleaks.local</primary>
+			<secondary>169.254.137.220</secondary>
+		</projector>
 	</osc>
 </xml>

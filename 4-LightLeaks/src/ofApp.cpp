@@ -43,6 +43,7 @@ string getStageName(int stage) {
 void ofApp::setup() {
     if(!setupCalled){
         oscSender.setup("localhost", 7777);
+        oscBeat.setup(9090);
 
         setupCalled = true;
         ofSetLogLevel(OF_LOG_VERBOSE);
@@ -57,7 +58,7 @@ void ofApp::setup() {
         settings.load("settings.xml");
         config.load("config.xml");
         debugMode = config.getBoolValue("debugMode");
-        ofSetWindowPosition(config.getIntValue("window/x"), config.getIntValue("window/y"));
+//        ofSetWindowPosition(config.getIntValue("window/x"), config.getIntValue("window/y"));
         if(config.getBoolValue("fullscreen")) {
 //            ofSetFullscreen(true);
         }
@@ -68,11 +69,11 @@ void ofApp::setup() {
         shader.load("shader");
         
         xyzMap.load("../../../SharedData/xyzMap.exr");
-        normalMap.load("../../../SharedData/normalMap.exr");
+//        normalMap.load("../../../SharedData/normalMap.exr");
         confidenceMap.load("../../../SharedData/confidenceMap.exr");
         
         xyzMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
-        normalMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+//        normalMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
         confidenceMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
         
         stage = Lighthouse;
@@ -81,7 +82,7 @@ void ofApp::setup() {
         //Spotlight setup
         spotlightPosition.setFc(0.01); //Low pass biquad filter - allow only slow frequencies
         
-        kl.load("kl.jpg");
+//        kl.load("kl.jpg");
         
         setupSpeakers();
 #ifdef USE_CAMERA
@@ -91,30 +92,31 @@ void ofApp::setup() {
         
     }
     
-    int numWindows = windows.size();
-    int curWindow = -1;
-    for(int i=0;i<numWindows;i++){
-        if(ofGetWindowPtr() == windows[i].get()){
-            curWindow = i;
-        }
-    }
+    int numWindows = 1;
+//    int numWindows = windows.size();
+//    int curWindow = -1;
+//    for(int i=0;i<numWindows;i++){
+//        if(ofGetWindowPtr() == windows[i].get()){
+//            curWindow = i;
+//        }
+//    }
     
-    if(curWindow == 0){
-        
-     //   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            ofSetWindowPosition(0, 0);
-            ofSetWindowShape(1920, 1200);
-            
-     
-     //   });
-    }
-    if(curWindow == 1){
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            ofSetWindowPosition(1920, 0);
-            ofSetWindowShape(1920*2,  1200);
-            
-      //  });
-    }
+//    if(curWindow == 0){
+//        
+//     //   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            ofSetWindowPosition(0, 0);
+//            ofSetWindowShape(1920, 1200);
+//            
+//     
+//     //   });
+//    }
+//    if(curWindow == 1){
+////        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            ofSetWindowPosition(1920, 0);
+//            ofSetWindowShape(1920*2,  1200);
+//            
+//      //  });
+//    }
 
     
 }
@@ -153,30 +155,32 @@ void ofApp::update() {
         shader.load("shader");
     }
     
-    int numWindows = windows.size();
-    int curWindow = -1;
-    for(int i=0;i<numWindows;i++){
-        if(ofGetWindowPtr() == windows[i].get()){
-            curWindow = i;
-        }
-    }
+    int numWindows = 1;
     
-    if(curWindow == 0){
-        
-        //   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        ofSetWindowPosition(0, 0);
-        ofSetWindowShape(1920, 1200);
-        
-        
-        //   });
-    }
-    if(curWindow == 1){
-        //        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        ofSetWindowPosition(0+1920, 0);
-        ofSetWindowShape(1920,  1200);
-        
-        //  });
-    }
+//    int numWindows = windows.size();
+//    int curWindow = -1;
+//    for(int i=0;i<numWindows;i++){
+//        if(ofGetWindowPtr() == windows[i].get()){
+//            curWindow = i;
+//        }
+//    }
+    
+//    if(curWindow == 0){
+//        
+//        //   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        ofSetWindowPosition(0, 0);
+//        ofSetWindowShape(1920, 1200);
+//        
+//        
+//        //   });
+//    }
+//    if(curWindow == 1){
+//        //        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        ofSetWindowPosition(0+1920, 0);
+//        ofSetWindowShape(1920,  1200);
+//        
+//        //  });
+//    }
 
     
     float currentTime = ofGetElapsedTimef();
@@ -286,6 +290,13 @@ void ofApp::update() {
 }
 
 void ofApp::updateOsc() {
+    while(oscBeat.hasWaitingMessages()) {
+        ofxOscMessage msg;
+        oscBeat.getNextMessage(msg);
+        lastBeat = ofGetElapsedTimef();
+        cout << "got beat" << endl;
+    }
+    
     if(stage == Lighthouse) {
         ofxOscMessage msg;
         msg.setAddress("/audio/lighthouse_angle");
@@ -309,13 +320,14 @@ void ofApp::updateOsc() {
 
 
 void ofApp::draw() {
-    int numWindows = windows.size();
-    int curWindow = 0;
-    for(int i=0;i<numWindows;i++){
-        if(ofGetWindowPtr() == windows[i].get()){
-            curWindow = i;
-        }
-    }
+    int numWindows = 1;
+//    int numWindows = windows.size();
+//    int curWindow = 0;
+//    for(int i=0;i<numWindows;i++){
+//        if(ofGetWindowPtr() == windows[i].get()){
+//            curWindow = i;
+//        }
+//    }
     
     ofBackground(0);
     ofEnableAlphaBlending();
@@ -347,17 +359,21 @@ void ofApp::draw() {
         shader.setUniformTexture("xyzMap", xyzMap, 0);
         //shader.setUniformTexture("normalMap", normalMap, 2);
         shader.setUniformTexture("confidenceMap", confidenceMap, 3);
-        shader.setUniformTexture("kl", kl, 4);
+//        shader.setUniformTexture("kl", kl, 4);
         shader.setUniform1i("useConfidence", 1);
         
+        float curTime = ofGetElapsedTimef();
+        float timeSinceBeat = curTime - lastBeat;
+        shader.setUniform1f("timeSinceBeat", timeSinceBeat);
+        
         // DRaw all projectors in one window
-        //xyzMap.draw(0, 0, ofGetWidth(), ofGetHeight());
+        xyzMap.draw(0, 0, ofGetWidth(), ofGetHeight());
         
         // Draw 1 projector per window
-        //xyzMap.drawSubsection(0, 0, ofGetWidth(), ofGetHeight(),curWindow * xyzMap.getWidth()/numWindows,0,xyzMap.getWidth()/numWindows, xyzMap.getHeight());
+//        xyzMap.drawSubsection(0, 0, ofGetWidth(), ofGetHeight(),curWindow * xyzMap.getWidth()/numWindows,0,xyzMap.getWidth()/numWindows, xyzMap.getHeight());
         
         // Special: Draw 1 projector in window 1, 2 projectors in window 2
-        xyzMap.drawSubsection(0, 0, ofGetWidth(), ofGetHeight(),curWindow * xyzMap.getWidth()/2,0,ofGetWidth(), xyzMap.getHeight());
+//        xyzMap.drawSubsection(0, 0, ofGetWidth(), ofGetHeight(),curWindow * xyzMap.getWidth()/2,0,ofGetWidth(), xyzMap.getHeight());
     } shader.end();
     
     
