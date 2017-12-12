@@ -26,6 +26,8 @@ void ofApp::httpGet(string url) {
         if(savePath.size() == 0){
             savePath = "preview.jpg";
         }
+        ofStringReplace(savePath, "/SharedData", "../../../SharedData");
+        
         ofLog()<<"Take photo: "<<savePath;
         capturing = true;
         camera.takePhoto();

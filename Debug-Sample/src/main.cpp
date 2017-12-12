@@ -52,6 +52,48 @@ public:
     }
 };
 
+
+// this camera is connected on network
+class NetworkCamera {
+private:
+    uint64_t lastTime = 0;
+    bool newPhoto = false;
+    bool startRequested = false;
+    
+public:
+    void setup() {
+    }
+    
+    void takePhoto(string filename) {
+        ofLog() <<"Take photo"<< filename;
+        ofStringReplace(filename, "../../../SharedData", "/SharedData");
+        lastTime = ofGetElapsedTimeMillis();
+        auto resp = ofLoadURL("http://localhost:8080/actions/takePhoto/"+filename);
+        if(resp.status != 200){
+            ofLogError()<<"Could not trigger camera "<<resp.error<< " Status: "<<resp.status;
+        } else {
+            newPhoto = true;
+        }
+    }
+    bool isStartRequested() {
+        bool prevStartRequested = startRequested;
+        startRequested = false;
+        return prevStartRequested;
+    }
+    bool isPhotoNew() {
+        bool prevNewPhoto = newPhoto;
+        newPhoto = false;
+        return prevNewPhoto;
+    }
+    
+    // override the start request using this projection app
+    void fakeStart() {
+        startRequested = true;
+    }
+};
+
+
+
 class ServerApp : public ofBaseApp {
 public:
     bool debug = false;
@@ -62,7 +104,7 @@ public:
     string timestamp;
     int pattern = 0;
     vector<tuple<int,int,int>> patterns;
-    FakeCamera camera;
+    NetworkCamera camera;
     
     void setup() {
         ofLog() << "Running";
@@ -208,7 +250,8 @@ public:
             ofDrawBitmapStringHighlight(ofToString(id) + "/" + fps, 10, 20);
         } else {
             ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
-            mask.draw(0, 0);
+            if(mask.isAllocated())
+                mask.draw(0, 0);
         }
         ofPopStyle();
     }
