@@ -2,12 +2,12 @@
 
 "Light Leaks" is an immersive installation built from a pile of mirror balls and a few projectors, created for CLICK Festival 2013 in Elsinore, Denmark.
 
-The repo is meant to be used with openFrameworks 0.9.8.
+The repo is meant to be used with openFrameworks 0.10.0 (a0bd41a75).
 
-* https://github.com/kylemcdonald/ofxCv/commit/e2db58a48472482e89a8fb17da8722a4032090dd
-* https://github.com/kylemcdonald/ofxControlPanel/commit/c45e93856ba9bab2a70b7e1f6e44255399b91637
-* https://github.com/kylemcdonald/ofxEdsdk/commit/a40f6e4d85b11585edb98ccfc0d743436980a1f2
-* https://github.com/dzlonline/ofxBiquadFilter/commit/87dbafce8036c09304ff574401026725c16013d1
+* https://github.com/kylemcdonald/ofxCv @ c171afa
+* https://github.com/kylemcdonald/ofxControlPanel @ c45e93856ba9bab2a70b7e1f6e44255399b91637
+* https://github.com/kylemcdonald/ofxEdsdk @ a40f6e4d85b11585edb98ccfc0d743436980a1f2
+* https://github.com/dzlonline/ofxBiquadFilter @ 87dbafce8036c09304ff574401026725c16013d1
 
 ## Calibration Process
 

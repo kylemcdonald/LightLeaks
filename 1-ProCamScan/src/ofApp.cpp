@@ -99,7 +99,7 @@ void ofApp::setup() {
     ofFile projectorMaskFile("mask.png");
     if(projectorMaskFile.exists()){
         ofLogVerbose() << "Projector mask loaded";
-        projectorMask.load(projectorMaskFile);
+        projectorMask.load("mask.png");
         projectorMask.setImageType(OF_IMAGE_GRAYSCALE);
         copy(projectorMask, projectorMaskMat, CV_32FC1);
         ofLogVerbose() << "Built mask with " << projectorMaskMat.cols << "x" << projectorMaskMat.rows;
@@ -372,24 +372,33 @@ void ofApp::setup() {
 //            ofLogVerbose() << "saving binaryCoded";
 //            saveImage(binaryCoded, path+"/binaryCoded.png");
             
-            ofLogVerbose() << "Build Pro Map";
-			
-			ofXml settings("settings.xml");
-            proWidth = settings.getIntValue("projectors/width");
-			proHeight = settings.getIntValue("projectors/height");
-			proCount = settings.getIntValue("projectors/count");
-//            buildProMap(proCount * proWidth, proHeight,
+            
+            ofJson settings = ofLoadJson("settings.json");
+                int width=0, height=0;
+                for(auto p : settings["projectors"]){
+                    width = MAX(width, int(p["width"]) + int(p["xcode"]));
+                    height = MAX(height, int(p["height"]) + int(p["ycode"]));
+                }
+                
+//            proWidth = settings.getIntValue("projectors/width");
+//			proHeight = settings.getIntValue("projectors/height");
+//			proCount = settings.getIntValue("projectors/count");
+                
+            ofLogVerbose() << "Build Pro Map: "<<width<<" X "<<height;
+//            buildProMap(width, height,
 //                        binaryCoded,
 //                        camConfidence,
 //                        proConfidence,
 //                        proMap);
-            buildProMapDist(proCount * proWidth, proHeight,
+                
+                
+                buildProMapDist(width, height,
                         binaryCoded,
                         camConfidence,
                         proConfidence,
                         proMap,
                         3);
-                
+
             if(!projectorMaskMat.empty()) {
                 cv::multiply(projectorMaskMat, proConfidence, proConfidence);
             }

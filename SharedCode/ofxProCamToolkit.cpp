@@ -197,11 +197,11 @@ void drawChessboardCorners(cv::Size patternSize, const vector<Point2f>& centers)
 			}
 			ofVec2f cur = toOf(centers[i++]);
 			ofDrawCircle(cur, radius);
-			crosses.addVertex(cur - firstCross);
-			crosses.addVertex(cur + firstCross);
-			crosses.addVertex(cur - secondCross);
-			crosses.addVertex(cur + secondCross);
-			lines.addVertex(cur);
+			crosses.addVertex(ofVec3f(cur) - firstCross);
+			crosses.addVertex(ofVec3f(cur) + firstCross);
+			crosses.addVertex(ofVec3f(cur) - secondCross);
+			crosses.addVertex(ofVec3f(cur) + secondCross);
+			lines.addVertex(ofVec3f(cur));
 		}
 	}
 	lines.draw();
@@ -496,9 +496,9 @@ int exportPlyVertices(ostream& ply, ofMesh& cloud) {
 	int i = 0;
 	ofVec3f zero(0, 0, 0);
 	vector<ofFloatColor>& colors = cloud.getColors();
-	vector<ofVec3f>& surface = cloud.getVertices();
+    auto& surface = cloud.getVertices();
 	for(int i = 0; i < surface.size(); i++) {
-		if (surface[i] != zero) {
+		if (ofVec3f(surface[i]) != zero) {
 			ply.write(reinterpret_cast<char*>(&(surface[i].x)), sizeof(float));
 			ply.write(reinterpret_cast<char*>(&(surface[i].y)), sizeof(float));
 			ply.write(reinterpret_cast<char*>(&(surface[i].z)), sizeof(float));
