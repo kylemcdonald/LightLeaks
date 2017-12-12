@@ -7,6 +7,9 @@
 
 #include "ofMain.h"
 #include "ofAppNoWindow.h"
+#include "ofxWebServer.h"
+
+ofJson jsonconfig;
 
 // this camera always returns after 500ms
 class FakeCamera {
@@ -56,7 +59,6 @@ public:
 // this camera is connected on network
 class NetworkCamera {
 private:
-    uint64_t lastTime = 0;
     bool newPhoto = false;
     bool startRequested = false;
     
@@ -67,8 +69,8 @@ public:
     void takePhoto(string filename) {
         ofLog() <<"Take photo"<< filename;
         ofStringReplace(filename, "../../../SharedData", "/SharedData");
-        lastTime = ofGetElapsedTimeMillis();
-        auto resp = ofLoadURL("http://localhost:8080/actions/takePhoto/"+filename);
+        string hostname = jsonconfig["osc"]["camera"];
+        auto resp = ofLoadURL("http://"+hostname+":8080/actions/takePhoto/"+filename);
         if(resp.status != 200){
             ofLogError()<<"Could not trigger camera "<<resp.error<< " Status: "<<resp.status;
         } else {
@@ -94,7 +96,7 @@ public:
 
 
 
-class ServerApp : public ofBaseApp {
+class ServerApp : public ofBaseApp, public ofxWSRequestHandler {
 public:
     bool debug = false;
     bool capturing = false;
@@ -105,10 +107,14 @@ public:
     int pattern = 0;
     vector<tuple<int,int,int>> patterns;
     NetworkCamera camera;
-    
+    ofxWebServer webserver;
+
     void setup() {
         ofLog() << "Running";
         camera.setup();
+        webserver.start("httpdocs", 8000);
+        webserver.addHandler(this, "actions/*");
+
     }
     void config(ofVec2f box) {
         int xk = ceil(log2(box.x));
@@ -153,7 +159,7 @@ public:
                 needToCapture = true;
             }
         }
-        if(camera.isPhotoNew()) {
+        if(capturing && camera.isPhotoNew()) {
             if(nextState()) {
                 lastCaptureTime = curTime;
                 needToCapture = true;
@@ -192,6 +198,28 @@ public:
     int getInverted() {
         return get<2>(patterns[pattern]);
     }
+    
+    void start(){
+        pattern = 0;
+        camera.fakeStart();
+    }
+    
+    void httpGet(string url){
+        if(ofIsStringInString(url,"/actions/start") == 1){
+            start();
+            httpResponse("Started");
+        }
+        if(ofIsStringInString(url,"/actions/stop") == 1){
+            capturing = false;
+            needToCapture = false;
+            httpResponse("Stopped");
+        }
+        if(ofIsStringInString(url,"/actions/cameraHostname") == 1){
+            string hostname = jsonconfig["osc"]["camera"];
+            httpResponse(hostname);
+        }
+
+    }
 };
 
 class ClientApp : public ofBaseApp {
@@ -202,7 +230,7 @@ public:
     
     ofShader shader;
     ofImage mask;
-    
+
     void config(int id, int n, int xcode, int ycode, shared_ptr<ServerApp> server) {
         this->id = id;
         this->hue = id / float(n);
@@ -258,6 +286,7 @@ public:
     void keyPressed(int key) {
         server->keyPressed(key);
     }
+   
 };
 
 ofVec2f getBoundingBox(const ofJson& projectors) {
@@ -272,11 +301,11 @@ ofVec2f getBoundingBox(const ofJson& projectors) {
 }
 
 int main() {
-    ofJson config = ofLoadJson("../../../SharedData/settings.json");
+    jsonconfig = ofLoadJson("../../../SharedData/settings.json");
     
     shared_ptr<ofAppNoWindow> winServer(new ofAppNoWindow);
     shared_ptr<ServerApp> appServer(new ServerApp);
-    ofVec2f box = getBoundingBox(config["projectors"]);
+    ofVec2f box = getBoundingBox(jsonconfig["projectors"]);
     appServer->config(box);
     ofRunApp(winServer, appServer);
     
@@ -286,9 +315,9 @@ int main() {
     settings.numSamples = 1;
     settings.resizable = true;
     
-    int n = config["projectors"].size();
+    int n = jsonconfig["projectors"].size();
     for(int i = 0; i < n; i++) {
-        ofJson curConfig = config["projectors"][i];
+        ofJson curConfig = jsonconfig["projectors"][i];
         settings.monitor = curConfig["monitor"];
         settings.width = curConfig["width"];
         settings.height = curConfig["height"];
