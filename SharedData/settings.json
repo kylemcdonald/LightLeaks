@@ -46,7 +46,7 @@
 		"scaleFactor": 4
 	},
 	"osc": {
-		"camera": "kyle.local",
+		"camera": "localhost",
 		"projector": "iyoiyo-gpu.local"
 	}
 }
