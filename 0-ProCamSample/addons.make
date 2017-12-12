@@ -1,4 +1,1 @@
-ofxCv
-ofxOpenCv
-ofxOsc
 ofxWebServer
