@@ -71,14 +71,16 @@ public:
 	void update() {
 		//sendMessage("/update");
 	}
-	void takePhoto(string filename) {
+	void takePhoto(string filename, bool primary) {
         cout<<"Take photo "<<filename<<endl;
         error = false;
         lastPath = filename;
+        if(primary) {
         ofxOscMessage msgOut;
-        msgOut.setAddress("/takeAndSavePhoto");
-        msgOut.addStringArg(filename);
-        oscOut.sendMessage(msgOut);
+            msgOut.setAddress("/takeAndSavePhoto");
+            msgOut.addStringArg(filename);
+            oscOut.sendMessage(msgOut);
+        }
 	}
 	
 	void draw(float x, float y) {

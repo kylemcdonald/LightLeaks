@@ -2,21 +2,23 @@
 
 "Light Leaks" is an immersive installation built from a pile of mirror balls and a few projectors, created for CLICK Festival 2013 in Elsinore, Denmark.
 
-The app is updated for openFrameworks 090
+The repo is meant to be used with openFrameworks 0.9.8.
 
-* https://github.com/kylemcdonald/ofxCv (in addons)
-* https://github.com/kylemcdonald/ofxControlPanel (in addons)
+* https://github.com/kylemcdonald/ofxCv/commit/e2db58a48472482e89a8fb17da8722a4032090dd
+* https://github.com/kylemcdonald/ofxControlPanel/commit/c45e93856ba9bab2a70b7e1f6e44255399b91637
+* https://github.com/kylemcdonald/ofxEdsdk/commit/a40f6e4d85b11585edb98ccfc0d743436980a1f2
+* https://github.com/dzlonline/ofxBiquadFilter/commit/87dbafce8036c09304ff574401026725c16013d1
 
 ## Calibration Process
 
-Before doing any calibration, it's essential to measure the room and produce a `model.dae` file that includes all the geometry you want to project on. We usually build this file in SketchUp with a laser rangefinder for measurements, then save with "export two-sided faces" enabled, and finally load the model into MeshLab and save it again. MeshLab changes the order of the axes, and saves the geometry in a way that makes it easier to load into OpenFrameworks.
+Before doing any calibration, it's essential to measure the room and produce a `model.dae` file that includes all the geometry you want to project on. We usually build this file in SketchUp with a laser rangefinder for measurements, then save with "export two-sided faces" enabled, and finally load the model into MeshLab and save it again. MeshLab changes the order of the axes, and saves the geometry in a way that makes it easier to load into OpenFrameworks. (Note: at BLACK we ignored the "export two-sided faces" step and the MeshLab step, and camamok was modified slightly to work for this situation.)
 
 0. Capture multiple structured light calibration patterns using `ProCamSample` with `EdsdkOsc`. Make sure the projector size and OSC hosts match your configuration in `settings.xml`. If the camera has image stabilization, make sure to turn it off.
 0. Place the resulting data in a folder called `scan/cameraImages/` in `SharedData/`. Run `ProCamScan` and this will generate `proConfidence.exr` and `proMap.png`.
-0. Place your `model.dae` and a `referenceImage.jpg` of the well lit space in `camamok/bin/data/`. Run `camamok` on your reference image. Hit the (back tick key) to generate the normals, then press the `saveXyzMap` button to save the normals.
+0. Place your `model.dae` and a `referenceImage.jpg` of the well lit space in `camamok/bin/data/`. Run `camamok` on your reference image. Hit the 'o' key to generate the normals, then press the `saveXyzMap` button to save the normals.
 0. Place the resulting `xyzMap.exr` and `normalMap.exr` inside `SharedData/scan/`.
-0. Run `BuildXyzMap`. This will produce `SharedData/confidenceMap.exr`, `SharedData/xyzMap.exr` and `SharedData/normalMap.exr`
-0. Copy the results of `BuildXyzMap` into `ProcessXyzMap/bin/data/` and run `ProcessXyzMap`.
+0. Run `BuildXyzMap` and drag `SharedData/scan` into the app. This will produce `SharedData/scan/camConfidence.exr` and `SharedData/scan/xyzMap.exr`. Repeat this step for multiple scans, then hit "s" to save the output. This will produce `SharedData/confidenceMap.exr` and `SharedData/xyzMap.exr`.
+0. Run `LightLeaks`.
 
 # Install Notes
 
@@ -25,7 +27,7 @@ Before doing any calibration, it's essential to measure the room and produce a `
 ## Click Festival (2012)
 
 * Mac Mini
-* 1024x768 (native resolution) with TH2G
+* 1024x768 (native resolution) with TripleHead2Go
 
 ## La Gaîté Lyrique (2014)
 
@@ -37,10 +39,22 @@ Before doing any calibration, it's essential to measure the room and produce a `
 ## Scopitone Festival (2015)
 
 * Mac Pro (the bin)
-* Mitsubishi UD8350U 6500 lumens, 1920x1200
-* 2 projectors running through triplehead2go, the last directly form
+* 3x [Mitsubishi UD8350U](http://www.mitsubishielectric.com/bu/projectors/products/data/high_resolution/ud8350u_lu_features.html) 6,500 Lumens, 1920x1200
+* 2 projectors running through TripleHead2Go, the last directly from the Mac Pro
+* One monitor hidden in the back closet
 
+## BLACK Festival (2017)
 
+20x15x4.4m room with 42 mirror balls on floor and 4 projectors at 3.25m high, 7.2m away from center of mirror balls.
+
+Temporarily used a laptop and Mac Pro together for calibration, leading to the "Primary" and "Secondary" ProCamSample instances. This solution doesn't really work because lost OSC messages to the Secondary machine cause irrecoverable problems.
+
+* Mac Pro with 4x [Apple Mini DisplayPort to Dual-Link Display Adapter, with USB Extension](https://www.apple.com/shop/product/MB571LL/A/mini-displayport-to-dual-link-dvi-adapter)
+* 4x [Christie D12HD-H 1DLP projectors](https://www.christiedigital.com/en-us/business/products/projectors/1-chip-dlp/h-series/Christie-D12HD-H) at 10,500 ANSI Lumens, all running at 1920x1080.
+* Additional monitor for debugging. Display arrangement was set so the monitor was the last screen to the right.
+* [Scarlett Focusrite 18i8](https://us.focusrite.com/usb-audio-interfaces/scarlett-18i8) audio interface.
+
+# Future ideas
 
 ## Redesign
 
@@ -51,8 +65,8 @@ Before doing any calibration, it's essential to measure the room and produce a `
 5. In the Calibration app, select control points until the model lines up.
 6. Start the LightLeaks app.
 
+## Other ideas
 
-# Future ideas
 * Auto calibrate from video taken with iPhone. Using BMC to encode the gray code signal. 
 * Auto create point mesh from images so 3d model is not needed, and camamok is not required. 
 * Change ProCamScan into a CLI that automatically is triggered by ProCamSample for live feedback on progress (highlight/hide points that have good confidence)

@@ -1,8 +1,12 @@
 <xml>
+    <debugMode>0</debugMode>
+	<primary>0</primary>
+	<monitorWidth>1680</monitorWidth>
+
 	<projectors>
-		<count>2</count>
+		<count>4</count>
 		<width>1920</width>
-		<height>1200</height>
+		<height>1080</height>
 	</projectors>
 	<sample>
 		<singlepass>1</singlepass>
@@ -14,6 +18,9 @@
 	</buildXyz>
 	<osc>
 		<camera>kyle.local</camera>
-		<projector>lightleaks.local</projector>
+		<projector>
+			<primary>lightleaks.local</primary>
+			<secondary>169.254.137.220</secondary>
+		</projector>
 	</osc>
 </xml>

@@ -10,6 +10,7 @@ uniform sampler2DRect confidenceMap;
 uniform int useConfidence;
 
 uniform float elapsedTime;
+uniform float timeSinceBeat;
 
 //Lighthouse
 uniform float beamAngle;
@@ -25,7 +26,7 @@ uniform float stageAmp;
 
 uniform vec2 mouse;
 
-const vec3 center = vec3(0.1, 0.25, 0.5);
+const vec3 center = vec3(0.5, .38, 0.);
 
 vec2 rotate(vec2 position, float amount) {
     mat2 rotation = mat2(vec2( cos(amount),  sin(amount)),
@@ -50,22 +51,21 @@ void main() {
     if(useConfidence == 0) {
         confidence = 1.;
     }
-    
+
     if(confidence < .1) {
         gl_FragColor = vec4(vec3(0), 1);
         return;
     }
-    
+
     float b = 0.;
-    
+
     // handle time
     float time = elapsedTime;
     time = elapsedTime + sin(elapsedTime); // step time
-    
     // handle space
     if(stage == 0) {
         //Lighthouse beam
-        vec2 rotated = rotate(centered.yz, beamAngle);
+        vec2 rotated = rotate(centered.xy, beamAngle);
         float positionAngle = atan(rotated.y, rotated.x);
         b = 1. - ((positionAngle + PI) / TWO_PI);
     }
@@ -84,45 +84,50 @@ void main() {
     } else if(stage == 2) {
         if(substage < 1) {
             // fast rising stripes
-            b = mod(position.x * 10. - time * 1.5, 1.);
+            b = mod(position.z * 10. - time * 1.5, 1.);
             b *= b;
         } else if(substage < 2) {
             // glittering floor
             float t = sin(time)*.5;
             vec2 rot = vec2(sin(t), cos(t)) * (1. + sin(time) * .5) + time;
-            b = sin(50. * dot(rot, centered.yz));
+            b = sin(50. * dot(rot, centered.xy));
         } else if(substage < 3) {
             // concentric spheres
-            b = sin(500.*mod(length(centered)+(0.02*sin(time*1.)), 10.));
+            b = sin(200.*mod(length(centered)+(0.02*sin(time*1.)), 10.));
         } else if(substage < 4) {
             // unstable floor
-            float t = sin(time)*.1;
+            float t = sin(time)*.25;
             vec2 rot = vec2(sin(t), cos(t));
-            b = sin(50.*dot(rot, centered.yz));
-        } else if(substage < 5) {
+            b = sin(50.*dot(rot, centered.xz));
+        } else if(substage < 5)     {
             // checkerboard (needs to be animated)
-            vec3 modp = mod(position.xyz * 24, 2.);
+            vec3 modp = mod(time + position.xyz * 10., 2.);
             if(modp.x > 1) {
                 b = (modp.z < 1 || modp.y > 1) ? 1 : 0;
             } else {
                 b = (modp.z > 1 || modp.y < 1) ? 1 : 0;
             }
+        } else if(substage < 6) {
+            // slower rising stripes
+            b = mod(position.z - time * 0.5, 1.);
+            b *= b;
         }
     }
     else if(stage == 3){
         // Linescan
         float scan = mouse.x;
-        
+
         float dist = abs(scan - position[substage]);
-        
+
         if(dist < 0.1){
             b = 1.0;
         }
     }
-
     
+    b *= timeSinceBeat;
+
+
 //    b *= smoothStep(stageAmp); // should be more like fast in/out near 0
 //    b *= confidence; // for previs
     gl_FragColor = vec4(vec3(b), 1.);
 }
-

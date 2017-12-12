@@ -17,11 +17,11 @@ public:
     ofxEdsdk::Camera camera;
     ofImage preview;
 	ofxOscReceiver oscIn;
-	ofxOscSender oscOut;
+    ofxOscSender oscOutPrimary, oscOutSecondary;
 	
 	string savePath;
 	bool capturing;
 	bool manual;
     
-    string remoteComputer;
+    string remoteComputerPrimary, remoteComputerSecondary;
 };

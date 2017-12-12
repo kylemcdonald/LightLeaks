@@ -41,7 +41,7 @@ public:
 	ofFloatImage xyzMap;
     ofFloatImage normalMap;
     ofFloatImage confidenceMap;
-	ofAutoShader shader;
+	ofShader shader;
     
     //Settings
     ofxXmlSettings settings;
@@ -67,6 +67,8 @@ public:
     ofFbo speakerFbo;
     ofFloatPixels speakerPixels;
     float speakerAmp[4];
+    
+    ofImage kl;
     
     //Scanlines
     int scanDir;
@@ -94,4 +96,6 @@ public:
     
     //OSC
     ofxOscSender oscSender;
+    ofxOscReceiver oscBeat;
+    float lastBeat;
 };

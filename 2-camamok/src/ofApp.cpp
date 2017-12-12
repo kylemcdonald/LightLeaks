@@ -57,7 +57,9 @@ void ofApp::setup() {
 	range = MAX(MAX(diagonal.x, diagonal.y), diagonal.z);
 	cout << "Using min " << min << " max " << max << " and range " << range << endl;
 	
-	referenceImage.load("referenceImage.jpg");
+	bool referenceImageLoaded = referenceImage.load("referenceImage.jpg");
+    if(!referenceImageLoaded) throw "referenceImage.jpg is needed";
+    
 	referenceImage.resize(referenceImage.getWidth() / 4, referenceImage.getHeight() / 4);
 	ofSetWindowShape(referenceImage.getWidth(), referenceImage.getHeight());
 	
@@ -68,6 +70,9 @@ void ofApp::setup() {
 	settings.internalformat = GL_RGBA32F_ARB;
 	fboPositions.allocate(settings);
 	fboNormals.allocate(settings);
+    
+    cam.setFarClip(1000000);
+    
 }
 
 void ofApp::update() {
@@ -118,14 +123,14 @@ void ofApp::draw() {
 		ofPushStyle();
 		ofSetColor(magentaPrint);
 		ofSetLineWidth(8);
-		ofLine(0, 0, ofGetWidth(), ofGetHeight());
-		ofLine(ofGetWidth(), 0, 0, ofGetHeight());
+		ofDrawLine(0, 0, ofGetWidth(), ofGetHeight());
+		ofDrawLine(ofGetWidth(), 0, 0, ofGetHeight());
 		string message = "Shader failed to compile.";
 		ofVec2f center(ofGetWidth(), ofGetHeight());
 		center /= 2;
 		center.x -= message.size() * 8 / 2;
 		center.y -= 8;
-		drawHighlightString(message, center);
+		ofDrawBitmapStringHighlight(message, center);
 		ofPopStyle();
 	}
 }
@@ -223,11 +228,11 @@ void ofApp::render() {
 	ofColor transparentBlack(0, 0, 0, 0);
 	switch(geti("drawMode")) {
 		case 0: // faces
-			if(useShader) shader.begin();
+			if(useShader) xyzShader.begin();
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 			objectMesh.drawFaces();
-			if(useShader) shader.end();
+			if(useShader) xyzShader.end();
 			break;
 		case 1: // fullWireframe
 			if(useShader) shader.begin();
@@ -332,7 +337,7 @@ void ofApp::setupControlPanel() {
 	
 	panel.addPanel("Interaction");
 	panel.addToggle("setupMode", true);
-	panel.addSlider("scale", 1, .1, 25);
+	panel.addSlider("scale", 1, .01, 2);
 	panel.addSlider("backgroundColor", 0, 0, 255, true);
 	panel.addMultiToggle("drawMode", 3, variadic("faces")("fullWireframe")("outlineWireframe")("occludedWireframe"));
 	panel.addMultiToggle("shading", 0, variadic("none")("lights")("shader"));
@@ -436,10 +441,10 @@ void ofApp::drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor
 	float h = ofGetHeight();
 	ofSetLineWidth(0);
 	ofNoFill();
-	ofLine(position - ofVec2f(w,0), position + ofVec2f(w,0));
-	ofLine(position - ofVec2f(0,h), position + ofVec2f(0,h));
-	ofCircle(position, geti("selectedPointSize"));
-	drawHighlightString(ofToString(label), position + tooltipOffset, bg, fg);
+	ofDrawLine(position - ofVec2f(w,0), position + ofVec2f(w,0));
+	ofDrawLine(position - ofVec2f(0,h), position + ofVec2f(0,h));
+	ofDrawCircle(position, geti("selectedPointSize"));
+	ofDrawBitmapStringHighlight(ofToString(label), position + tooltipOffset, bg, fg);
 	glPopAttrib();
 	ofPopStyle();
 }
@@ -514,11 +519,11 @@ void ofApp::drawOverlay() {
 		glMatrixMode(GL_MODELVIEW);
 		
 		if(calibrationReady) {
-			intrinsics.loadProjectionMatrix(10, 2000);
+			intrinsics.loadProjectionMatrix(10, 20000000);
 			applyMatrix(modelMatrix);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
+			glCullFace(GL_FRONT);
 			xyzShader.begin();
 			xyzShader.setUniform1f("range", range);
 			xyzShader.setUniform3fv("zero", zero.getPtr());
@@ -542,11 +547,11 @@ void ofApp::drawOverlay() {
 		glMatrixMode(GL_MODELVIEW);
 		
 		if(calibrationReady) {
-			intrinsics.loadProjectionMatrix(10, 2000);
+			intrinsics.loadProjectionMatrix(10, 20000000);
 			applyMatrix(modelMatrix);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
+			glCullFace(GL_FRONT);
 			normalShader.begin();
 			objectMesh.drawFaces();
 			normalShader.end();
@@ -574,7 +579,7 @@ void ofApp::drawRenderMode() {
 	glMatrixMode(GL_MODELVIEW);
 	
 	if(calibrationReady) {
-		intrinsics.loadProjectionMatrix(10, 2000);
+		intrinsics.loadProjectionMatrix(10, 20000000);
 		applyMatrix(modelMatrix);
 		render();
 		if(getb("setupMode")) {
@@ -616,7 +621,7 @@ void ofApp::drawRenderMode() {
 			cur = Point2f(ofLerp(cur.x, mouseX, rate), ofLerp(cur.y, mouseY, rate));
 			drawLabeledPoint(choice, toOf(cur), yellowPrint, ofColor::white, ofColor::black);
 			ofSetColor(ofColor::black);
-			ofRect(toOf(cur), 1, 1);
+			ofDrawRectangle(toOf(cur), 1, 1);
 		} else {
 			// check to see if anything is selected
 			// draw hover magenta
