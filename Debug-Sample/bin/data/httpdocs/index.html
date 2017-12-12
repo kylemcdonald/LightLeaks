@@ -1,23 +1,36 @@
 <html>
 	<head>
+		<style>
+			body {
+				font-family: sans-serif;
+			}
+		</style>
 		<script>
 			let hostname = "localhost";
+			let timer;
 
 			fetch("/actions/cameraHostname").then((resp)=> resp.text())
 			.then((_hostname)=>{
 				hostname = _hostname;
 				console.log("Camera hostname",hostname);
-				// document.getElementById('camera').href = "http://"+hostname+":8080"
+				
 			})
 
 			function start(){
-				fetch('/actions/start').then(()=>{
-					// document.getElementById('img').src = '/preview.jpg?t='+Math.random()
-				});
+				fetch('/actions/start')
+				timer = setInterval(()=>{
+					fetch("/actions/currentPattern")
+					.then((resp)=> resp.text())
+					.then((stats)=>{
+						// console.log(stats);
+						document.getElementById("status").innerText = stats;
+					})
+				}, 300)
 				
 			}
 			function stop(){
 				fetch('/actions/stop')
+				clearInterval(timer);
 			}
 
 			function preview(){
@@ -30,11 +43,11 @@
 	<body>
 	<h1>Light Leaks - ProCamSample remote</h1>
 	<ul>
-		<li><a href="javascript:start();">Start calibration</a></li>
+		<li><a href="javascript:start();">Start calibration</a><span id="status"></span></li>
 		<li><a href="javascript:stop();">Stop</a></li>
 		<li><a href="javascript:preview()" id="camera">Take preview</a></li>
 	</ul>
 	
-	<img src="" id="img" alt="">
+	<img src="" id="img" alt="" style="width:100%">
 	</body>
 </html>

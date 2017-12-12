@@ -218,6 +218,9 @@ public:
             string hostname = jsonconfig["osc"]["camera"];
             httpResponse(hostname);
         }
+        if(ofIsStringInString(url,"/actions/currentPattern") == 1){
+            httpResponse(ofToString(pattern)+"/"+ofToString(patterns.size()));
+        }
 
     }
 };
