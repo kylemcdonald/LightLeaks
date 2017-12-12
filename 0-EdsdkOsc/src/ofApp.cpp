@@ -1,18 +1,14 @@
 #include "ofApp.h"
 
 void ofApp::setup() {
-	ofXml settings;
-	settings.load("../../../SharedData/settings.xml");
-	
-    remoteComputerPrimary = settings.getValue("osc/projector/primary");
-    remoteComputerSecondary = settings.getValue("osc/projector/secondary");
+    ofJson settings = ofLoadJson("../../../SharedData/settings.json");
+    remoteComputer = settings["osc"]["projector"];
     
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	oscIn.setup(9000);
-    oscOutPrimary.setup(remoteComputerPrimary, 9001);
-    oscOutSecondary.setup(remoteComputerSecondary, 9001);
+    oscOut.setup(remoteComputer, 9001);
 	manual = false;
     camera.setLiveView(false);
 	camera.setup();
@@ -42,8 +38,7 @@ void ofApp::update() {
 			ofxOscMessage msgOut;
             msgOut.setAddress("/newPhoto");
             msgOut.addStringArg(savePath);
-            oscOutPrimary.sendMessage(msgOut);
-            oscOutSecondary.sendMessage(msgOut);
+            oscOut.sendMessage(msgOut);
         }
         camera.savePhoto(savePath);
         preview.load(savePath);
@@ -59,8 +54,7 @@ void ofApp::draw() {
     }
     
     ofDrawBitmapStringHighlight("savePath: " + savePath, 10, 20);
-    ofDrawBitmapStringHighlight("remote computer primary: " + remoteComputerPrimary, 10, 40);
-    ofDrawBitmapStringHighlight("remote computer secondary: " + remoteComputerSecondary, 10, 60);
+    ofDrawBitmapStringHighlight("remote computer: " + remoteComputer, 10, 40);
     ofDrawBitmapStringHighlight("press 'p' to take a preview image", 10, 80);
     ofDrawBitmapStringHighlight("press ' ' to start the scan", 10, 100);
     ofDrawBitmapStringHighlight("press 'tab' to continue broken communication", 10, 120);
@@ -77,14 +71,12 @@ void ofApp::keyPressed(int key) {
     if(key == ' ') {
         ofxOscMessage msgOut;
         msgOut.setAddress("/start");
-        oscOutPrimary.sendMessage(msgOut);
-        oscOutSecondary.sendMessage(msgOut);
+        oscOut.sendMessage(msgOut);
     }
     if(key == '\t') {
         ofxOscMessage msgOut;
         msgOut.setAddress("/newPhoto");
         // in this case, lastPath is empty, and the same pattern is re-shot
-        oscOutPrimary.sendMessage(msgOut);
-        oscOutSecondary.sendMessage(msgOut);
+        oscOut.sendMessage(msgOut);
     }
 }
