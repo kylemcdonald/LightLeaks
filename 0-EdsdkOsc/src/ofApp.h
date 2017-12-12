@@ -12,8 +12,6 @@ public:
 	void draw();
     void exit();
     
-    void takePhotoSync();
-	
 	void keyPressed(int key);
 	
     ofxEdsdk::Camera camera;
