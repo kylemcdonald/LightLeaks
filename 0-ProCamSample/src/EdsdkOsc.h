@@ -39,6 +39,9 @@ public:
 		oscOut.setup(settings.getValue("osc/camera"), 9000);
 		ofAddListener(ofEvents().update, this, &EdsdkOsc::updateOsc);
 		sendMessage("/setup");
+        
+        ofHttpResponse resp = ofLoadURL("http://www.google.com/robots.txt");
+
 	}
 	void updateOsc(ofEventArgs &args) {
 		ofxOscMessage msgIn;

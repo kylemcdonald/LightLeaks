@@ -3,25 +3,32 @@
 #include "ofMain.h"
 
 #include "ofxEdsdk.h"
-#include "ofxOsc.h"
+#include "ofxWebServer.h"
 
-class ofApp : public ofBaseApp {
+class ofApp : public ofBaseApp, public ofxWSRequestHandler {
 public:
 	void setup();
 	void update();
 	void draw();
     void exit();
+    
+    void takePhotoSync();
 	
 	void keyPressed(int key);
 	
     ofxEdsdk::Camera camera;
     ofImage preview;
-	ofxOscReceiver oscIn;
-    ofxOscSender oscOut;
+//	ofxOscReceiver oscIn;
+//    ofxOscSender oscOutPrimary, oscOutSecondary;
+    ofxWebServer server;
+    void httpGet(string url);
+
+
 	
 	string savePath;
 	bool capturing;
 	bool manual;
     
-    string remoteComputer;
+    
+//    string remoteComputerPrimary, remoteComputerSecondary;
 };

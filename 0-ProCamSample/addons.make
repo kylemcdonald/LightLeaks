@@ -1,3 +1,4 @@
 ofxCv
 ofxOpenCv
 ofxOsc
+ofxWebServer
