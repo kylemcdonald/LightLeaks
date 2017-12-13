@@ -7,7 +7,7 @@ using namespace cv;
 
 #define USE_GDC
 #define SAVE_DEBUG
-//#define FINETUNE_TRANSLATION
+#define FINETUNE_TRANSLATION
 //#define USE_LCP
 
 // Situations like capturing a lcd screen, highpass should be disabled since it blurs the image
@@ -86,11 +86,12 @@ void highpass(Mat img) {
 
 
 int counter = 0;
-cv::Rect findCalibrationTranslation(Mat baseImage, Mat image, string name){
+cv::Rect findCalibrationTranslation(Mat baseImage, Mat image, int size, string name){
     Mat diff;
     
+    // The size of search for best calibration offset
     int sizeX = 0;
-    int sizeY = 10;
+    int sizeY = size*2;
     
     cv::Rect bestR;
     float bestMean = -1;
@@ -105,85 +106,87 @@ cv::Rect findCalibrationTranslation(Mat baseImage, Mat image, string name){
                                   baseImage.cols - sizeX,
                                   baseImage.rows - sizeY);
             
-            Mat distortedMatIT = image(r);
-            Mat baseImageT = baseImage(r2);
+            Mat imageCropped = image(r);
+            Mat baseImageCropped = baseImage(r2);
             
-            ofxCv::absdiff(baseImageT,
-                           distortedMatIT,
+            ofxCv::absdiff(baseImageCropped,
+                           imageCropped,
                            diff);
             
             
             float mean = cv::mean(diff)[0];
-//            ofLog()<<"Mean:"<<x<<","<<y<<": "<<mean;
+
             if(bestMean == -1 || bestMean > mean){
                 bestMean = mean;
                 bestR = r;
                 
                 // Debug:
-                ofImage diffImg;
-                diffImg.setUseTexture(false);
-                ofxCv::toOf(diff, diffImg);
-                ofSaveImage(diffImg, "diff_"+name+".jpg");
+//                ofImage diffImg;
+//                diffImg.setUseTexture(false);
+//                ofxCv::toOf(diff, diffImg);
+//                ofSaveImage(diffImg, "diff_"+name+".jpg");
             }
             
             // Debug:
             if(y == sizeY/2){
-                ofImage diffImg;
-                diffImg.setUseTexture(false);
-                ofxCv::toOf(diff, diffImg);
-                ofSaveImage(diffImg, "diff_"+name+"_default.jpg");
+//                ofImage diffImg;
+//                diffImg.setUseTexture(false);
+//                ofxCv::toOf(diff, diffImg);
+//                ofSaveImage(diffImg, "diff_"+name+"_default.jpg");
             }
         }
         
     }
-//    ofLog()<<counter<<" Result: "<<bestR.tl();
-//    counter ++;
+
     return bestR;
 }
 
-void processImageSet(ofFile file, ofFile fileI, ofImage *& imageNormal, ofImage *& imageInverse, Mat baseImage, string name){
-    ofImage * img = new ofImage();
-    img->setUseTexture(false);
+void processImageSet(ofFile fileNormal, ofFile fileInverse, ofImage *& imageNormal, ofImage *& imageInverse, Mat referenceImage, string name){
+    //Load images
+    imageNormal = new ofImage();
+    imageInverse = new ofImage();
     
-    ofImage * imgI = new ofImage();
-    imgI->setUseTexture(false);
+    imageNormal->setUseTexture(false);
+    imageInverse->setUseTexture(false);
     
-    // ofLogVerbose() <<"Load "+hnFiles[i].path()<<endl;
-    img->load(file.path());
-    imgI->load(fileI.path());
+    imageNormal->load(fileNormal.path());
+    imageInverse->load(fileInverse.path());
     
-    img->setImageType(OF_IMAGE_GRAYSCALE);
-    imgI->setImageType(OF_IMAGE_GRAYSCALE);
+    imageNormal->setImageType(OF_IMAGE_GRAYSCALE);
+    imageInverse->setImageType(OF_IMAGE_GRAYSCALE);
     
-    Mat bufferMat;
+    // Create CV Mat
+    Mat matNormal = toCv(*imageNormal);
+    Mat matInverse = toCv(*imageInverse);
     
-    Mat distortedMat = toCv(*img);
-    highpass(distortedMat);
+    // Run Highpass
+    highpass(matNormal);
+    highpass(matInverse);
+
 #ifdef USE_LCP
+    Mat bufferMat;
     copy(distortedMat, bufferMat);
     calibration.undistort(bufferMat, distortedMat, calibrationMode);
-#endif
-    
-    Mat distortedMatI = toCv(*imgI);
-    highpass(distortedMatI);
-#ifdef USE_LCP
+
     copy(distortedMatI, bufferMat);
     calibration.undistort(bufferMat, distortedMatI, calibrationMode);
 #endif
     
-    imageNormal = img;
-    imageInverse = imgI;
     
 #ifdef FINETUNE_TRANSLATION
-    auto p1 = findCalibrationTranslation(baseImage, distortedMat, name+"_normal");
-    auto p2 = findCalibrationTranslation(baseImage, distortedMatI, name+"_inverse");
+    // Number of pixels to search in each direcrtion on y axis for best match:
+    int searchArea = 7;
     
-    distortedMat = distortedMat(p1);
-    distortedMatI = distortedMatI(p2);
+    auto r1 = findCalibrationTranslation(referenceImage, matNormal, searchArea, name+"_normal");
+    auto r2 = findCalibrationTranslation(referenceImage, matInverse, searchArea, name+"_inverse");
+    
+    Mat trans_mat_normal =(Mat_<double>(2,3) << 1, 0, r1.x, 0, 1, -(r1.y-searchArea));
+    Mat trans_mat_inverse =(Mat_<double>(2,3) << 1, 0, r2.x, 0, 1, -(r2.y-searchArea));
+    
+    // Transform the image with the new roi
+    cv::warpAffine(matNormal, matNormal, trans_mat_normal, matNormal.size());
+    cv::warpAffine(matInverse, matInverse, trans_mat_inverse, matInverse.size());
 #endif
-    
-    
-//
 }
 
 void ofApp::setup() {
