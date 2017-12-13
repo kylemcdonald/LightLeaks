@@ -27,4 +27,6 @@ public:
     ofxCv::Calibration calibration;
     int time;
 
+    void processImageSet(ofFile fileNormal, ofFile fileInverse, ofImage *& imageNormal, ofImage *& imageInverse, cv::Mat referenceImage, string name);
+
 };

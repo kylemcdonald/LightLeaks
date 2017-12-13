@@ -8,7 +8,7 @@ using namespace cv;
 #define USE_GDC
 #define SAVE_DEBUG
 #define FINETUNE_TRANSLATION
-//#define USE_LCP
+#define USE_LCP
 
 // Situations like capturing a lcd screen, highpass should be disabled since it blurs the image
 #define RUN_HIGHPASS
@@ -141,7 +141,7 @@ cv::Rect findCalibrationTranslation(Mat baseImage, Mat image, int size, string n
     return bestR;
 }
 
-void processImageSet(ofFile fileNormal, ofFile fileInverse, ofImage *& imageNormal, ofImage *& imageInverse, Mat referenceImage, string name){
+void ofApp::processImageSet(ofFile fileNormal, ofFile fileInverse, ofImage *& imageNormal, ofImage *& imageInverse, Mat referenceImage, string name){
     //Load images
     imageNormal = new ofImage();
     imageInverse = new ofImage();
@@ -165,11 +165,15 @@ void processImageSet(ofFile fileNormal, ofFile fileInverse, ofImage *& imageNorm
 
 #ifdef USE_LCP
     Mat bufferMat;
-    copy(distortedMat, bufferMat);
-    calibration.undistort(bufferMat, distortedMat, calibrationMode);
+    copy(matNormal, bufferMat);
+    calibration.undistort(bufferMat, matNormal, calibrationMode);
 
-    copy(distortedMatI, bufferMat);
-    calibration.undistort(bufferMat, distortedMatI, calibrationMode);
+    copy(matInverse, bufferMat);
+    calibration.undistort(bufferMat, matInverse, calibrationMode);
+    
+//    calibration.undistort(matNormal, calibrationMode);
+//    calibration.undistort(matInverse, calibrationMode);
+
 #endif
     
     
@@ -195,10 +199,6 @@ void ofApp::setup() {
     setCalibrationDataPathRoot();
     ofSetLogLevel(OF_LOG_VERBOSE);
     
-#ifdef USE_LCP
-    string lcpRoot = "/Library/Application Support/Adobe/CameraRaw/LensProfiles/1.0/Canon/";
-    calibration.loadLcp(lcpRoot + "Canon EOS 50D (Canon EF-S 18-135mm f3.5-5.6 IS) - RAW.lcp", 18);
-#endif
     
     // projector mask
     Mat projectorMaskMat;
@@ -294,6 +294,11 @@ void ofApp::setup() {
             binaryCodedHorizontal = Mat::zeros(camHeight, camWidth, CV_16UC1);
             binaryCodedVertical = Mat::zeros(camHeight, camWidth, CV_16UC1);
             
+#ifdef USE_LCP
+            string lcpRoot = "/Library/Application Support/Adobe/CameraRaw/LensProfiles/1.0/Canon/";
+            calibration.loadLcp(lcpRoot + "Canon EOS 50D (Canon EF-S 18-135mm f3.5-5.6 IS) - RAW.lcp", 18, camWidth, camHeight);
+#endif
+
             Mat cameraMaskMat;
             if(maskLoaded){
                 cameraMaskMat = toCv(cameraMask);
@@ -318,7 +323,11 @@ void ofApp::setup() {
             Mat baseMat = toCv(baseimg);
             highpass(baseMat);
             
-            ofLog()<<"Base image loaded "<<baseMat.cols<<" X "<<baseMat.rows;
+//            cv::resize(baseMat, baseMat, cv::Size(4770, 3177));
+
+#ifdef USE_LCP
+            calibration.undistort(baseMat, calibrationMode);
+#endif
             
 #ifdef USE_GDC
             //A dispatch group that the horizontal job and vertical job will be added to
