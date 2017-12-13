@@ -8,6 +8,7 @@ The repo is meant to be used with openFrameworks 0.10.0 (a0bd41a75).
 * https://github.com/kylemcdonald/ofxControlPanel @ c45e93856ba9bab2a70b7e1f6e44255399b91637
 * https://github.com/kylemcdonald/ofxEdsdk @ a40f6e4d85b11585edb98ccfc0d743436980a1f2
 * https://github.com/dzlonline/ofxBiquadFilter @ 87dbafce8036c09304ff574401026725c16013d1
+* https://github.com/mazbox/ofxWebServer # 6472ba043075c685977ecca36851d51db1ec4648
 
 ## Calibration Process
 
