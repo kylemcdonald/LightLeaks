@@ -7,6 +7,7 @@ using namespace cv;
 
 #define USE_GDC
 #define SAVE_DEBUG
+//#define FINETUNE_TRANSLATION
 //#define USE_LCP
 
 // Situations like capturing a lcd screen, highpass should be disabled since it blurs the image
@@ -81,6 +82,108 @@ void highpass(Mat img) {
     img32f += .5; // center on gray before conversion to 8 bit
     ofxCv::copy(img32f, img, CV_8UC1);
 #endif
+}
+
+
+int counter = 0;
+cv::Rect findCalibrationTranslation(Mat baseImage, Mat image, string name){
+    Mat diff;
+    
+    int sizeX = 0;
+    int sizeY = 10;
+    
+    cv::Rect bestR;
+    float bestMean = -1;
+    
+    for(int x=0; x<=sizeX; x++){
+        for(int y=0;y<=sizeY;y++){
+            cv::Rect r = cv::Rect(x, y,
+                                  baseImage.cols - sizeX,
+                                  baseImage.rows - sizeY);
+            
+            cv::Rect r2 = cv::Rect(sizeX/2, sizeY/2,
+                                  baseImage.cols - sizeX,
+                                  baseImage.rows - sizeY);
+            
+            Mat distortedMatIT = image(r);
+            Mat baseImageT = baseImage(r2);
+            
+            ofxCv::absdiff(baseImageT,
+                           distortedMatIT,
+                           diff);
+            
+            
+            float mean = cv::mean(diff)[0];
+//            ofLog()<<"Mean:"<<x<<","<<y<<": "<<mean;
+            if(bestMean == -1 || bestMean > mean){
+                bestMean = mean;
+                bestR = r;
+                
+                // Debug:
+                ofImage diffImg;
+                diffImg.setUseTexture(false);
+                ofxCv::toOf(diff, diffImg);
+                ofSaveImage(diffImg, "diff_"+name+".jpg");
+            }
+            
+            // Debug:
+            if(y == sizeY/2){
+                ofImage diffImg;
+                diffImg.setUseTexture(false);
+                ofxCv::toOf(diff, diffImg);
+                ofSaveImage(diffImg, "diff_"+name+"_default.jpg");
+            }
+        }
+        
+    }
+//    ofLog()<<counter<<" Result: "<<bestR.tl();
+//    counter ++;
+    return bestR;
+}
+
+void processImageSet(ofFile file, ofFile fileI, ofImage *& imageNormal, ofImage *& imageInverse, Mat baseImage, string name){
+    ofImage * img = new ofImage();
+    img->setUseTexture(false);
+    
+    ofImage * imgI = new ofImage();
+    imgI->setUseTexture(false);
+    
+    // ofLogVerbose() <<"Load "+hnFiles[i].path()<<endl;
+    img->load(file.path());
+    imgI->load(fileI.path());
+    
+    img->setImageType(OF_IMAGE_GRAYSCALE);
+    imgI->setImageType(OF_IMAGE_GRAYSCALE);
+    
+    Mat bufferMat;
+    
+    Mat distortedMat = toCv(*img);
+    highpass(distortedMat);
+#ifdef USE_LCP
+    copy(distortedMat, bufferMat);
+    calibration.undistort(bufferMat, distortedMat, calibrationMode);
+#endif
+    
+    Mat distortedMatI = toCv(*imgI);
+    highpass(distortedMatI);
+#ifdef USE_LCP
+    copy(distortedMatI, bufferMat);
+    calibration.undistort(bufferMat, distortedMatI, calibrationMode);
+#endif
+    
+    imageNormal = img;
+    imageInverse = imgI;
+    
+#ifdef FINETUNE_TRANSLATION
+    auto p1 = findCalibrationTranslation(baseImage, distortedMat, name+"_normal");
+    auto p2 = findCalibrationTranslation(baseImage, distortedMatI, name+"_inverse");
+    
+    distortedMat = distortedMat(p1);
+    distortedMatI = distortedMatI(p2);
+#endif
+    
+    
+//
 }
 
 void ofApp::setup() {
@@ -204,6 +307,16 @@ void ofApp::setup() {
             viImageNormal.resize(verticalBits, 0);
             viImageInverse.resize(verticalBits, 0);
             
+            // Load base image used for adjusting x,y position
+            ofImage baseimg ;
+            baseimg.setUseTexture(false);
+            baseimg.load(hnFiles[5].path());
+            baseimg.setImageType(OF_IMAGE_GRAYSCALE);
+            Mat baseMat = toCv(baseimg);
+            highpass(baseMat);
+            
+            ofLog()<<"Base image loaded "<<baseMat.cols<<" X "<<baseMat.rows;
+            
 #ifdef USE_GDC
             //A dispatch group that the horizontal job and vertical job will be added to
             dispatch_group_t group = dispatch_group_create();
@@ -216,39 +329,9 @@ void ofApp::setup() {
 #ifdef USE_GDC
                 dispatch_apply(horizontalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i){
 #else
-               for(int i = 0; i < horizontalBits; i++) {
+                for(int i = 0; i < horizontalBits; i++) {
 #endif
-                    ofImage * img = new ofImage();
-                    img->setUseTexture(false);
-                    
-                    ofImage * imgI = new ofImage();
-                    imgI->setUseTexture(false);
-                    
-                    // ofLogVerbose() <<"Load "+hnFiles[i].path()<<endl;
-                   img->load(hnFiles[i].path());
-                   imgI->load(hiFiles[i].path());
-                   
-                   img->setImageType(OF_IMAGE_GRAYSCALE);
-                   imgI->setImageType(OF_IMAGE_GRAYSCALE);
-                   
-                   Mat bufferMat;
-                   
-                   Mat distortedMat = toCv(*img);
-                   highpass(distortedMat);
-#ifdef USE_LCP
-                   copy(distortedMat, bufferMat);
-                   calibration.undistort(bufferMat, distortedMat, calibrationMode);
-#endif
-                   
-                   Mat distortedMatI = toCv(*imgI);
-                   highpass(distortedMatI);
-#ifdef USE_LCP
-                   copy(distortedMatI, bufferMat);
-                   calibration.undistort(bufferMat, distortedMatI, calibrationMode);
-#endif
-                   
-                   hnImageNormal[i] = img;
-                   hnImageInverse[i] = imgI;
+                   processImageSet(hnFiles[i], hiFiles[i], hnImageNormal[i], hnImageInverse[i], baseMat, "h_"+ofToString(i));
                 }
 #ifdef USE_GDC
                 );
@@ -282,36 +365,8 @@ void ofApp::setup() {
 #else
                 for(int i = 0; i < verticalBits; i++) {
 #endif
-                    
-                    ofImage * img = new ofImage();
-                    img->setUseTexture(false);
-                    
-                    ofImage * imgI = new ofImage();
-                    imgI->setUseTexture(false);
-                    
-                    img->load(vnFiles[i].path());
-                    imgI->load(viFiles[i].path());
-                    
-                    img->setImageType(OF_IMAGE_GRAYSCALE);
-                    imgI->setImageType(OF_IMAGE_GRAYSCALE);
-                    
-                    Mat bufferMat;
-                    Mat distortedMat = toCv(*img);
-                    highpass(distortedMat);
-#ifdef USE_LCP
-                    copy(distortedMat, bufferMat);
-                    calibration.undistort(bufferMat, distortedMat, calibrationMode);
-#endif
+                    processImageSet(vnFiles[i], viFiles[i], viImageNormal[i], viImageInverse[i], baseMat,"v_"+ofToString(i));
 
-                    Mat distortedMatI = toCv(*imgI);
-                    highpass(distortedMatI);
-#ifdef USE_LCP
-                    copy(distortedMatI, bufferMat);
-                    calibration.undistort(bufferMat, distortedMatI, calibrationMode);
-#endif
-                    
-                    viImageNormal[i] = img;
-                    viImageInverse[i] = imgI;
                 }
 #ifdef USE_GDC
                 );
