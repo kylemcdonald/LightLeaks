@@ -2,39 +2,39 @@
 	"projectors": [
 		{
 			"monitor": 0,
-			"width": 192,
-			"height": 108,
+			"width": 1920,
+			"height": 1080,
 			"xcode": 0,
 			"ycode": 0,
-			"xwindow": 20,
-			"ywindow": 60
+			"xwindow": 0,
+			"ywindow": 0
 		},
 		{
 			"monitor": 0,
-			"width": 192,
-			"height": 108,
-			"xcode": 192,
+			"width": 1920,
+			"height": 1080,
+			"xcode": 1920,
 			"ycode": 0,
-			"xwindow": 212,
-			"ywindow": 60
+			"xwindow": 1920,
+			"ywindow": 0
 		},
 		{
 			"monitor": 0,
-			"width": 192,
-			"height": 108,
+			"width": 1920,
+			"height": 1080,
 			"xcode": 0,
-			"ycode": 108,
-			"xwindow": 20,
-			"ywindow": 168
+			"ycode": 1080,
+			"xwindow": 0,
+			"ywindow": 1080
 		},
 		{
 			"monitor": 0,
-			"width": 192,
-			"height": 108,
-			"xcode": 192,
-			"ycode": 108,
-			"xwindow": 212,
-			"ywindow": 168
+			"width": 1920,
+			"height": 1080,
+			"xcode": 1920,
+			"ycode": 1080,
+			"xwindow": 1920,
+			"ywindow": 1080
 		}
 	],
 	"sample": {
@@ -46,7 +46,7 @@
 		"scaleFactor": 4
 	},
 	"osc": {
-		"camera": "localhost",
+		"camera": "10.0.1.101",
 		"projector": "iyoiyo-gpu.local"
 	}
 }
