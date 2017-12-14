@@ -187,6 +187,14 @@ public:
         if(key == 's') {
             camera.fakeStart();
         }
+        if(key == OF_KEY_RIGHT) {
+            pattern++;
+        }
+        if(key == OF_KEY_LEFT) {
+            pattern--;
+        }
+        int n = patterns.size();
+        pattern = (pattern + n) % n;
     }
     bool getDebug() {
         return debug;
