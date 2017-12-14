@@ -2,39 +2,12 @@
 	"projectors": [
 		{
 			"monitor": 0,
-			"width": 1920,
-			"height": 1080,
+			"width": 3840,
+			"height": 2160,
 			"xcode": 0,
 			"ycode": 0,
 			"xwindow": 0,
 			"ywindow": 0
-		},
-		{
-			"monitor": 0,
-			"width": 1920,
-			"height": 1080,
-			"xcode": 1920,
-			"ycode": 0,
-			"xwindow": 1920,
-			"ywindow": 0
-		},
-		{
-			"monitor": 0,
-			"width": 1920,
-			"height": 1080,
-			"xcode": 0,
-			"ycode": 1080,
-			"xwindow": 0,
-			"ywindow": 1080
-		},
-		{
-			"monitor": 0,
-			"width": 1920,
-			"height": 1080,
-			"xcode": 1920,
-			"ycode": 1080,
-			"xwindow": 1920,
-			"ywindow": 1080
 		}
 	],
 	"sample": {

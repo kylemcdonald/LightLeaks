@@ -105,7 +105,7 @@ public:
     uint64_t lastCaptureTime = 0;
     string timestamp;
     int pattern = 0;
-    vector<tuple<int,int,int>> patterns;
+    vector<tuple<int,int,int,int>> patterns;
     NetworkCamera camera;
     ofxWebServer webserver;
 
@@ -120,17 +120,17 @@ public:
         int xk = ceil(log2(box.x));
         int yk = ceil(log2(box.y));
         
-        int axis, level, inverted;
+        int axis, level, inverted, levelCount;
         axis = 0;
         for(level = 0; level < xk; level++) {
             for(int inverted : {0,1}) {
-                patterns.emplace_back(make_tuple(axis, level, inverted));
+                patterns.emplace_back(make_tuple(axis, level, inverted, xk));
             }
         }
         axis = 1;
         for(level = 0; level < yk; level++) {
             for(int inverted : {0,1}) {
-                patterns.emplace_back(make_tuple(axis, level, inverted));
+                patterns.emplace_back(make_tuple(axis, level, inverted, yk));
             }
         }
         
@@ -138,8 +138,8 @@ public:
         cout << "level count: " << xk << ", " << yk << endl;
         cout << "List of patterns:" << endl;
         for(auto cur : patterns) {
-            tie(axis, level, inverted) = cur;
-            cout << "\t" << axis << ", " << level << ", " << inverted << endl;
+            tie(axis, level, inverted, levelCount) = cur;
+            cout << "\t" << axis << ", " << level << ", " << inverted << ", " << levelCount << endl;
         }
     }
     bool nextState() {
@@ -173,7 +173,9 @@ public:
                 string directory = "../../../SharedData/scan-" + timestamp + "/cameraImages/" +
                     (getAxis() == 0 ? "vertical/" : "horizontal/") +
                     (getInverted() == 0 ? "normal/" : "inverse/");
-                camera.takePhoto(directory + ofToString(getLevel()) + ".jpg");
+                // we need to invert here to keep with an older style
+                string levelName = ofToString(getLevelCount() - getLevel() - 1);
+                camera.takePhoto(directory + levelName + ".jpg");
                 needToCapture = false;
             }
         }
@@ -185,6 +187,14 @@ public:
         if(key == 's') {
             camera.fakeStart();
         }
+        if(key == OF_KEY_RIGHT) {
+            pattern++;
+        }
+        if(key == OF_KEY_LEFT) {
+            pattern--;
+        }
+        int n = patterns.size();
+        pattern = (pattern + n) % n;
     }
     bool getDebug() {
         return debug;
@@ -197,6 +207,9 @@ public:
     }
     int getInverted() {
         return get<2>(patterns[pattern]);
+    }
+    int getLevelCount() {
+        return get<3>(patterns[pattern]);
     }
     
     void start(){
