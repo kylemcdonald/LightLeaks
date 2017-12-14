@@ -165,8 +165,13 @@ void ofApp::mouseReleased(int x, int y, int button) {
 }
 
 void ofApp::setupMesh() {
-	model.loadModel("model.dae");
-	objectMesh = model.getMesh(0);
+	model.loadModel("../../../SharedData/model.dae", false); // must be false to avoid crashing
+    assert(model.getNumMeshes() == 1);
+    objectMesh = model.getMesh(0);
+//    ofVec3f offset(154, 39, 0);
+//    for(auto& x : objectMesh.getVertices()) {
+//        x -= offset;
+//    }
 	int n = objectMesh.getNumVertices();
 	objectPoints.resize(n);
 	imagePoints.resize(n);
@@ -229,8 +234,9 @@ void ofApp::render() {
 	switch(geti("drawMode")) {
 		case 0: // faces
 			if(useShader) xyzShader.begin();
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
+//            glEnable(GL_CULL_FACE);
+//            glCullFace(GL_BACK);
+            glDisable(GL_CULL_FACE);
 			objectMesh.drawFaces();
 			if(useShader) xyzShader.end();
 			break;
@@ -522,8 +528,9 @@ void ofApp::drawOverlay() {
 			intrinsics.loadProjectionMatrix(10, 20000000);
 			applyMatrix(modelMatrix);
 			glEnable(GL_DEPTH_TEST);
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_FRONT);
+//            glEnable(GL_CULL_FACE);
+//            glCullFace(GL_BACK);
+            glDisable(GL_CULL_FACE);
 			xyzShader.begin();
 			xyzShader.setUniform1f("range", range);
 			xyzShader.setUniform3fv("zero", zero.getPtr());
@@ -550,8 +557,9 @@ void ofApp::drawOverlay() {
 			intrinsics.loadProjectionMatrix(10, 20000000);
 			applyMatrix(modelMatrix);
 			glEnable(GL_DEPTH_TEST);
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_FRONT);
+//            glEnable(GL_CULL_FACE);
+//            glCullFace(GL_BACK);
+            glDisable(GL_CULL_FACE);
 			normalShader.begin();
 			objectMesh.drawFaces();
 			normalShader.end();

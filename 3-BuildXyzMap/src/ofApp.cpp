@@ -52,10 +52,10 @@ void ofApp::setup() {
     
     setCalibrationDataPathRoot();
     
-    ofXml settings("settings.xml");
-    confidenceThreshold = settings.getFloatValue("buildXyz/confidenceThreshold");
-    viewBetternes = settings.getFloatValue("buildXyz/viewBetternes");
-    scaleFactor = settings.getIntValue("buildXyz/scaleFactor");
+//    ofXml settings("settings.xml");
+    confidenceThreshold = 0.05; //settings.getFloatValue("buildXyz/confidenceThreshold");
+    viewBetternes = 1.0; //settings.getFloatValue("buildXyz/viewBetternes");
+    scaleFactor = 4; //settings.getIntValue("buildXyz/scaleFactor");
     
     
     //----- Model stuff
