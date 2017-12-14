@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxAssimpModelLoader.h"
 #include "ofxCv.h"
 #include "ofAutoShader.h"
 #include "CoordWarp.h"
@@ -58,9 +57,11 @@ public:
     //Lighthouse
     float lighthouseAngle;
 
+#ifdef USE_CAMERA
     //Spotlight
     float spotlightThresholder;
     ofxBiquadFilter2f spotlightPosition;
+#endif
     
     //Speaker sampling
     ofFloatImage speakerXYZMap;

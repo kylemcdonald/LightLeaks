@@ -556,18 +556,19 @@ void ofApp::processScan(ofFile scanName){
 }
 
 void ofApp::saveResult(){
+    int w = proXyzCombined.cols, h = proXyzCombined.rows;
+    
     ofLogVerbose() << "processing final results";
     ofFloatPixels proMapFinal, proNormalFinal, proConfidenceFinal;
     
     // set the alpha channel of xyzMap to confidenceMap, reducing lookups in shader later
-    int w = proXyzCombined.cols, h = proXyzCombined.rows;
-    for(int y = 0; y < h; y++) {
-        for(int x = 0; x < w; x++) {
-            const Vec4f& c = proConfidenceCombined.at<Vec4f>(y, x);
-            Vec4f& p = proXyzCombined.at<Vec4f>(y, x);
-            p[4] = c[0];
-        }
-    }
+//    for(int y = 0; y < h; y++) {
+//        for(int x = 0; x < w; x++) {
+//            const Vec4f& c = proConfidenceCombined.at<Vec4f>(y, x);
+//            Vec4f& p = proXyzCombined.at<Vec4f>(y, x);
+//            p[4] = c[0];
+//        }
+//    }
     
     toOf(proXyzCombined, proMapFinal);
     //toOf(proNormalCombined, proNormalFinal);
