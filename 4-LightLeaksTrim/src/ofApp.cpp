@@ -51,7 +51,7 @@ void ofApp::setup() {
         //Shader
         shader.load("shader");
         
-        ofSetDataPathRoot(ofToDataPath("../../../SharedData"));
+        ofSetDataPathRoot("../../SharedData");
         xyzMap.load("xyzMap.exr");
 //        normalMap.load("../../../SharedData/normalMap.exr");
         confidenceMap.load("confidenceMap.exr");
