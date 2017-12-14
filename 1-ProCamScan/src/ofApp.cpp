@@ -8,7 +8,7 @@ using namespace cv;
 #define USE_GDC
 #define SAVE_DEBUG
 #define FINETUNE_TRANSLATION
-#define USE_LCP
+//#define USE_LCP
 
 // Situations like capturing a lcd screen, highpass should be disabled since it blurs the image
 #define RUN_HIGHPASS
@@ -30,7 +30,7 @@ bool natural(const ofFile& a, const ofFile& b) {
 	}
 }
 
-void processGraycodeLevel(int i, int n, int dimensions, const Mat& cameraMask, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat, ofImage * imageNormal, ofImage * imageInverse) {
+void processGraycodeLevel(int i, int n, int dimensions, Mat& confidence, Mat& binaryCoded, Mat& minMat, Mat& maxMat, ofImage * imageNormal, ofImage * imageInverse) {
     ofLogVerbose() << "Process " << i << " of " << n;
     
 	int w = imageNormal->getWidth(), h = imageNormal->getHeight();
@@ -38,10 +38,6 @@ void processGraycodeLevel(int i, int n, int dimensions, const Mat& cameraMask, M
     imageNormalGray = toCv(*imageNormal);
     imageInverseGray = toCv(*imageInverse);
     
-    if(cameraMask.cols > 0){
-        imageNormalGray &= cameraMask;
-        imageInverseGray &= cameraMask;
-    }
     
 	if(i == 0) {
 		minMat = min(imageNormalGray, imageInverseGray);
@@ -141,7 +137,7 @@ cv::Rect findCalibrationTranslation(Mat baseImage, Mat image, int size, string n
     return bestR;
 }
 
-void ofApp::processImageSet(ofFile fileNormal, ofFile fileInverse, ofImage *& imageNormal, ofImage *& imageInverse, Mat referenceImage, string name){
+void ofApp::processImageSet(ofFile fileNormal, ofFile fileInverse, ofImage *& imageNormal, ofImage *& imageInverse, const Mat cameraMask, Mat referenceImage, string name){
     //Load images
     imageNormal = new ofImage();
     imageInverse = new ofImage();
@@ -159,9 +155,20 @@ void ofApp::processImageSet(ofFile fileNormal, ofFile fileInverse, ofImage *& im
     Mat matNormal = toCv(*imageNormal);
     Mat matInverse = toCv(*imageInverse);
     
+    if(cameraMask.cols > 0){
+        matNormal &= cameraMask;
+        matInverse &= cameraMask;
+    }
+    
     // Run Highpass
     highpass(matNormal);
     highpass(matInverse);
+    
+    
+    if(cameraMask.cols > 0){
+        matNormal &= cameraMask;
+        matInverse &= cameraMask;
+    }
 
 #ifdef USE_LCP
     Mat bufferMat;
@@ -343,7 +350,7 @@ void ofApp::setup() {
 #else
                 for(int i = 0; i < horizontalBits; i++) {
 #endif
-                   processImageSet(hnFiles[i], hiFiles[i], hnImageNormal[i], hnImageInverse[i], baseMat, "h_"+ofToString(i));
+                   processImageSet(hnFiles[i], hiFiles[i], hnImageNormal[i], hnImageInverse[i], cameraMaskMat, baseMat, "h_"+ofToString(i));
                 }
 #ifdef USE_GDC
                 );
@@ -353,7 +360,7 @@ void ofApp::setup() {
                 //Process horizontal images
                 ofLogVerbose() << "Process " <<  horizontalBits << " horizontal images";
                 for(int i = 0; i < horizontalBits; i++) {
-                    processGraycodeLevel(i, horizontalBits, 2, cameraMaskMat, camConfidence, binaryCodedHorizontal, minImage, maxImage, hnImageNormal[i], hnImageInverse[i]);
+                    processGraycodeLevel(i, horizontalBits, 2, camConfidence, binaryCodedHorizontal, minImage, maxImage, hnImageNormal[i], hnImageInverse[i]);
                 };
                 
                 
@@ -377,7 +384,7 @@ void ofApp::setup() {
 #else
                 for(int i = 0; i < verticalBits; i++) {
 #endif
-                    processImageSet(vnFiles[i], viFiles[i], viImageNormal[i], viImageInverse[i], baseMat,"v_"+ofToString(i));
+                    processImageSet(vnFiles[i], viFiles[i], viImageNormal[i], viImageInverse[i], cameraMaskMat, baseMat,"v_"+ofToString(i));
 
                 }
 #ifdef USE_GDC
@@ -388,7 +395,7 @@ void ofApp::setup() {
                 //Process vertical images
                 ofLogVerbose() << "Process " <<  verticalBits << " vertical images";
                 for(int i = 0; i < verticalBits; i++) {
-                    processGraycodeLevel(i, verticalBits, 2, cameraMaskMat, camConfidence, binaryCodedVertical, minImage, maxImage, viImageNormal[i], viImageInverse[i]);
+                    processGraycodeLevel(i, verticalBits, 2, camConfidence, binaryCodedVertical, minImage, maxImage, viImageNormal[i], viImageInverse[i]);
                 }
                 
                 //Delete vertical images
