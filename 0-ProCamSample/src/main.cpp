@@ -94,8 +94,6 @@ public:
     }
 };
 
-
-
 class ServerApp : public ofBaseApp, public ofxWSRequestHandler {
 public:
     bool debug = false;
@@ -108,13 +106,13 @@ public:
     vector<tuple<int,int,int,int>> patterns;
     NetworkCamera camera;
     ofxWebServer webserver;
-
+    
     void setup() {
         ofLog() << "Running";
         camera.setup();
         webserver.start("httpdocs", 8000);
         webserver.addHandler(this, "actions/*");
-
+        
     }
     void config(ofVec2f box) {
         int xk = ceil(log2(box.x));
@@ -171,8 +169,8 @@ public:
         if(capturing) {
             if(needToCapture && curTime > bufferTime + lastCaptureTime) {
                 string directory = "../../../SharedData/scan-" + timestamp + "/cameraImages/" +
-                    (getAxis() == 0 ? "vertical/" : "horizontal/") +
-                    (getInverted() == 0 ? "normal/" : "inverse/");
+                (getAxis() == 0 ? "vertical/" : "horizontal/") +
+                (getInverted() == 0 ? "normal/" : "inverse/");
                 // we need to invert here to keep with an older style
                 string levelName = ofToString(getLevelCount() - getLevel() - 1);
                 camera.takePhoto(directory + levelName + ".jpg");
@@ -234,9 +232,22 @@ public:
         if(ofIsStringInString(url,"/actions/currentPattern") == 1){
             httpResponse(ofToString(pattern)+"/"+ofToString(patterns.size()));
         }
-
+        
     }
 };
+
+template <class T>
+void loadImage(string fn, ofImage_<T>& img) {
+    if(ofFile::doesFileExist(fn)) {
+        if(img.load(fn)) {
+            cout << "Exists, loaded: " << fn << endl;
+        } else {
+            cout << "Exists, but error loading: " << fn << endl;
+        }
+    } else {
+        cout << "Does not exist: " << fn << endl;
+    }
+}
 
 class ClientApp : public ofBaseApp {
 public:
@@ -246,26 +257,15 @@ public:
     
     ofShader shader;
     ofImage mask;
-
+    
     void config(int id, int n, int xcode, int ycode, shared_ptr<ServerApp> server) {
         this->id = id;
         this->hue = id / float(n);
         this->xcode = xcode;
         this->ycode = ycode;
         this->server = server;
-        
-        string maskFn = "mask-" + ofToString(id) + ".png";
-        if(ofFile::doesFileExist(maskFn)) {
-            if(mask.load(maskFn)) {
-                cout << "Loaded mask: " << maskFn << endl;
-            } else {
-                cout << "Error loading mask: " << maskFn << endl;
-            }
-        } else {
-            cout << "Mask does not exist: " << maskFn << endl;
-        }
+        loadImage("mask-" + ofToString(id) + ".png", mask);
     }
-    
     void setup() {
         ofBackground(0);
         ofSetVerticalSync(true);
@@ -294,15 +294,16 @@ public:
             ofDrawBitmapStringHighlight(ofToString(id) + "/" + fps, 10, 20);
         } else {
             ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
-            if(mask.isAllocated())
+            if(mask.isAllocated()) {
                 mask.draw(0, 0);
+            }
         }
         ofPopStyle();
     }
     void keyPressed(int key) {
         server->keyPressed(key);
     }
-   
+    
 };
 
 ofVec2f getBoundingBox(const ofJson& projectors) {
@@ -321,6 +322,7 @@ int main() {
     
     shared_ptr<ofAppNoWindow> winServer(new ofAppNoWindow);
     shared_ptr<ServerApp> appServer(new ServerApp);
+    
     ofVec2f box = getBoundingBox(jsonconfig["projectors"]);
     appServer->config(box);
     ofRunApp(winServer, appServer);
