@@ -6,6 +6,7 @@
 #include "ofxProCamToolkit.h"
 #include "ofxAutoControlPanel.h"
 #include "LineArt.h"
+#include "ofxGrabCam.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -41,7 +42,7 @@ public:
 	ofFbo fboPositions, fboNormals;
 	
 	ofxAssimpModelLoader model;	
-	ofEasyCam cam;
+	ofxGrabCam cam;
 	ofVboMesh objectMesh;
 	ofMesh imageMesh;
 	ofLight light;

@@ -179,6 +179,10 @@ void ofApp::setupMesh() {
 	for(int i = 0; i < n; i++) {
 		objectPoints[i] = toCv(objectMesh.getVertex(i));
 	}
+    
+    auto center = objectMesh.getCentroid();
+//    cam.setTarget(center);
+    cam.setPosition(center);
 }
 
 void ofApp::render() {
@@ -236,7 +240,7 @@ void ofApp::render() {
 			if(useShader) xyzShader.begin();
 //            glEnable(GL_CULL_FACE);
 //            glCullFace(GL_BACK);
-            glDisable(GL_CULL_FACE);
+//            glDisable(GL_CULL_FACE);
 			objectMesh.drawFaces();
 			if(useShader) xyzShader.end();
 			break;

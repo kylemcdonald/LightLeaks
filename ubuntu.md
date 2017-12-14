@@ -15,6 +15,11 @@ vncserver
 DISPLAY=:1 nvidia-settings -c :0
 ```
 
+## Disable screen hibernation
+```
+DISPLAY=:0 xset s off -dpms
+```
+
 ## Autologin
 ```
 $ nano /etc/lightdm/lightdm.conf

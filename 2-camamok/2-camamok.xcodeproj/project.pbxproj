@@ -13,7 +13,6 @@
 		1D5F3298C2FA073628012944 /* ofxCvContourFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C76DE5C29BDBD2CAA1DD0021 /* ofxCvContourFinder.cpp */; };
 		2023EF517ED2D8B397511D4B /* Helpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B9076967F8C54A04362C04AA /* Helpers.cpp */; };
 		250A95BA26587BE85DB0A353 /* ofxCvColorImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE9C7160245B19131DAE6128 /* ofxCvColorImage.cpp */; };
-		27FF53CD1FE22359007A30D6 /* ofxProCamToolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF53CC1FE22359007A30D6 /* ofxProCamToolkit.cpp */; };
 		2B11014060CFA00EA494FBC6 /* guiTypeTextDropDown.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F64D7DD70C6B5B1FC395DED /* guiTypeTextDropDown.cpp */; };
 		311DF864378748129984EA1D /* Kalman.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 77A1A692522820F935B58762 /* Kalman.cpp */; };
 		314D78311D80062369E1827B /* guiTypeChartPlotter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D66885FA7C19B7830EE08ED /* guiTypeChartPlotter.cpp */; };
@@ -24,6 +23,7 @@
 		483FA4F6D5FA6422C559B1F5 /* ofxAssimpMeshHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F67FE68E327BEFBD4B777571 /* ofxAssimpMeshHelper.cpp */; };
 		495A92A35AC1D16E07CA45C7 /* guiTypeCustom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CFED64139BF049D0E6E85B06 /* guiTypeCustom.cpp */; };
 		4A71E37D7F36F23AA123EB0B /* guiTypeSlider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CD68CA8FE136C3BE208703B /* guiTypeSlider.cpp */; };
+		4B84BE00D8222E1072317E49 /* ofxGrabCam.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 126D728B075C482C4C740428 /* ofxGrabCam.cpp */; };
 		5A4349E9754D6FA14C0F2A3A /* tinyxmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FC5DA1C87211D4F6377DA719 /* tinyxmlparser.cpp */; };
 		5AB5747E5EF615D728FE9C67 /* guiTypeLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CFC7A1F656C34688D0EA0D0C /* guiTypeLabel.cpp */; };
 		5CC34D433F5806179935B89D /* Flow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03A75A648BC4CF1D9DEDD0CE /* Flow.cpp */; };
@@ -47,6 +47,7 @@
 		A6668C5B1272D7FCD5B5A16F /* Utilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6CEC50DB3D06414010233963 /* Utilities.cpp */; };
 		B6840996567E78436F7ECFAB /* ETF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B047FF96258DC01792B272DB /* ETF.cpp */; };
 		B8846EF8E504895A4A9EFEC0 /* ofxAssimpTexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6F2EE44AD04FF549AB13699 /* ofxAssimpTexture.cpp */; };
+		C54C240E1FE30B7F00A1311C /* ofxProCamToolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C54C240C1FE30B7F00A1311C /* ofxProCamToolkit.cpp */; };
 		C602002DE761F9B52DB4400A /* ObjectFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE75A3FBA2C2D87D14F06FE6 /* ObjectFinder.cpp */; };
 		C6A9EC27E2608C434BCA1DB9 /* guiType2DSlider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F740139603D171038C4E1057 /* guiType2DSlider.cpp */; };
 		CBA68AD61765B24C0BFD9886 /* guiBaseObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6B7D7ECC5A662345912C93D5 /* guiBaseObject.cpp */; };
@@ -124,6 +125,7 @@
 		1054B4574F75C1F693C147C6 /* optical_flow.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = optical_flow.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/videostab/optical_flow.hpp; sourceTree = SOURCE_ROOT; };
 		114B872696817CC33990FC83 /* imgproc.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = imgproc.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc/imgproc.hpp; sourceTree = SOURCE_ROOT; };
 		116AA25686B005BA869907F7 /* cuda_types.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = cuda_types.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda_types.hpp; sourceTree = SOURCE_ROOT; };
+		126D728B075C482C4C740428 /* ofxGrabCam.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxGrabCam.cpp; path = ../../../addons/ofxGrabCam/src/ofxGrabCam.cpp; sourceTree = SOURCE_ROOT; };
 		12D375F2DDD285C3F9BFA4BA /* dynamic_smem.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = dynamic_smem.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda/dynamic_smem.hpp; sourceTree = SOURCE_ROOT; };
 		1335F3F49E8A72CB04FA873D /* util_inl.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = util_inl.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/stitching/detail/util_inl.hpp; sourceTree = SOURCE_ROOT; };
 		1445907105C17263F76087D0 /* guiTypeVairableLister.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = guiTypeVairableLister.h; path = ../../../addons/ofxControlPanel/src/guiTypeVairableLister.h; sourceTree = SOURCE_ROOT; };
@@ -146,11 +148,6 @@
 		25F371915E6771CEA7595D51 /* guiTypeText.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = guiTypeText.cpp; path = ../../../addons/ofxControlPanel/src/guiTypeText.cpp; sourceTree = SOURCE_ROOT; };
 		26149D52CBE031B3F154D862 /* defs.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = defs.h; path = ../../../addons/ofxAssimpModelLoader/libs/assimp/include/assimp/defs.h; sourceTree = SOURCE_ROOT; };
 		26E4EEE253C8A6EFC3B3A639 /* warpers.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = warpers.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/stitching/detail/warpers.hpp; sourceTree = SOURCE_ROOT; };
-		27FF53C81FE22359007A30D6 /* LightLeaksUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LightLeaksUtilities.h; sourceTree = "<group>"; };
-		27FF53C91FE22359007A30D6 /* ofxProCamToolkit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxProCamToolkit.h; sourceTree = "<group>"; };
-		27FF53CA1FE22359007A30D6 /* LineArt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineArt.h; sourceTree = "<group>"; };
-		27FF53CB1FE22359007A30D6 /* ofAutoShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofAutoShader.h; sourceTree = "<group>"; };
-		27FF53CC1FE22359007A30D6 /* ofxProCamToolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxProCamToolkit.cpp; sourceTree = "<group>"; };
 		28A42A2103C59E7D30E9D245 /* Exporter.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = Exporter.hpp; path = ../../../addons/ofxAssimpModelLoader/libs/assimp/include/assimp/Exporter.hpp; sourceTree = SOURCE_ROOT; };
 		28DD8BE15EE5EA746D586FCE /* imgproc.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = imgproc.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/imgproc.hpp; sourceTree = SOURCE_ROOT; };
 		294A99786494605CDCC4BDBA /* ptr.inl.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ptr.inl.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/ptr.inl.hpp; sourceTree = SOURCE_ROOT; };
@@ -186,6 +183,7 @@
 		3FEC91F2DC9B84817ADF511F /* interface.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = interface.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/hal/interface.h; sourceTree = SOURCE_ROOT; };
 		402C8F4015542356D362AC88 /* Calibration.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = Calibration.cpp; path = ../../../addons/ofxCv/libs/ofxCv/src/Calibration.cpp; sourceTree = SOURCE_ROOT; };
 		40F27148EE7D193B6954C793 /* outlier_rejection.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = outlier_rejection.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/videostab/outlier_rejection.hpp; sourceTree = SOURCE_ROOT; };
+		411825D206FEFBA451C69368 /* ofxGrabCam.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxGrabCam.h; path = ../../../addons/ofxGrabCam/src/ofxGrabCam.h; sourceTree = SOURCE_ROOT; };
 		4169C003509990AD61E2FA76 /* saturate_cast.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = saturate_cast.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda/saturate_cast.hpp; sourceTree = SOURCE_ROOT; };
 		41DBF41AB15D7C33CA52C05F /* NullLogger.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = NullLogger.hpp; path = ../../../addons/ofxAssimpModelLoader/libs/assimp/include/assimp/NullLogger.hpp; sourceTree = SOURCE_ROOT; };
 		42B5D460590D03DC3009F243 /* material.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = material.h; path = ../../../addons/ofxAssimpModelLoader/libs/assimp/include/assimp/material.h; sourceTree = SOURCE_ROOT; };
@@ -356,6 +354,11 @@
 		C1C56D20A1A57DC44096BFE7 /* ofxCvContourFinder.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxCvContourFinder.h; path = ../../../addons/ofxOpenCv/src/ofxCvContourFinder.h; sourceTree = SOURCE_ROOT; };
 		C224E0400677911C78D08627 /* poppack1.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = poppack1.h; path = ../../../addons/ofxAssimpModelLoader/libs/assimp/include/assimp/Compiler/poppack1.h; sourceTree = SOURCE_ROOT; };
 		C22D2E2813FFE1C6DADD94D3 /* vec_distance_detail.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = vec_distance_detail.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda/detail/vec_distance_detail.hpp; sourceTree = SOURCE_ROOT; };
+		C54C24091FE30B7F00A1311C /* LightLeaksUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LightLeaksUtilities.h; sourceTree = "<group>"; };
+		C54C240A1FE30B7F00A1311C /* LineArt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineArt.h; sourceTree = "<group>"; };
+		C54C240B1FE30B7F00A1311C /* ofAutoShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofAutoShader.h; sourceTree = "<group>"; };
+		C54C240C1FE30B7F00A1311C /* ofxProCamToolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxProCamToolkit.cpp; sourceTree = "<group>"; };
+		C54C240D1FE30B7F00A1311C /* ofxProCamToolkit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxProCamToolkit.h; sourceTree = "<group>"; };
 		C5BB6D7A0C3A9D760BC22BBB /* guiTypeVideo.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = guiTypeVideo.cpp; path = ../../../addons/ofxControlPanel/src/guiTypeVideo.cpp; sourceTree = SOURCE_ROOT; };
 		C6054B8E81EF9D0DB91868B5 /* optim.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = optim.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/optim.hpp; sourceTree = SOURCE_ROOT; };
 		C6151136D101F857DAE12722 /* ofxCvImage.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxCvImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvImage.cpp; sourceTree = SOURCE_ROOT; };
@@ -483,41 +486,41 @@
 		0F07FE174552DEF007BF5AD5 /* opencv2 */ = {
 			isa = PBXGroup;
 			children = (
-				28DD8BE15EE5EA746D586FCE /* imgproc.hpp */,
-				ED977EFE7B82B0D53CB5C778 /* superres */,
-				C58CC92A5283B95AA31D50FB /* video */,
-				313FC06485D9C716C91410CD /* shape */,
+				428EB732FD42504F37BCA78A /* calib3d */,
 				3E62F0912DD06E97FB7B71E5 /* calib3d.hpp */,
-				1E45F8C3CCFF6847BFF957AA /* flann */,
 				A5A3A2F98919E2243C73199C /* core */,
-				AF43D9569510BEB0E2DFB944 /* stitching */,
-				9B7D592E7AB311451A27C46E /* opencv.hpp */,
-				3E44059DCBC2444D65660B9C /* imgproc */,
-				D0CAFE48EE488EEED9149670 /* objdetect */,
-				3AFE5637A5F062F7D47A3BB4 /* highgui.hpp */,
-				E7DD47EE16E493E5BCFBE7D0 /* features2d.hpp */,
-				5E9B116A022FFBC4B765B49C /* shape.hpp */,
-				D9997ADF12E1048B8CBD9E79 /* videostab.hpp */,
+				00AD08BCC48245F20EC29129 /* core.hpp */,
 				A669AC3407EAD8BE5AC99B6B /* cvconfig.h */,
-				3989467E93E3290D1BB5EA97 /* photo.hpp */,
-				0F288FD421D474F4AE2684D3 /* ml */,
+				86FEC009E2721D0FB23338D7 /* features2d */,
+				E7DD47EE16E493E5BCFBE7D0 /* features2d.hpp */,
+				1E45F8C3CCFF6847BFF957AA /* flann */,
 				0DA510FE79680FD066ECE798 /* flann.hpp */,
-				A95A2CE8156E72C5423329C2 /* objdetect.hpp */,
-				FF8E07FE7785C049B5175495 /* video.hpp */,
+				9C99831C330874C2B245AB48 /* highgui */,
+				3AFE5637A5F062F7D47A3BB4 /* highgui.hpp */,
 				4817327C18DACC1C93E29AB7 /* imgcodecs */,
 				EB4C1D48319ED2AFFE26D407 /* imgcodecs.hpp */,
-				9ED953970AA4018519181ED5 /* videoio */,
-				9C99831C330874C2B245AB48 /* highgui */,
-				F0E9ADA5A6ADE5F14B6AF8DD /* superres.hpp */,
+				3E44059DCBC2444D65660B9C /* imgproc */,
+				28DD8BE15EE5EA746D586FCE /* imgproc.hpp */,
+				0F288FD421D474F4AE2684D3 /* ml */,
 				5CBC4A0DE84EA2EA40E874B7 /* ml.hpp */,
-				86FEC009E2721D0FB23338D7 /* features2d */,
-				F0656B9018BCC041F81CD5AA /* videoio.hpp */,
-				A4E5F31122D08FFF978C700B /* stitching.hpp */,
-				38D119387412EF71F9FAA033 /* videostab */,
+				D0CAFE48EE488EEED9149670 /* objdetect */,
+				A95A2CE8156E72C5423329C2 /* objdetect.hpp */,
+				9B7D592E7AB311451A27C46E /* opencv.hpp */,
 				9ABD8CF34D37FADFEB352B88 /* opencv_modules.hpp */,
 				3B8F70BFDA30BBA2A5A060FC /* photo */,
-				428EB732FD42504F37BCA78A /* calib3d */,
-				00AD08BCC48245F20EC29129 /* core.hpp */,
+				3989467E93E3290D1BB5EA97 /* photo.hpp */,
+				313FC06485D9C716C91410CD /* shape */,
+				5E9B116A022FFBC4B765B49C /* shape.hpp */,
+				AF43D9569510BEB0E2DFB944 /* stitching */,
+				A4E5F31122D08FFF978C700B /* stitching.hpp */,
+				ED977EFE7B82B0D53CB5C778 /* superres */,
+				F0E9ADA5A6ADE5F14B6AF8DD /* superres.hpp */,
+				C58CC92A5283B95AA31D50FB /* video */,
+				FF8E07FE7785C049B5175495 /* video.hpp */,
+				9ED953970AA4018519181ED5 /* videoio */,
+				F0656B9018BCC041F81CD5AA /* videoio.hpp */,
+				38D119387412EF71F9FAA033 /* videostab */,
+				D9997ADF12E1048B8CBD9E79 /* videostab.hpp */,
 			);
 			name = opencv2;
 			sourceTree = "<group>";
@@ -541,42 +544,42 @@
 		1E45F8C3CCFF6847BFF957AA /* flann */ = {
 			isa = PBXGroup;
 			children = (
-				D5A3AFF36064B2CACAD31716 /* composite_index.h */,
-				FD609E2EC17FCE181DFE635F /* dist.h */,
-				FF58A50E588D6A64EE206840 /* hdf5.h */,
-				49EFFCF36CF194CCE0E1FAAB /* kdtree_index.h */,
-				F070AF5E3926EB2CB7A15D1B /* params.h */,
-				45F38573A0B0DEEC8BBC7A2C /* simplex_downhill.h */,
-				FB213FF0567D1B312DDBD05D /* linear_index.h */,
-				B7BF51E8E757FF8A162D3662 /* lsh_index.h */,
-				586A8EC141BDFA82B3B0518C /* config.h */,
-				2E411F99E3AB7154484B4F96 /* kmeans_index.h */,
-				E7DDB716B5AE0DEA82DFFEDA /* autotuned_index.h */,
-				CBDE84185E2969BA4AB209FC /* general.h */,
-				A15E0125B8C9B7F01DED5695 /* matrix.h */,
-				DCB56F4E9F44E31D571BC9C4 /* index_testing.h */,
-				722542BCDC94162B6A8B9B72 /* defines.h */,
-				01DAE5C2E3E0A74207B2BE49 /* saving.h */,
-				1E95EFD35ED9C5D97F2F015E /* timer.h */,
-				FEDA0B6056089762F5FA11CA /* lsh_table.h */,
-				096CB33CAD6C5A446E7026E9 /* dynamic_bitset.h */,
-				0CF0AA3895D28E97D8A1E4A9 /* ground_truth.h */,
-				E5F6E381641665852B997FC4 /* allocator.h */,
-				758F19335D4E46A5E0DE449F /* kdtree_single_index.h */,
-				6DD5A3CBB6D5BBA1C1354F1B /* flann.hpp */,
-				F9EC3DDC0E9F85C34B21C760 /* object_factory.h */,
-				974AACF856A0A1B7D8F259E0 /* result_set.h */,
 				011E372AEA4DFBC1A32C2851 /* all_indices.h */,
-				6B907CFBB1B0FEDE76C41AA0 /* heap.h */,
-				9B076DCB5B800BE9AF1B71A6 /* flann_base.hpp */,
-				7E57AAE3FAB29F87D19451BC /* sampling.h */,
-				9DA0CBD43DA38386EB04C9AE /* miniflann.hpp */,
-				0173A3F435DECD5A4DDE0B8E /* logger.h */,
-				946187321200AC04E570E6EC /* hierarchical_clustering_index.h */,
-				36F0FF7F8D7342D220CC6319 /* dummy.h */,
+				E5F6E381641665852B997FC4 /* allocator.h */,
 				45410DD818BB205166E67E89 /* any.h */,
-				ECC34C470C60F0A2AE2761B1 /* random.h */,
+				E7DDB716B5AE0DEA82DFFEDA /* autotuned_index.h */,
+				D5A3AFF36064B2CACAD31716 /* composite_index.h */,
+				586A8EC141BDFA82B3B0518C /* config.h */,
+				722542BCDC94162B6A8B9B72 /* defines.h */,
+				FD609E2EC17FCE181DFE635F /* dist.h */,
+				36F0FF7F8D7342D220CC6319 /* dummy.h */,
+				096CB33CAD6C5A446E7026E9 /* dynamic_bitset.h */,
+				6DD5A3CBB6D5BBA1C1354F1B /* flann.hpp */,
+				9B076DCB5B800BE9AF1B71A6 /* flann_base.hpp */,
+				CBDE84185E2969BA4AB209FC /* general.h */,
+				0CF0AA3895D28E97D8A1E4A9 /* ground_truth.h */,
+				FF58A50E588D6A64EE206840 /* hdf5.h */,
+				6B907CFBB1B0FEDE76C41AA0 /* heap.h */,
+				946187321200AC04E570E6EC /* hierarchical_clustering_index.h */,
+				DCB56F4E9F44E31D571BC9C4 /* index_testing.h */,
+				49EFFCF36CF194CCE0E1FAAB /* kdtree_index.h */,
+				758F19335D4E46A5E0DE449F /* kdtree_single_index.h */,
+				2E411F99E3AB7154484B4F96 /* kmeans_index.h */,
+				FB213FF0567D1B312DDBD05D /* linear_index.h */,
+				0173A3F435DECD5A4DDE0B8E /* logger.h */,
+				B7BF51E8E757FF8A162D3662 /* lsh_index.h */,
+				FEDA0B6056089762F5FA11CA /* lsh_table.h */,
+				A15E0125B8C9B7F01DED5695 /* matrix.h */,
+				9DA0CBD43DA38386EB04C9AE /* miniflann.hpp */,
 				8DB45DE3BD6BB97E34BDB411 /* nn_index.h */,
+				F9EC3DDC0E9F85C34B21C760 /* object_factory.h */,
+				F070AF5E3926EB2CB7A15D1B /* params.h */,
+				ECC34C470C60F0A2AE2761B1 /* random.h */,
+				974AACF856A0A1B7D8F259E0 /* result_set.h */,
+				7E57AAE3FAB29F87D19451BC /* sampling.h */,
+				01DAE5C2E3E0A74207B2BE49 /* saving.h */,
+				45F38573A0B0DEEC8BBC7A2C /* simplex_downhill.h */,
+				1E95EFD35ED9C5D97F2F015E /* timer.h */,
 			);
 			name = flann;
 			sourceTree = "<group>";
@@ -588,19 +591,6 @@
 				6E54289412D2D94F45A05113 /* libs */,
 			);
 			name = ofxXmlSettings;
-			sourceTree = "<group>";
-		};
-		27FF53C71FE22359007A30D6 /* SharedCode */ = {
-			isa = PBXGroup;
-			children = (
-				27FF53C81FE22359007A30D6 /* LightLeaksUtilities.h */,
-				27FF53C91FE22359007A30D6 /* ofxProCamToolkit.h */,
-				27FF53CA1FE22359007A30D6 /* LineArt.h */,
-				27FF53CB1FE22359007A30D6 /* ofAutoShader.h */,
-				27FF53CC1FE22359007A30D6 /* ofxProCamToolkit.cpp */,
-			);
-			name = SharedCode;
-			path = ../SharedCode;
 			sourceTree = "<group>";
 		};
 		2C8F245ACBE61E28646C17F2 /* ofxAssimpModelLoader */ = {
@@ -616,17 +606,17 @@
 			isa = PBXGroup;
 			children = (
 				44A8175B7C8A100B5BEF5DE4 /* autocalib.hpp */,
-				26E4EEE253C8A6EFC3B3A639 /* warpers.hpp */,
-				D6426FE9886FD3B4A831A446 /* exposure_compensate.hpp */,
-				1335F3F49E8A72CB04FA873D /* util_inl.hpp */,
-				1F9D46D19614774956DFE362 /* seam_finders.hpp */,
-				0F7A29977E90E5E599704B17 /* timelapsers.hpp */,
 				79E285EDBBEA89226444A4D0 /* blenders.hpp */,
-				CE5203B78839A661DA972B33 /* warpers_inl.hpp */,
-				B1579F602B98D48A6937B341 /* util.hpp */,
+				057D8E7580EA21E2254ADDDA /* camera.hpp */,
+				D6426FE9886FD3B4A831A446 /* exposure_compensate.hpp */,
 				31BE73BA37686CA4E4904323 /* matchers.hpp */,
 				2411F6B35DAAAE5083D51167 /* motion_estimators.hpp */,
-				057D8E7580EA21E2254ADDDA /* camera.hpp */,
+				1F9D46D19614774956DFE362 /* seam_finders.hpp */,
+				0F7A29977E90E5E599704B17 /* timelapsers.hpp */,
+				B1579F602B98D48A6937B341 /* util.hpp */,
+				1335F3F49E8A72CB04FA873D /* util_inl.hpp */,
+				26E4EEE253C8A6EFC3B3A639 /* warpers.hpp */,
+				CE5203B78839A661DA972B33 /* warpers_inl.hpp */,
 			);
 			name = detail;
 			sourceTree = "<group>";
@@ -635,10 +625,10 @@
 			isa = PBXGroup;
 			children = (
 				4803A00620552868C56305A0 /* emdL1.hpp */,
+				579DAB2F522F6FA89D5FAD65 /* hist_cost.hpp */,
+				853178B90C539B8D13AF3A3B /* shape.hpp */,
 				AFB896F95E9D7C2A1AF48C9F /* shape_distance.hpp */,
 				3257139B759DE3ED39A9944A /* shape_transformer.hpp */,
-				853178B90C539B8D13AF3A3B /* shape.hpp */,
-				579DAB2F522F6FA89D5FAD65 /* hist_cost.hpp */,
 			);
 			name = shape;
 			sourceTree = "<group>";
@@ -663,20 +653,20 @@
 		38D119387412EF71F9FAA033 /* videostab */ = {
 			isa = PBXGroup;
 			children = (
+				D9613459E2788BF99E572ED1 /* deblurring.hpp */,
 				A3411731962D0402217F182B /* fast_marching.hpp */,
+				075597E52E99BDE94F8036B2 /* fast_marching_inl.hpp */,
+				59570D160E1EDD6EB832826A /* frame_source.hpp */,
+				0CEC1FE946DBDBAB82AF6FE3 /* global_motion.hpp */,
 				D2991184C57509808BF041C8 /* inpainting.hpp */,
+				7279658ADA9582251CB1D783 /* log.hpp */,
 				87E4982E52613342E608A140 /* motion_core.hpp */,
 				EEEA907F4732A9D8875ABB9C /* motion_stabilizing.hpp */,
-				17CE5A4068930946980DE788 /* stabilizer.hpp */,
-				59570D160E1EDD6EB832826A /* frame_source.hpp */,
-				3A4821C85052A8CED6405046 /* wobble_suppression.hpp */,
-				075597E52E99BDE94F8036B2 /* fast_marching_inl.hpp */,
-				6A1337E3AD5759EF5C6E035A /* ring_buffer.hpp */,
-				D9613459E2788BF99E572ED1 /* deblurring.hpp */,
-				7279658ADA9582251CB1D783 /* log.hpp */,
-				0CEC1FE946DBDBAB82AF6FE3 /* global_motion.hpp */,
-				40F27148EE7D193B6954C793 /* outlier_rejection.hpp */,
 				1054B4574F75C1F693C147C6 /* optical_flow.hpp */,
+				40F27148EE7D193B6954C793 /* outlier_rejection.hpp */,
+				6A1337E3AD5759EF5C6E035A /* ring_buffer.hpp */,
+				17CE5A4068930946980DE788 /* stabilizer.hpp */,
+				3A4821C85052A8CED6405046 /* wobble_suppression.hpp */,
 			);
 			name = videostab;
 			sourceTree = "<group>";
@@ -685,8 +675,8 @@
 			isa = PBXGroup;
 			children = (
 				B7CF9304CA7B93201D068FDB /* cuda.hpp */,
-				56ED74AD5FC73867F5E046F0 /* photo_c.h */,
 				CCFB64CDA537F2B5A54CDC13 /* photo.hpp */,
+				56ED74AD5FC73867F5E046F0 /* photo_c.h */,
 			);
 			name = photo;
 			sourceTree = "<group>";
@@ -694,9 +684,9 @@
 		3E44059DCBC2444D65660B9C /* imgproc */ = {
 			isa = PBXGroup;
 			children = (
+				563EED163AFBFFA1863834E0 /* detail */,
 				114B872696817CC33990FC83 /* imgproc.hpp */,
 				9B55998E41388AD8704E4F9A /* imgproc_c.h */,
-				563EED163AFBFFA1863834E0 /* detail */,
 				9B90B3EE60497170AA00BFE8 /* types_c.h */,
 			);
 			name = imgproc;
@@ -714,12 +704,12 @@
 		44C9CF7BDA3F1D7447153213 /* detail */ = {
 			isa = PBXGroup;
 			children = (
+				549B3EA7657E206618A5FD94 /* color_detail.hpp */,
 				54C6BE377AE084FA7411103C /* reduce.hpp */,
 				F59EB6ED6E1911AEDF5D637E /* reduce_key_val.hpp */,
-				549B3EA7657E206618A5FD94 /* color_detail.hpp */,
+				A20A71999BCD1DEAF73CC06D /* transform_detail.hpp */,
 				D8488BEE2CBE9CF46BD61268 /* type_traits_detail.hpp */,
 				C22D2E2813FFE1C6DADD94D3 /* vec_distance_detail.hpp */,
-				A20A71999BCD1DEAF73CC06D /* transform_detail.hpp */,
 			);
 			name = detail;
 			sourceTree = "<group>";
@@ -735,9 +725,9 @@
 		4817327C18DACC1C93E29AB7 /* imgcodecs */ = {
 			isa = PBXGroup;
 			children = (
-				D897DE20250FB8F8DAB94875 /* ios.h */,
 				7CB7983BC98D4BEE5A7EAB46 /* imgcodecs.hpp */,
 				E01D7F496E9E90D0E396DD43 /* imgcodecs_c.h */,
+				D897DE20250FB8F8DAB94875 /* ios.h */,
 			);
 			name = imgcodecs;
 			sourceTree = "<group>";
@@ -745,17 +735,17 @@
 		4EB038C7DF921AA8A4070286 /* ofxCv */ = {
 			isa = PBXGroup;
 			children = (
-				D29DD28C195CD81267F3C8A1 /* Distance.h */,
 				58140E0F92D37844E9C8883D /* Calibration.h */,
-				4524C0ED0C2DD3E085CE3350 /* ObjectFinder.h */,
-				73157AAE32787C63313C7D8E /* Wrappers.h */,
-				84D3470A12DEE51F320224AC /* Utilities.h */,
-				6B3CDFD1A15E92F074E7D5AE /* RunningBackground.h */,
-				F3C32677C12BD67CF9F8980E /* Kalman.h */,
 				178547E33CE398C7B59F08AB /* ContourFinder.h */,
+				D29DD28C195CD81267F3C8A1 /* Distance.h */,
 				8326CDEDA153D242D924D2B6 /* Flow.h */,
-				70046E043EDDB466ED625C3B /* Tracker.h */,
 				8738DE90218B1E9054A88B54 /* Helpers.h */,
+				F3C32677C12BD67CF9F8980E /* Kalman.h */,
+				4524C0ED0C2DD3E085CE3350 /* ObjectFinder.h */,
+				6B3CDFD1A15E92F074E7D5AE /* RunningBackground.h */,
+				70046E043EDDB466ED625C3B /* Tracker.h */,
+				84D3470A12DEE51F320224AC /* Utilities.h */,
+				73157AAE32787C63313C7D8E /* Wrappers.h */,
 			);
 			name = ofxCv;
 			sourceTree = "<group>";
@@ -788,40 +778,40 @@
 		67AD613537D3ED7FD883659E /* assimp */ = {
 			isa = PBXGroup;
 			children = (
-				ADAE582E4696B9BD64E5B2B8 /* IOSystem.hpp */,
-				EED8C389555EA379BDFA5BD5 /* Logger.hpp */,
-				18D6965F094E05B40B20AFB8 /* IOStream.hpp */,
-				26149D52CBE031B3F154D862 /* defs.h */,
-				9FECF0FCF0CCAEC9C58FE54F /* version.h */,
-				A7579B6BD9B77152BF320192 /* matrix4x4.h */,
-				6E069CE4C58E970E3429DBE5 /* Importer.hpp */,
-				3D5F33D66F2F166A4E8EA438 /* cfileio.h */,
-				98033501202172DF458BD6CF /* vector2.h */,
-				7920005E4069FBD68DF30F56 /* config.h */,
-				808F0EC060E7C8DA90947996 /* light.h */,
-				C1638C371AC7701E1A4D6671 /* types.h */,
-				2412104B96C3E5E004D85DED /* cimport.h */,
-				7B454555CF8F39CFBAAFDFA2 /* camera.h */,
-				D501EB9AF5A65F43CB972589 /* matrix3x3.h */,
-				42B5D460590D03DC3009F243 /* material.h */,
 				3DE27F8F3350100A56220776 /* ai_assert.h */,
-				41DBF41AB15D7C33CA52C05F /* NullLogger.hpp */,
-				1E0C80A97E66F858E3720C91 /* quaternion.h */,
-				24814572966A916B92F96257 /* DefaultLogger.hpp */,
-				8090B616E3293BD0E1085AE8 /* metadata.h */,
-				6A0E743407465957DB764ED3 /* mesh.h */,
-				28A42A2103C59E7D30E9D245 /* Exporter.hpp */,
-				9339B8AD0EF31B7708C53B9F /* ProgressHandler.hpp */,
-				96EBF8A6CD3F11C79F7950BC /* cexport.h */,
-				AED6F84D8DABA623CAF59F13 /* color4.h */,
 				E83EDA0A1919173D8498F392 /* anim.h */,
-				42D77E59A87937F5313E468D /* postprocess.h */,
-				221A6B45269330B270549CB3 /* texture.h */,
-				2B629E4DB07A45391A420283 /* importerdesc.h */,
+				7B454555CF8F39CFBAAFDFA2 /* camera.h */,
+				96EBF8A6CD3F11C79F7950BC /* cexport.h */,
+				3D5F33D66F2F166A4E8EA438 /* cfileio.h */,
+				2412104B96C3E5E004D85DED /* cimport.h */,
+				AED6F84D8DABA623CAF59F13 /* color4.h */,
 				B77F1220F7C30BFF6034CC97 /* Compiler */,
-				A6197D72F51ED9030D7C5F16 /* vector3.h */,
-				D825FF1F1EA48B305BB428B7 /* scene.h */,
+				7920005E4069FBD68DF30F56 /* config.h */,
+				24814572966A916B92F96257 /* DefaultLogger.hpp */,
+				26149D52CBE031B3F154D862 /* defs.h */,
+				28A42A2103C59E7D30E9D245 /* Exporter.hpp */,
+				6E069CE4C58E970E3429DBE5 /* Importer.hpp */,
+				2B629E4DB07A45391A420283 /* importerdesc.h */,
+				18D6965F094E05B40B20AFB8 /* IOStream.hpp */,
+				ADAE582E4696B9BD64E5B2B8 /* IOSystem.hpp */,
+				808F0EC060E7C8DA90947996 /* light.h */,
+				EED8C389555EA379BDFA5BD5 /* Logger.hpp */,
 				0E3FB6D73DB6B260295B6855 /* LogStream.hpp */,
+				42B5D460590D03DC3009F243 /* material.h */,
+				D501EB9AF5A65F43CB972589 /* matrix3x3.h */,
+				A7579B6BD9B77152BF320192 /* matrix4x4.h */,
+				6A0E743407465957DB764ED3 /* mesh.h */,
+				8090B616E3293BD0E1085AE8 /* metadata.h */,
+				41DBF41AB15D7C33CA52C05F /* NullLogger.hpp */,
+				42D77E59A87937F5313E468D /* postprocess.h */,
+				9339B8AD0EF31B7708C53B9F /* ProgressHandler.hpp */,
+				1E0C80A97E66F858E3720C91 /* quaternion.h */,
+				D825FF1F1EA48B305BB428B7 /* scene.h */,
+				221A6B45269330B270549CB3 /* texture.h */,
+				C1638C371AC7701E1A4D6671 /* types.h */,
+				98033501202172DF458BD6CF /* vector2.h */,
+				A6197D72F51ED9030D7C5F16 /* vector3.h */,
+				9FECF0FCF0CCAEC9C58FE54F /* version.h */,
 			);
 			name = assimp;
 			sourceTree = "<group>";
@@ -836,10 +826,10 @@
 		6E54289412D2D94F45A05113 /* libs */ = {
 			isa = PBXGroup;
 			children = (
-				B21E7E5F548EEA92F368040B /* tinyxml.h */,
-				FC5DA1C87211D4F6377DA719 /* tinyxmlparser.cpp */,
-				832BDC407620CDBA568B713D /* tinyxmlerror.cpp */,
 				2B40EDA85BEB63E46785BC29 /* tinyxml.cpp */,
+				B21E7E5F548EEA92F368040B /* tinyxml.h */,
+				832BDC407620CDBA568B713D /* tinyxmlerror.cpp */,
+				FC5DA1C87211D4F6377DA719 /* tinyxmlparser.cpp */,
 			);
 			name = libs;
 			sourceTree = "<group>";
@@ -856,17 +846,17 @@
 		737B033AA777B67BA4F8F4D2 /* opencv */ = {
 			isa = PBXGroup;
 			children = (
-				9FF9126184DFBDE8A912373E /* highgui.h */,
 				33FF03222909C1A0ECE43753 /* cv.h */,
-				E90542C149C83316678AB011 /* cxmisc.h */,
-				B8427966039B53A0FE69C1F0 /* cxcore.h */,
-				D76A59E7B3601E76351C9BDB /* cvaux.h */,
-				DB8653D6433E14BF06F3EFAF /* cvwimage.h */,
-				CF29BFB3FD3CAA54F336E6FD /* cvaux.hpp */,
-				7101CF2125B8B2BF46AA2662 /* cxcore.hpp */,
-				7C3D9C0EAC738ED2624D264B /* ml.h */,
 				30884ECD9C171AB1B1BDFC3F /* cv.hpp */,
+				D76A59E7B3601E76351C9BDB /* cvaux.h */,
+				CF29BFB3FD3CAA54F336E6FD /* cvaux.hpp */,
+				DB8653D6433E14BF06F3EFAF /* cvwimage.h */,
+				B8427966039B53A0FE69C1F0 /* cxcore.h */,
+				7101CF2125B8B2BF46AA2662 /* cxcore.hpp */,
 				319268D200F1BA567E4CCFF9 /* cxeigen.hpp */,
+				E90542C149C83316678AB011 /* cxmisc.h */,
+				9FF9126184DFBDE8A912373E /* highgui.h */,
+				7C3D9C0EAC738ED2624D264B /* ml.h */,
 			);
 			name = opencv;
 			sourceTree = "<group>";
@@ -883,12 +873,12 @@
 		7E6C5E65D1F2AF506837C309 /* hal */ = {
 			isa = PBXGroup;
 			children = (
-				9099FE39F83D89F069902F3F /* intrin.hpp */,
-				1A4C00ED58E03FDD44AD4199 /* intrin_neon.hpp */,
-				3FEC91F2DC9B84817ADF511F /* interface.h */,
-				676F777537535D01BD0CF2E6 /* intrin_cpp.hpp */,
-				5962B8B41B0DE1DBC0D25662 /* intrin_sse.hpp */,
 				930B84B145D9C48AB8AF391C /* hal.hpp */,
+				3FEC91F2DC9B84817ADF511F /* interface.h */,
+				9099FE39F83D89F069902F3F /* intrin.hpp */,
+				676F777537535D01BD0CF2E6 /* intrin_cpp.hpp */,
+				1A4C00ED58E03FDD44AD4199 /* intrin_neon.hpp */,
+				5962B8B41B0DE1DBC0D25662 /* intrin_sse.hpp */,
 			);
 			name = hal;
 			sourceTree = "<group>";
@@ -921,8 +911,8 @@
 		90D509C72729D1998E28A98F /* libs */ = {
 			isa = PBXGroup;
 			children = (
-				85961BEC127E2550AA7756C9 /* ofxCv */,
 				7CC1E591490DB083FB916812 /* CLD */,
+				85961BEC127E2550AA7756C9 /* ofxCv */,
 			);
 			name = libs;
 			sourceTree = "<group>";
@@ -939,15 +929,15 @@
 		9D99F547CA5C0ECCB9EB9806 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				F67FE68E327BEFBD4B777571 /* ofxAssimpMeshHelper.cpp */,
-				EA83DF139B3F2085C1A56C49 /* ofxAssimpAnimation.h */,
 				36068D6C1D6D412786A5C4C1 /* ofxAssimpAnimation.cpp */,
+				EA83DF139B3F2085C1A56C49 /* ofxAssimpAnimation.h */,
+				F67FE68E327BEFBD4B777571 /* ofxAssimpMeshHelper.cpp */,
+				F0BBBD032D905D92679D83E6 /* ofxAssimpMeshHelper.h */,
+				EDE55D82BD962DAC0E94B708 /* ofxAssimpModelLoader.cpp */,
+				7DF381F656E8FD352E21346E /* ofxAssimpModelLoader.h */,
 				B6F2EE44AD04FF549AB13699 /* ofxAssimpTexture.cpp */,
 				8B473495EAE4247AC1A851F1 /* ofxAssimpTexture.h */,
-				EDE55D82BD962DAC0E94B708 /* ofxAssimpModelLoader.cpp */,
-				F0BBBD032D905D92679D83E6 /* ofxAssimpMeshHelper.h */,
 				4FAE4A0F69A8990513603BDF /* ofxAssimpUtils.h */,
-				7DF381F656E8FD352E21346E /* ofxAssimpModelLoader.h */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -974,45 +964,45 @@
 		A5A3A2F98919E2243C73199C /* core */ = {
 			isa = PBXGroup;
 			children = (
-				312C4E5B5888B0E1B0260A34 /* fast_math.hpp */,
-				116AA25686B005BA869907F7 /* cuda_types.hpp */,
-				D8BDD238C7C92566914E2008 /* utility.hpp */,
-				2F3FA783F254D7A057FF7E5C /* ippasync.hpp */,
-				CCC89CA785CFCE1FE8D78F26 /* cvstd.inl.hpp */,
-				7E6C5E65D1F2AF506837C309 /* hal */,
-				E93D421BB41B892141AC9F25 /* bufferpool.hpp */,
-				C6054B8E81EF9D0DB91868B5 /* optim.hpp */,
-				A939E9E5E8564A11D369FEBE /* va_intel.hpp */,
-				3C5231D57B4C137AD4857C43 /* cvdef.h */,
-				F925B16E068BA6ACF0AB14A4 /* cuda */,
-				06AA5B022ED430230ED9C65D /* traits.hpp */,
-				FCF1B981F9B18D61766B06CB /* opengl.hpp */,
-				1C5CDE00E9073EC2CE9E3550 /* cuda.inl.hpp */,
-				A2EE5E80B134EA52A8B369D2 /* eigen.hpp */,
-				DADCA77BE419C56D69B3124C /* cuda_stream_accessor.hpp */,
-				AFCFB2EC5C6F97073DAC843C /* ocl.hpp */,
-				84C059AA681D7088B742D8E8 /* cuda.hpp */,
 				C1A2E81B4FD0713346D7E806 /* affine.hpp */,
-				AB2AE477F82ACF17D0121166 /* mat.hpp */,
-				0989F2DCBAC40FC135553B24 /* neon_utils.hpp */,
-				D47C17C8DFC7389F138F64E2 /* sse_utils.hpp */,
-				8AC4DB83348A34972E021B6A /* private.hpp */,
-				E8AF1E9150AD818FA9D9195D /* version.hpp */,
-				D58FE1C46107CE30D46376C1 /* ocl_genbase.hpp */,
-				AFDF50FE842FFA83D825748D /* matx.hpp */,
-				CDD232607BBCF4BDE5954EEC /* directx.hpp */,
 				2AA1E0A8A25FFBD523DF6684 /* base.hpp */,
-				E4385429A1E63ACEDC39A612 /* operations.hpp */,
-				399CF1E9DEED7A64336A4A70 /* persistence.hpp */,
-				4FCB43506B64DAF8A5C0F927 /* mat.inl.hpp */,
-				294A99786494605CDCC4BDBA /* ptr.inl.hpp */,
-				CD8565F2F122EECA0C095526 /* types_c.h */,
-				A23294BD900A77E58A71F621 /* cvstd.hpp */,
-				1DBFE7BF680298B7C6F3388F /* private.cuda.hpp */,
-				002DD489BECC92AE370E9D50 /* types.hpp */,
-				082BD19D2C5644A6F12F3829 /* saturate.hpp */,
-				087522EA37A32B8D902CAB64 /* core_c.h */,
+				E93D421BB41B892141AC9F25 /* bufferpool.hpp */,
 				C66C6414C8B86FDB99ED3B70 /* core.hpp */,
+				087522EA37A32B8D902CAB64 /* core_c.h */,
+				F925B16E068BA6ACF0AB14A4 /* cuda */,
+				84C059AA681D7088B742D8E8 /* cuda.hpp */,
+				1C5CDE00E9073EC2CE9E3550 /* cuda.inl.hpp */,
+				DADCA77BE419C56D69B3124C /* cuda_stream_accessor.hpp */,
+				116AA25686B005BA869907F7 /* cuda_types.hpp */,
+				3C5231D57B4C137AD4857C43 /* cvdef.h */,
+				A23294BD900A77E58A71F621 /* cvstd.hpp */,
+				CCC89CA785CFCE1FE8D78F26 /* cvstd.inl.hpp */,
+				CDD232607BBCF4BDE5954EEC /* directx.hpp */,
+				A2EE5E80B134EA52A8B369D2 /* eigen.hpp */,
+				312C4E5B5888B0E1B0260A34 /* fast_math.hpp */,
+				7E6C5E65D1F2AF506837C309 /* hal */,
+				2F3FA783F254D7A057FF7E5C /* ippasync.hpp */,
+				AB2AE477F82ACF17D0121166 /* mat.hpp */,
+				4FCB43506B64DAF8A5C0F927 /* mat.inl.hpp */,
+				AFDF50FE842FFA83D825748D /* matx.hpp */,
+				0989F2DCBAC40FC135553B24 /* neon_utils.hpp */,
+				AFCFB2EC5C6F97073DAC843C /* ocl.hpp */,
+				D58FE1C46107CE30D46376C1 /* ocl_genbase.hpp */,
+				FCF1B981F9B18D61766B06CB /* opengl.hpp */,
+				E4385429A1E63ACEDC39A612 /* operations.hpp */,
+				C6054B8E81EF9D0DB91868B5 /* optim.hpp */,
+				399CF1E9DEED7A64336A4A70 /* persistence.hpp */,
+				1DBFE7BF680298B7C6F3388F /* private.cuda.hpp */,
+				8AC4DB83348A34972E021B6A /* private.hpp */,
+				294A99786494605CDCC4BDBA /* ptr.inl.hpp */,
+				082BD19D2C5644A6F12F3829 /* saturate.hpp */,
+				D47C17C8DFC7389F138F64E2 /* sse_utils.hpp */,
+				06AA5B022ED430230ED9C65D /* traits.hpp */,
+				002DD489BECC92AE370E9D50 /* types.hpp */,
+				CD8565F2F122EECA0C095526 /* types_c.h */,
+				D8BDD238C7C92566914E2008 /* utility.hpp */,
+				A939E9E5E8564A11D369FEBE /* va_intel.hpp */,
+				E8AF1E9150AD818FA9D9195D /* version.hpp */,
 				A9C85208C7E45FB9D1926789 /* wimage.hpp */,
 			);
 			name = core;
@@ -1029,8 +1019,8 @@
 		AF43D9569510BEB0E2DFB944 /* stitching */ = {
 			isa = PBXGroup;
 			children = (
-				F2F75C2513DDF24A79A894DF /* warpers.hpp */,
 				303E2D4AF80E80BD1FD5E5F6 /* detail */,
+				F2F75C2513DDF24A79A894DF /* warpers.hpp */,
 			);
 			name = stitching;
 			sourceTree = "<group>";
@@ -1051,18 +1041,32 @@
 				2C8F245ACBE61E28646C17F2 /* ofxAssimpModelLoader */,
 				3598F21374BFCA3EDCE76F18 /* ofxControlPanel */,
 				6025FAF6414C2CA589764D26 /* ofxCv */,
+				CB480773A518EB96FF506657 /* ofxGrabCam */,
 				A0B90D3B0ADB9C1716816714 /* ofxOpenCv */,
 				1F4FB5C423662B96ADFDCC0B /* ofxXmlSettings */,
 			);
 			name = addons;
 			sourceTree = "<group>";
 		};
+		C54C24081FE30B7F00A1311C /* SharedCode */ = {
+			isa = PBXGroup;
+			children = (
+				C54C24091FE30B7F00A1311C /* LightLeaksUtilities.h */,
+				C54C240A1FE30B7F00A1311C /* LineArt.h */,
+				C54C240B1FE30B7F00A1311C /* ofAutoShader.h */,
+				C54C240C1FE30B7F00A1311C /* ofxProCamToolkit.cpp */,
+				C54C240D1FE30B7F00A1311C /* ofxProCamToolkit.h */,
+			);
+			name = SharedCode;
+			path = ../SharedCode;
+			sourceTree = "<group>";
+		};
 		C58CC92A5283B95AA31D50FB /* video */ = {
 			isa = PBXGroup;
 			children = (
+				71C98C3F44D63B39F1482A54 /* background_segm.hpp */,
 				E14D3EF03E140F5604900412 /* tracking.hpp */,
 				5D0971E2750DFC83749AFF16 /* tracking_c.h */,
-				71C98C3F44D63B39F1482A54 /* background_segm.hpp */,
 				97FBD89E6180673035AD1083 /* video.hpp */,
 			);
 			name = video;
@@ -1079,25 +1083,33 @@
 		C756CAAFD542831674E15FE6 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				CE9C7160245B19131DAE6128 /* ofxCvColorImage.cpp */,
-				8A4DD23693DFAB8EC05FAA5D /* ofxCvShortImage.cpp */,
-				DEA2EDC0AFD59176FDEDC222 /* ofxCvShortImage.h */,
-				8E79CF8911DFABAFE23EA45B /* ofxCvConstants.h */,
 				603F2267D449084A4187A049 /* ofxCvBlob.h */,
+				CE9C7160245B19131DAE6128 /* ofxCvColorImage.cpp */,
 				D5BB6F0357B6422E1B1656B4 /* ofxCvColorImage.h */,
-				CE81A5E39EB3C871FDF3D4D5 /* ofxOpenCv.h */,
-				C1C56D20A1A57DC44096BFE7 /* ofxCvContourFinder.h */,
+				8E79CF8911DFABAFE23EA45B /* ofxCvConstants.h */,
 				C76DE5C29BDBD2CAA1DD0021 /* ofxCvContourFinder.cpp */,
-				9A16CBF2E8CFE43AF54FE6F5 /* ofxCvHaarFinder.cpp */,
-				C6151136D101F857DAE12722 /* ofxCvImage.cpp */,
-				F7269F96AC34A2B44A680D03 /* ofxCvFloatImage.h */,
+				C1C56D20A1A57DC44096BFE7 /* ofxCvContourFinder.h */,
 				7B6A03390302D5A2C9F0E4AB /* ofxCvFloatImage.cpp */,
+				F7269F96AC34A2B44A680D03 /* ofxCvFloatImage.h */,
 				057122A817D12571F8C0C7A4 /* ofxCvGrayscaleImage.cpp */,
 				9A048549F08C6DFFA79E6DEF /* ofxCvGrayscaleImage.h */,
-				D847EBE484F4F500F9CF2549 /* ofxCvImage.h */,
+				9A16CBF2E8CFE43AF54FE6F5 /* ofxCvHaarFinder.cpp */,
 				516717F84C0146512C47A3EC /* ofxCvHaarFinder.h */,
+				C6151136D101F857DAE12722 /* ofxCvImage.cpp */,
+				D847EBE484F4F500F9CF2549 /* ofxCvImage.h */,
+				8A4DD23693DFAB8EC05FAA5D /* ofxCvShortImage.cpp */,
+				DEA2EDC0AFD59176FDEDC222 /* ofxCvShortImage.h */,
+				CE81A5E39EB3C871FDF3D4D5 /* ofxOpenCv.h */,
 			);
 			name = src;
+			sourceTree = "<group>";
+		};
+		CB480773A518EB96FF506657 /* ofxGrabCam */ = {
+			isa = PBXGroup;
+			children = (
+				F60C58CA4909EB621B1DBD95 /* src */,
+			);
+			name = ofxGrabCam;
 			sourceTree = "<group>";
 		};
 		D0CAFE48EE488EEED9149670 /* objdetect */ = {
@@ -1113,17 +1125,17 @@
 		D240A1DD1AE9F8E81BDBCD2B /* src */ = {
 			isa = PBXGroup;
 			children = (
+				402C8F4015542356D362AC88 /* Calibration.cpp */,
+				5FBB4A8427353AED09174BE5 /* ContourFinder.cpp */,
+				9DBD717072C35D324E101669 /* Distance.cpp */,
+				03A75A648BC4CF1D9DEDD0CE /* Flow.cpp */,
 				B9076967F8C54A04362C04AA /* Helpers.cpp */,
-				D347FB65D19015303863922A /* Wrappers.cpp */,
+				77A1A692522820F935B58762 /* Kalman.cpp */,
+				AE75A3FBA2C2D87D14F06FE6 /* ObjectFinder.cpp */,
 				5CBF6AED6A17AC0C17F63CC4 /* RunningBackground.cpp */,
 				A810DF70319A10353588F5DB /* Tracker.cpp */,
-				402C8F4015542356D362AC88 /* Calibration.cpp */,
-				03A75A648BC4CF1D9DEDD0CE /* Flow.cpp */,
-				5FBB4A8427353AED09174BE5 /* ContourFinder.cpp */,
-				AE75A3FBA2C2D87D14F06FE6 /* ObjectFinder.cpp */,
 				6CEC50DB3D06414010233963 /* Utilities.cpp */,
-				77A1A692522820F935B58762 /* Kalman.cpp */,
-				9DBD717072C35D324E101669 /* Distance.cpp */,
+				D347FB65D19015303863922A /* Wrappers.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -1149,7 +1161,7 @@
 			children = (
 				E4B6FCAD0C3E899E008CF71C /* openFrameworks-Info.plist */,
 				E4EB6923138AFD0F00A09F29 /* Project.xcconfig */,
-				27FF53C71FE22359007A30D6 /* SharedCode */,
+				C54C24081FE30B7F00A1311C /* SharedCode */,
 				E4B69E1C0A3A1BDC003C02F2 /* src */,
 				E4EEC9E9138DF44700A80321 /* openFrameworks */,
 				BB4B014C10F69532006C3DED /* addons */,
@@ -1193,34 +1205,43 @@
 			name = include;
 			sourceTree = "<group>";
 		};
+		F60C58CA4909EB621B1DBD95 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				126D728B075C482C4C740428 /* ofxGrabCam.cpp */,
+				411825D206FEFBA451C69368 /* ofxGrabCam.h */,
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
 		F925B16E068BA6ACF0AB14A4 /* cuda */ = {
 			isa = PBXGroup;
 			children = (
-				8ADC117A9688BEA05E058FD7 /* warp.hpp */,
-				D43C38658CE359EE99F6E9FD /* filters.hpp */,
-				12D375F2DDD285C3F9BFA4BA /* dynamic_smem.hpp */,
-				22D2FDEBD108FBBE7BDAE351 /* reduce.hpp */,
-				704DCFE42516C774B24026C6 /* utility.hpp */,
-				3320E3391BCC52FB025EF699 /* warp_shuffle.hpp */,
+				9074F214F4C153F69065F0D2 /* block.hpp */,
 				8860960BBA5514EB034ACBCB /* border_interpolate.hpp */,
-				D5843E5ED6CC75F23317CEBC /* transform.hpp */,
-				4169C003509990AD61E2FA76 /* saturate_cast.hpp */,
-				8DA137894419DA05F55BCF7E /* vec_math.hpp */,
+				F50A86EB81FEFCD97EF9E14E /* color.hpp */,
+				826D2BD7602562E48C8B3953 /* common.hpp */,
+				F5D15BBB907129000AE70363 /* datamov_utils.hpp */,
+				44C9CF7BDA3F1D7447153213 /* detail */,
+				12D375F2DDD285C3F9BFA4BA /* dynamic_smem.hpp */,
+				6B5BE4234BDC723B93110438 /* emulation.hpp */,
+				D43C38658CE359EE99F6E9FD /* filters.hpp */,
+				D6CA4AE545446E2FC6B000E4 /* funcattrib.hpp */,
 				F12D0C8A16C4D3DFDED192BB /* functional.hpp */,
 				9A45223FE8C83E9650095279 /* limits.hpp */,
-				D6BB8CE1E07DF01F316CD53D /* type_traits.hpp */,
-				AEA6758C0865972AF3CE2E42 /* vec_distance.hpp */,
-				9074F214F4C153F69065F0D2 /* block.hpp */,
-				44C9CF7BDA3F1D7447153213 /* detail */,
-				6B5BE4234BDC723B93110438 /* emulation.hpp */,
-				F50A86EB81FEFCD97EF9E14E /* color.hpp */,
-				F5D15BBB907129000AE70363 /* datamov_utils.hpp */,
-				D6CA4AE545446E2FC6B000E4 /* funcattrib.hpp */,
-				826D2BD7602562E48C8B3953 /* common.hpp */,
-				5B45FF6EC3FEBF4E2AD490CB /* vec_traits.hpp */,
-				EE66ADB3E34E1EFB974D47CA /* simd_functions.hpp */,
-				33FAD1336E9D266254C08C44 /* warp_reduce.hpp */,
+				22D2FDEBD108FBBE7BDAE351 /* reduce.hpp */,
+				4169C003509990AD61E2FA76 /* saturate_cast.hpp */,
 				75386E12E645F42737CA0EB5 /* scan.hpp */,
+				EE66ADB3E34E1EFB974D47CA /* simd_functions.hpp */,
+				D5843E5ED6CC75F23317CEBC /* transform.hpp */,
+				D6BB8CE1E07DF01F316CD53D /* type_traits.hpp */,
+				704DCFE42516C774B24026C6 /* utility.hpp */,
+				AEA6758C0865972AF3CE2E42 /* vec_distance.hpp */,
+				8DA137894419DA05F55BCF7E /* vec_math.hpp */,
+				5B45FF6EC3FEBF4E2AD490CB /* vec_traits.hpp */,
+				8ADC117A9688BEA05E058FD7 /* warp.hpp */,
+				33FAD1336E9D266254C08C44 /* warp_reduce.hpp */,
+				3320E3391BCC52FB025EF699 /* warp_shuffle.hpp */,
 			);
 			name = cuda;
 			sourceTree = "<group>";
@@ -1228,64 +1249,64 @@
 		F9E6B680913D8757E21C58B5 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				CBD6E9E8B022AB69FE7E454E /* guiTypeVideo.h */,
-				CE0C97E3F012F9FADFB5F260 /* guiTypeText.h */,
-				1D8B9A8480A5B3D82CEFFF06 /* simpleFileLister.h */,
-				D51169F112943BB2022A756A /* guiCallbackValue.cpp */,
-				4F64D7DD70C6B5B1FC395DED /* guiTypeTextDropDown.cpp */,
-				BDD9E60039A29DAFB013CDBD /* simpleFileLister.cpp */,
-				29897723D8C99BC3F4C66556 /* guiTypeFileLister.h */,
-				8131428D7458EC1392831F6C /* guiType2DSlider.h */,
-				6FCDF1191D78DB4E5238AC46 /* guiTypeTextInput.h */,
-				ED318057376FEDA301BD823E /* ofxControlPanel.cpp */,
-				B3C7247ED359BE65B5319A20 /* guiTypeLogger.h */,
-				D4944026CDFD5CED0A8EFF8A /* guiTypePanel.h */,
-				E82E4A22BF45F5CD82F6E180 /* guiCustomImpl.h */,
-				785EF65F14138AB610C0595E /* guiCallbackValue.h */,
-				DB609B0A16264158C61C979F /* guiTypeTextInput.cpp */,
-				8F5AFDA23DE220F49EA17CBC /* guiTypeButtonSlider.cpp */,
-				08549D86F2263BAFA64AE5D1 /* guiTypePanel.cpp */,
-				9A234A6E775BFC7C47B1E336 /* guiTextBase.cpp */,
-				D859BBB55780DA0D9098DBD2 /* guiColor.cpp */,
-				C5BB6D7A0C3A9D760BC22BBB /* guiTypeVideo.cpp */,
-				62121AB82E8C23F11BBC56E4 /* guiTypeToggle.cpp */,
-				EDC1B8201077923461FE934D /* guiTypeSlider.h */,
-				815C422E69C6FFEEB97D1B0A /* guiTypeDrawable.h */,
-				82741786E8E6961C9B9EA2DF /* guiTypeToggle.h */,
-				4ED7010A59CFBFF66DC17A56 /* guiTypeButtonSlider.h */,
-				EAC15439B87DC40C3609393B /* guiTypeDrawable.cpp */,
-				B64FB1A368486A378452239D /* guiTextBase.h */,
-				589362A07AEB006B1B8BE93F /* guiTypeLogger.cpp */,
-				9F91D61ED1C9EFA6A2ACDC47 /* guiValue.cpp */,
-				C15BFBA225F9D1CF5780BD5E /* simpleLogger.cpp */,
-				7E8A185410D2B5002305515A /* guiTypeFileLister.cpp */,
-				5CD68CA8FE136C3BE208703B /* guiTypeSlider.cpp */,
 				6B7D7ECC5A662345912C93D5 /* guiBaseObject.cpp */,
-				1445907105C17263F76087D0 /* guiTypeVairableLister.h */,
-				F740139603D171038C4E1057 /* guiType2DSlider.cpp */,
-				2D692A0570A93567D01B6D9D /* guiTypeTextDropDown.h */,
-				D3AC91D60FBBEB4AA58B1972 /* guiTypeLabel.h */,
-				CFED64139BF049D0E6E85B06 /* guiTypeCustom.cpp */,
-				A8F5D6546B2050363E043358 /* simpleColor.cpp */,
-				433F1A9AF67F62A5C34F5C8F /* ofxAutoControlPanel.h */,
-				49CA6F47242293DAF5A715A8 /* simpleColor.h */,
-				BF1E9A470F4B02D30B8B1D18 /* guiTypeMultiToggle.cpp */,
-				CFC7A1F656C34688D0EA0D0C /* guiTypeLabel.cpp */,
-				6F5E052EDC8E42EB2BEBFBB2 /* ofxControlPanel.h */,
-				3A18B217EA10EA8E3C7F6508 /* guiTypeChartPlotter.h */,
-				0623A592865192DAF866EC80 /* guiCallback.cpp */,
 				9AD86EB22381AC3DEEA8F304 /* guiBaseObject.h */,
-				76AC9361ADD00E0A97505518 /* guiTypeVairableLister.cpp */,
-				25F371915E6771CEA7595D51 /* guiTypeText.cpp */,
-				B70D8C165CC65EEE349E643F /* guiTypeCustom.h */,
-				0D1FF930B42368E7DF128F5C /* guiVariablePointer.h */,
-				D11AF1710220D1059049EB19 /* guiTypeMultiToggle.h */,
+				0623A592865192DAF866EC80 /* guiCallback.cpp */,
 				E879411E3078DFEBA57E2BAB /* guiCallback.h */,
-				4BC67DBB14FF67076137AF39 /* guiValue.h */,
-				AB1EDBEE566B226A8832E191 /* guiIncludes.h */,
-				1E17B07DA944407EC011B0B7 /* guiXmlValue.h */,
-				3D66885FA7C19B7830EE08ED /* guiTypeChartPlotter.cpp */,
+				D51169F112943BB2022A756A /* guiCallbackValue.cpp */,
+				785EF65F14138AB610C0595E /* guiCallbackValue.h */,
+				D859BBB55780DA0D9098DBD2 /* guiColor.cpp */,
 				6DDF13A4EF64524A9026EF50 /* guiColor.h */,
+				E82E4A22BF45F5CD82F6E180 /* guiCustomImpl.h */,
+				AB1EDBEE566B226A8832E191 /* guiIncludes.h */,
+				9A234A6E775BFC7C47B1E336 /* guiTextBase.cpp */,
+				B64FB1A368486A378452239D /* guiTextBase.h */,
+				F740139603D171038C4E1057 /* guiType2DSlider.cpp */,
+				8131428D7458EC1392831F6C /* guiType2DSlider.h */,
+				8F5AFDA23DE220F49EA17CBC /* guiTypeButtonSlider.cpp */,
+				4ED7010A59CFBFF66DC17A56 /* guiTypeButtonSlider.h */,
+				3D66885FA7C19B7830EE08ED /* guiTypeChartPlotter.cpp */,
+				3A18B217EA10EA8E3C7F6508 /* guiTypeChartPlotter.h */,
+				CFED64139BF049D0E6E85B06 /* guiTypeCustom.cpp */,
+				B70D8C165CC65EEE349E643F /* guiTypeCustom.h */,
+				EAC15439B87DC40C3609393B /* guiTypeDrawable.cpp */,
+				815C422E69C6FFEEB97D1B0A /* guiTypeDrawable.h */,
+				7E8A185410D2B5002305515A /* guiTypeFileLister.cpp */,
+				29897723D8C99BC3F4C66556 /* guiTypeFileLister.h */,
+				CFC7A1F656C34688D0EA0D0C /* guiTypeLabel.cpp */,
+				D3AC91D60FBBEB4AA58B1972 /* guiTypeLabel.h */,
+				589362A07AEB006B1B8BE93F /* guiTypeLogger.cpp */,
+				B3C7247ED359BE65B5319A20 /* guiTypeLogger.h */,
+				BF1E9A470F4B02D30B8B1D18 /* guiTypeMultiToggle.cpp */,
+				D11AF1710220D1059049EB19 /* guiTypeMultiToggle.h */,
+				08549D86F2263BAFA64AE5D1 /* guiTypePanel.cpp */,
+				D4944026CDFD5CED0A8EFF8A /* guiTypePanel.h */,
+				5CD68CA8FE136C3BE208703B /* guiTypeSlider.cpp */,
+				EDC1B8201077923461FE934D /* guiTypeSlider.h */,
+				25F371915E6771CEA7595D51 /* guiTypeText.cpp */,
+				CE0C97E3F012F9FADFB5F260 /* guiTypeText.h */,
+				4F64D7DD70C6B5B1FC395DED /* guiTypeTextDropDown.cpp */,
+				2D692A0570A93567D01B6D9D /* guiTypeTextDropDown.h */,
+				DB609B0A16264158C61C979F /* guiTypeTextInput.cpp */,
+				6FCDF1191D78DB4E5238AC46 /* guiTypeTextInput.h */,
+				62121AB82E8C23F11BBC56E4 /* guiTypeToggle.cpp */,
+				82741786E8E6961C9B9EA2DF /* guiTypeToggle.h */,
+				76AC9361ADD00E0A97505518 /* guiTypeVairableLister.cpp */,
+				1445907105C17263F76087D0 /* guiTypeVairableLister.h */,
+				C5BB6D7A0C3A9D760BC22BBB /* guiTypeVideo.cpp */,
+				CBD6E9E8B022AB69FE7E454E /* guiTypeVideo.h */,
+				9F91D61ED1C9EFA6A2ACDC47 /* guiValue.cpp */,
+				4BC67DBB14FF67076137AF39 /* guiValue.h */,
+				0D1FF930B42368E7DF128F5C /* guiVariablePointer.h */,
+				1E17B07DA944407EC011B0B7 /* guiXmlValue.h */,
+				433F1A9AF67F62A5C34F5C8F /* ofxAutoControlPanel.h */,
+				ED318057376FEDA301BD823E /* ofxControlPanel.cpp */,
+				6F5E052EDC8E42EB2BEBFBB2 /* ofxControlPanel.h */,
+				A8F5D6546B2050363E043358 /* simpleColor.cpp */,
+				49CA6F47242293DAF5A715A8 /* simpleColor.h */,
+				BDD9E60039A29DAFB013CDBD /* simpleFileLister.cpp */,
+				1D8B9A8480A5B3D82CEFFF06 /* simpleFileLister.h */,
+				C15BFBA225F9D1CF5780BD5E /* simpleLogger.cpp */,
 				7B621BD2F5DE1FF903FB7F2C /* simpleLogger.h */,
 			);
 			name = src;
@@ -1304,9 +1325,9 @@
 			isa = PBXGroup;
 			children = (
 				820102E51B125101D727B3CC /* ETF.h */,
+				CC455256CE0ECFE328853737 /* fdog.h */,
 				DB0CD4C938C079DCD67222FE /* imatrix.h */,
 				FE15469185A3A49FEC9D2292 /* myvec.h */,
-				CC455256CE0ECFE328853737 /* fdog.h */,
 			);
 			name = CLD;
 			sourceTree = "<group>";
@@ -1414,62 +1435,63 @@
 			files = (
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */,
-				483FA4F6D5FA6422C559B1F5 /* ofxAssimpMeshHelper.cpp in Sources */,
 				3B8120368B4FCCD80883BAF3 /* ofxAssimpAnimation.cpp in Sources */,
-				B8846EF8E504895A4A9EFEC0 /* ofxAssimpTexture.cpp in Sources */,
+				483FA4F6D5FA6422C559B1F5 /* ofxAssimpMeshHelper.cpp in Sources */,
 				8DED5056525646FA71980866 /* ofxAssimpModelLoader.cpp in Sources */,
-				E8A48D51B598B0E8012410D2 /* guiCallbackValue.cpp in Sources */,
-				2B11014060CFA00EA494FBC6 /* guiTypeTextDropDown.cpp in Sources */,
-				9FEF7AFAD4DDFFD2A55AA54A /* simpleFileLister.cpp in Sources */,
-				E8999CBB9C2C6F093A5BD013 /* ofxControlPanel.cpp in Sources */,
-				8C3BA55A2996325BB57889A3 /* guiTypeTextInput.cpp in Sources */,
-				0D98E43AB0144630EF2206B3 /* guiTypeButtonSlider.cpp in Sources */,
-				9D97FDF450CC66E11F05E279 /* guiTypePanel.cpp in Sources */,
-				5FD445ED4A5BB42065A63EC5 /* guiTextBase.cpp in Sources */,
-				62884D3FCE003C390F94AB7D /* guiColor.cpp in Sources */,
-				DBF52D494F6E2499E17ACBF8 /* guiTypeVideo.cpp in Sources */,
-				849341DBC7A5374C26AC0524 /* guiTypeToggle.cpp in Sources */,
-				41D65A061E305AFD52E53551 /* guiTypeDrawable.cpp in Sources */,
-				EDA6787F2E8DEF6246CF24D3 /* guiTypeLogger.cpp in Sources */,
-				41BCF7021939202F70E232A1 /* guiValue.cpp in Sources */,
-				D41B30CF66DA734F99A45D5E /* simpleLogger.cpp in Sources */,
-				DA78A8AE11597B5E43DFE903 /* guiTypeFileLister.cpp in Sources */,
-				4A71E37D7F36F23AA123EB0B /* guiTypeSlider.cpp in Sources */,
+				B8846EF8E504895A4A9EFEC0 /* ofxAssimpTexture.cpp in Sources */,
 				CBA68AD61765B24C0BFD9886 /* guiBaseObject.cpp in Sources */,
-				C6A9EC27E2608C434BCA1DB9 /* guiType2DSlider.cpp in Sources */,
-				495A92A35AC1D16E07CA45C7 /* guiTypeCustom.cpp in Sources */,
-				8A230FB96662FB1AB1611B8A /* simpleColor.cpp in Sources */,
-				CBE57D7C657C0B7FD0102864 /* guiTypeMultiToggle.cpp in Sources */,
-				5AB5747E5EF615D728FE9C67 /* guiTypeLabel.cpp in Sources */,
 				7830622D2831D72613A1D3CE /* guiCallback.cpp in Sources */,
-				871AF250136390C0A8F657DA /* guiTypeVairableLister.cpp in Sources */,
-				9B36FEC1F9A02AF09246572B /* guiTypeText.cpp in Sources */,
+				C54C240E1FE30B7F00A1311C /* ofxProCamToolkit.cpp in Sources */,
+				E8A48D51B598B0E8012410D2 /* guiCallbackValue.cpp in Sources */,
+				62884D3FCE003C390F94AB7D /* guiColor.cpp in Sources */,
+				5FD445ED4A5BB42065A63EC5 /* guiTextBase.cpp in Sources */,
+				C6A9EC27E2608C434BCA1DB9 /* guiType2DSlider.cpp in Sources */,
+				0D98E43AB0144630EF2206B3 /* guiTypeButtonSlider.cpp in Sources */,
 				314D78311D80062369E1827B /* guiTypeChartPlotter.cpp in Sources */,
-				2023EF517ED2D8B397511D4B /* Helpers.cpp in Sources */,
-				DBCB84A37F9AECC254870D79 /* Wrappers.cpp in Sources */,
-				7CDAD32BE4FA46701E3552C7 /* RunningBackground.cpp in Sources */,
-				27FF53CD1FE22359007A30D6 /* ofxProCamToolkit.cpp in Sources */,
-				10B69DE456AED1288FC9316B /* Tracker.cpp in Sources */,
-				EBCDE831EFAE08274E799C97 /* Calibration.cpp in Sources */,
-				5CC34D433F5806179935B89D /* Flow.cpp in Sources */,
-				6AABAB39E82AF5CFEA23A205 /* ContourFinder.cpp in Sources */,
-				C602002DE761F9B52DB4400A /* ObjectFinder.cpp in Sources */,
-				A6668C5B1272D7FCD5B5A16F /* Utilities.cpp in Sources */,
-				311DF864378748129984EA1D /* Kalman.cpp in Sources */,
-				45CC483A999BF1065A6B926C /* Distance.cpp in Sources */,
+				495A92A35AC1D16E07CA45C7 /* guiTypeCustom.cpp in Sources */,
+				41D65A061E305AFD52E53551 /* guiTypeDrawable.cpp in Sources */,
+				DA78A8AE11597B5E43DFE903 /* guiTypeFileLister.cpp in Sources */,
+				5AB5747E5EF615D728FE9C67 /* guiTypeLabel.cpp in Sources */,
+				EDA6787F2E8DEF6246CF24D3 /* guiTypeLogger.cpp in Sources */,
+				CBE57D7C657C0B7FD0102864 /* guiTypeMultiToggle.cpp in Sources */,
+				9D97FDF450CC66E11F05E279 /* guiTypePanel.cpp in Sources */,
+				4A71E37D7F36F23AA123EB0B /* guiTypeSlider.cpp in Sources */,
+				9B36FEC1F9A02AF09246572B /* guiTypeText.cpp in Sources */,
+				2B11014060CFA00EA494FBC6 /* guiTypeTextDropDown.cpp in Sources */,
+				8C3BA55A2996325BB57889A3 /* guiTypeTextInput.cpp in Sources */,
+				849341DBC7A5374C26AC0524 /* guiTypeToggle.cpp in Sources */,
+				871AF250136390C0A8F657DA /* guiTypeVairableLister.cpp in Sources */,
+				DBF52D494F6E2499E17ACBF8 /* guiTypeVideo.cpp in Sources */,
+				41BCF7021939202F70E232A1 /* guiValue.cpp in Sources */,
+				E8999CBB9C2C6F093A5BD013 /* ofxControlPanel.cpp in Sources */,
+				8A230FB96662FB1AB1611B8A /* simpleColor.cpp in Sources */,
+				9FEF7AFAD4DDFFD2A55AA54A /* simpleFileLister.cpp in Sources */,
+				D41B30CF66DA734F99A45D5E /* simpleLogger.cpp in Sources */,
 				B6840996567E78436F7ECFAB /* ETF.cpp in Sources */,
 				F76B4A79BD8DE4854141CB47 /* fdog.cpp in Sources */,
+				EBCDE831EFAE08274E799C97 /* Calibration.cpp in Sources */,
+				6AABAB39E82AF5CFEA23A205 /* ContourFinder.cpp in Sources */,
+				45CC483A999BF1065A6B926C /* Distance.cpp in Sources */,
+				5CC34D433F5806179935B89D /* Flow.cpp in Sources */,
+				2023EF517ED2D8B397511D4B /* Helpers.cpp in Sources */,
+				311DF864378748129984EA1D /* Kalman.cpp in Sources */,
+				C602002DE761F9B52DB4400A /* ObjectFinder.cpp in Sources */,
+				7CDAD32BE4FA46701E3552C7 /* RunningBackground.cpp in Sources */,
+				10B69DE456AED1288FC9316B /* Tracker.cpp in Sources */,
+				A6668C5B1272D7FCD5B5A16F /* Utilities.cpp in Sources */,
+				DBCB84A37F9AECC254870D79 /* Wrappers.cpp in Sources */,
+				4B84BE00D8222E1072317E49 /* ofxGrabCam.cpp in Sources */,
 				250A95BA26587BE85DB0A353 /* ofxCvColorImage.cpp in Sources */,
-				D3301F6A0B43BB293ED97C1D /* ofxCvShortImage.cpp in Sources */,
 				1D5F3298C2FA073628012944 /* ofxCvContourFinder.cpp in Sources */,
-				E212C821D1064B92DD953A42 /* ofxCvHaarFinder.cpp in Sources */,
-				63020F16C7E8DED980111241 /* ofxCvImage.cpp in Sources */,
 				169D3C72FDE6C5590A1616F5 /* ofxCvFloatImage.cpp in Sources */,
 				FB09C6B2A1DA0EA217240CB8 /* ofxCvGrayscaleImage.cpp in Sources */,
+				E212C821D1064B92DD953A42 /* ofxCvHaarFinder.cpp in Sources */,
+				63020F16C7E8DED980111241 /* ofxCvImage.cpp in Sources */,
+				D3301F6A0B43BB293ED97C1D /* ofxCvShortImage.cpp in Sources */,
 				63B57AC5BF4EF088491E0317 /* ofxXmlSettings.cpp in Sources */,
-				5A4349E9754D6FA14C0F2A3A /* tinyxmlparser.cpp in Sources */,
-				9D44DC88EF9E7991B4A09951 /* tinyxmlerror.cpp in Sources */,
 				933A2227713C720CEFF80FD9 /* tinyxml.cpp in Sources */,
+				9D44DC88EF9E7991B4A09951 /* tinyxmlerror.cpp in Sources */,
+				5A4349E9754D6FA14C0F2A3A /* tinyxmlparser.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1521,6 +1543,7 @@
 					../../../addons/ofxCv/libs/ofxCv/include,
 					../../../addons/ofxCv/libs/CLD/include/CLD,
 					../../../addons/ofxCv/src,
+					../../../addons/ofxGrabCam/src,
 					../../../addons/ofxOpenCv/libs,
 					../../../addons/ofxOpenCv/libs/opencv,
 					../../../addons/ofxOpenCv/libs/opencv/include,
@@ -1595,6 +1618,7 @@
 					../../../addons/ofxCv/libs/ofxCv/include,
 					../../../addons/ofxCv/libs/CLD/include/CLD,
 					../../../addons/ofxCv/src,
+					../../../addons/ofxGrabCam/src,
 					../../../addons/ofxOpenCv/libs,
 					../../../addons/ofxOpenCv/libs/opencv,
 					../../../addons/ofxOpenCv/libs/opencv/include,
@@ -1680,6 +1704,7 @@
 					../../../addons/ofxCv/libs/ofxCv/include,
 					../../../addons/ofxCv/libs/CLD/include/CLD,
 					../../../addons/ofxCv/src,
+					../../../addons/ofxGrabCam/src,
 					../../../addons/ofxOpenCv/libs,
 					../../../addons/ofxOpenCv/libs/opencv,
 					../../../addons/ofxOpenCv/libs/opencv/include,
@@ -1765,6 +1790,7 @@
 					../../../addons/ofxCv/libs/ofxCv/include,
 					../../../addons/ofxCv/libs/CLD/include/CLD,
 					../../../addons/ofxCv/src,
+					../../../addons/ofxGrabCam/src,
 					../../../addons/ofxOpenCv/libs,
 					../../../addons/ofxOpenCv/libs/opencv,
 					../../../addons/ofxOpenCv/libs/opencv/include,
@@ -1839,6 +1865,7 @@
 					../../../addons/ofxCv/libs/ofxCv/include,
 					../../../addons/ofxCv/libs/CLD/include/CLD,
 					../../../addons/ofxCv/src,
+					../../../addons/ofxGrabCam/src,
 					../../../addons/ofxOpenCv/libs,
 					../../../addons/ofxOpenCv/libs/opencv,
 					../../../addons/ofxOpenCv/libs/opencv/include,
@@ -1913,6 +1940,7 @@
 					../../../addons/ofxCv/libs/ofxCv/include,
 					../../../addons/ofxCv/libs/CLD/include/CLD,
 					../../../addons/ofxCv/src,
+					../../../addons/ofxGrabCam/src,
 					../../../addons/ofxOpenCv/libs,
 					../../../addons/ofxOpenCv/libs/opencv,
 					../../../addons/ofxOpenCv/libs/opencv/include,
