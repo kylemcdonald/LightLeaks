@@ -51,9 +51,9 @@ void ofApp::setup() {
         //Shader
         shader.load("shader");
         
-        xyzMap.load("../../SharedData/xyzMap.exr");
+        xyzMap.load("xyzMap.exr");
 //        normalMap.load("../../../SharedData/normalMap.exr");
-        confidenceMap.load("../../SharedData/confidenceMap.exr");
+        confidenceMap.load("confidenceMap.exr");
         
         xyzMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
 //        normalMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
