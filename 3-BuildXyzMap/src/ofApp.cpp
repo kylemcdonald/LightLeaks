@@ -74,6 +74,8 @@ void ofApp::setup() {
     model.loadModel("model.dae");
     objectMesh = model.getMesh(0);
     
+    auto center = objectMesh.getCentroid();
+    cam.setTarget(center);
     
     ofVec3f min, max;
     getBoundingBox(objectMesh, min, max);
