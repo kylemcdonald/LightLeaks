@@ -556,15 +556,25 @@ void ofApp::processScan(ofFile scanName){
 }
 
 void ofApp::saveResult(){
-    ofLogVerbose() << "saving results";
+    ofLogVerbose() << "processing final results";
     ofFloatPixels proMapFinal, proNormalFinal, proConfidenceFinal;
+    
+    // set the alpha channel of xyzMap to confidenceMap, reducing lookups in shader later
+    int w = proXyzCombined.cols, h = proXyzCombined.rows;
+    for(int y = 0; y < h; y++) {
+        for(int x = 0; x < w; x++) {
+            const Vec4f& c = proConfidenceCombined.at<Vec4f>(y, x);
+            Vec4f& p = proXyzCombined.at<Vec4f>(y, x);
+            p[4] = c[0];
+        }
+    }
+    
     toOf(proXyzCombined, proMapFinal);
     //toOf(proNormalCombined, proNormalFinal);
     toOf(proConfidenceCombined, proConfidenceFinal);
     
     removeIslands(proConfidenceFinal);
     
-    int w = proXyzCombined.cols, h = proXyzCombined.rows;
     for(int y = 0; y < h; y++) {
         for(int x = 0; x < w; x++) {
             if(!proConfidenceCombined.at<float>(y, x)) {
@@ -580,6 +590,7 @@ void ofApp::saveResult(){
         }
     }
 
+    ofLogVerbose() << "saving images";
     ofSaveImage(proConfidenceFinal, "confidenceMap.exr");
     ofSaveImage(proMapFinal, "xyzMap.exr");
     ofSaveImage(debugViewOutput, "_BuildXYZDebug.jpg", OF_IMAGE_QUALITY_BEST);
