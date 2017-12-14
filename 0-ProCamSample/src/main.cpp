@@ -264,7 +264,7 @@ public:
         this->xcode = xcode;
         this->ycode = ycode;
         this->server = server;
-        loadImage("mask-" + ofToString(id) + ".png", mask);
+        loadImage("../../../SharedData/mask-" + ofToString(id) + ".png", mask);
     }
     void setup() {
         ofBackground(0);
