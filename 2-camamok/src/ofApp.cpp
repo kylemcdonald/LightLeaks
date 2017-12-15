@@ -579,7 +579,7 @@ void ofApp::drawOverlay() {
 		ofSetColor(255);
 		ofPushMatrix();
 		fboPositions.draw(0, 0);
-		fboNormals.draw(fboPositions.getWidth() / 2, 0);
+//		fboNormals.draw(fboPositions.getWidth() / 2, 0);
 		ofPopMatrix();
 	}
 }
