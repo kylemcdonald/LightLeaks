@@ -98,24 +98,55 @@ float unstableFloor(float time, vec2 position, float size){
 
 void main() {
     vec2 projectionOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
-    vec3 position = texture2DRect(xyzMap, gl_TexCoord[0].st + projectionOffset).xyz;
+    vec2 projectionPosition = gl_TexCoord[0].st;
+    
+    if(gl_TexCoord[0].st.x < 1920 && gl_TexCoord[0].st.y < 1080){
+        // red
+        projectionOffset += vec2(0.,-10.0);
+    } else if(gl_TexCoord[0].st.x > 1920 && gl_TexCoord[0].st.y < 1080){
+        // green
+        projectionOffset += vec2(0.,-10.0);
+    } else if(gl_TexCoord[0].st.x < 1920 && gl_TexCoord[0].st.y > 1080){
+        // blue
+        projectionOffset += vec2(0.,-10.0);
+    } else if(gl_TexCoord[0].st.x > 1920 && gl_TexCoord[0].st.y > 1080){
+        // yellow
+        projectionOffset += vec2(0.,-10.0);
+    }
+
+    vec3 position = texture2DRect(xyzMap, projectionPosition + projectionOffset).xyz;
+    float calibration = 255 * texture2DRect(calibrationMap, gl_TexCoord[0].st + projectionOffset).x;
     vec3 centered = position - center;
     // vec3 normal = texture2DRect(normalMap, gl_TexCoord[0].st + projectionOffset).xyz;
     float confidence = texture2DRect(confidenceMap, gl_TexCoord[0].st).r;
 
-    if(confidence < 0.1) {
+    if(confidence < 0.2) {
         gl_FragColor = vec4(vec3(0.), 1.);
         return;
     }
 
-    // Position tester:
-    if(position.x > center.x + sin(elapsedTime) * 0.03){
-      gl_FragColor = vec4(1.,0.,0.,1.);  
-      return;
-    } else {
-        gl_FragColor = vec4(0.,1.,0.,1.);  
-      return;
-    }
+//      gl_FragColor = vec4(vec3(1.), 1.);
+// return;
+    // if(calibration != 1. ){
+    //     return;
+    // }
+
+    // if(gl_TexCoord[0].st.x > 1920){
+    //     // gl_FragColor *= vec4(vec3(0.,1.0,0.0), 1.);
+    //     return;
+    // }
+    // if(gl_TexCoord[0].st.y > 1080){
+    //     return;
+    // }
+    // // Position tester:
+    // if(position.x > center.x + sin(elapsedTime) * .03){
+    // // if(position.x > center.x - 0.3){
+    //   gl_FragColor = vec4(1.,0.,0.,1.);  
+    //   return;
+    // } else {
+    //     gl_FragColor = vec4(0.,1.,0.,1.);  
+    //   return;
+    // }
 
 
     //gl_FragColor = vec4(vec3(confidence > 0.1 ? 1. : 0.),1.);
@@ -139,7 +170,7 @@ void main() {
     }
 
     
-    // _stage = 7.; // Overwrite stage
+    _stage = 5.; // Overwrite stage
     _stage = mod(_stage,numStages);
     
     int s = 0;
@@ -193,75 +224,43 @@ void main() {
         // c.r = hardStripes(elapsedTime * 0.3, position.z + position.y * 0.5, 0.3);
         // c.b = hardStripes(elapsedTime * 0.2, position.z + position.y * 0.5, 0.3);
     }
-    // s++;
 
-    // if(stageAlpha(s, _stage) > 0. && stageAlpha(s, _stage) <= 1.) {
-    //     w += checkerboard(elapsedTime * 0.5, position) 
-    //     * stageAlpha(s, _stage);
-    // }
-
-    // if(_stage >= 0. && _stage < 1.) {
-    //     b = lighthouse(elapsedTime, position, centered);
-    //     b *= interpolation;
-    // }
-    // else if(_stage == 1){
-    //     //Spotlight
-    //     float spotlightDistance = length(position - spotlightPos) / spotlightSize;
-    //     b = 0;
-    //     if(spotlightDistance < 1) {
-    //         b += smoothStep(1. - spotlightDistance);
-    //     }
-    //     float stripe = sin(elapsedTime * -3. + spotlightDistance * 10.);
-    //     if(stripe > .9) {
-    //         b += 1.;
-    //     }
-    //     b = min(b, 1.);
-    // } else 
-    // if(_stage == 2) {
-    //     if(_substage < 1) {
-    //         // fast rising stripes
-    //         b = mod(position.z * 20. - time * 1, 1.);
-    //         b *= b;
-    //     } else if(_substage < 2) {
-    //         // glittering floor
-    //         float t = sin(time)*.5;
-    //         vec2 rot = vec2(sin(t), cos(t)) * (1. + sin(time) * .5) + time;
-    //         b = sin(50. * dot(rot, centered.xy));
-    //     } else if(_substage < 3) {
-    //         // concentric spheres
-    //         b = sin(200.*mod(length(centered)+(0.02*sin(time*1.)), 10.));
-    //     } else if(_substage < 4) {
-    //         // unstable floor
-    //         float t = sin(time)*.25;
-    //         vec2 rot = vec2(sin(t), cos(t));
-    //         b = sin(50.*dot(rot, centered.xz));
-    //     } else if(_substage < 5)     {
-    //         // checkerboard (needs to be animated)
-    //         vec3 modp = mod(time + position.xyz * 10., 2.);
-    //         if(modp.x > 1) {
-    //             b = (modp.z < 1 || modp.y > 1) ? 1 : 0;
-    //         } else {
-    //             b = (modp.z > 1 || modp.y < 1) ? 1 : 0;
-    //         }
-    //     } else if(_substage < 6) {
-    //         // slower rising stripes
-    //         b = mod(position.z - time * 0.5, 1.);
-    //         b *= b;
-    //     }
-    // }
-    // else if(_stage == 3){
-    //     // Linescan
-    //     float scan = mouse.x;
-
-    //     float dist = abs(scan - position[substage]);
-
-    //     if(dist < 0.1){
-    //         b = 1.0;
-    //     }
-    // }
-
-
-//    b *= smoothStep(stageAmp); // should be more like fast in/out near 0
-//    b *= confidence; // for previs
+    // w = hardStripes(elapsedTime * 0.1, position.x, 0.1) ;
+        
     gl_FragColor = vec4(vec3(w) + c, 1.);
+
+    if(position.x == 0){
+        // gl_FragColor = vec4(0.);
+    }
+
+    // if(gl_TexCoord[0].st.x < 1920 && gl_TexCoord[0].st.y < 1080){
+    //     gl_FragColor *= vec4(1.0, 0.2, 0., 0.0);
+    // } else if(gl_TexCoord[0].st.x > 1920 && gl_TexCoord[0].st.y < 1080){
+    //     gl_FragColor *= vec4(0.0, 1., 0., 1.0);
+    // } else if(gl_TexCoord[0].st.x < 1920 && gl_TexCoord[0].st.y > 1080){
+    //     gl_FragColor *= vec4(0.0, 0.4, 1., 0.0);
+    // } else if(gl_TexCoord[0].st.x > 1920 && gl_TexCoord[0].st.y > 1080){
+    //     gl_FragColor *= vec4(0.5, 0.5, 0., 0.0);
+    // }
+    // if(gl_TexCoord[0].st.y < 1080){
+    //      gl_FragColor *= vec4(1.0, 0., 0., 1.0);
+    // }
+    // if(gl_TexCoord[0].st.y > 1080){
+    //      gl_FragColor *= vec4(0.0, 1., 0., 1.0);
+    // }
+
+    // if(gl_TexCoord[0].st.x < 1920){
+    //      gl_FragColor *= vec4(1.0, 0., 0., 1.0);
+    // }
+    // if(gl_TexCoord[0].st.x > 1920){
+    //      gl_FragColor *= vec4(0.0, 1., 0., 1.0);
+    // }
+
+    // if(gl_TexCoord[0].st.x > 1920){
+        // gl_FragColor *= vec4(vec3(0.,0.0,1.0), 1.);
+        // return;
+    // }
+    // if(gl_TexCoord[0].st.y > 1080){
+    //     return;
+    // }
 }
