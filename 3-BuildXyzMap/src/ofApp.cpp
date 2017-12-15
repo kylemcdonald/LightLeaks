@@ -219,6 +219,7 @@ void ofApp::keyPressed( int key ){
         
         mesh.clear();
         referencePointsMesh.clear();
+        meanPoints.clear();
         meshOutput.clear();
         totalFound = false;
         colorCounter = 0;
@@ -514,7 +515,7 @@ void ofApp::processScan(ofFile scanName){
         
         // loop through once to compute the mean xyz points weighted by confidence
         ofVec3f pointSum;
-        float pointWeights;
+        float pointWeights = 0;
         for(int y = 0; y < h; y++) {
             for(int x = 0; x < w; x++) {
                 const float& curConfidence = proConfidenceMat.at<float>(y, x);
