@@ -16,8 +16,8 @@ public:
 		ofFile fragFile(fragName);
 		if(fragFile.exists()) {
             time_t fragTimestamp = filesystem::last_write_time(fragFile);
-            cout << "timestamp for " << fragName << ": " << fragTimestamp << endl;
 			if(fragTimestamp != lastFragTimestamp) {
+                cout << "timestamp for " << fragName << ": " << fragTimestamp << endl;
 				needsReload = true;
 				lastFragTimestamp = fragTimestamp;
 			}
@@ -29,8 +29,8 @@ public:
 		ofFile vertFile(vertName);
         if(vertFile.exists()) {
             time_t vertTimestamp = filesystem::last_write_time(vertFile);
-            cout << "timestamp for " << vertName << ": " << vertTimestamp << endl;
 			if(vertTimestamp != lastVertTimestamp) {
+                cout << "timestamp for " << vertName << ": " << vertTimestamp << endl;
 				needsReload = true;
 				lastVertTimestamp = vertTimestamp;
 			}

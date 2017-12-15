@@ -5,24 +5,9 @@
 #define HALF_PI (PI*0.5)
 
 uniform sampler2DRect xyzMap;
-// uniform sampler2DRect normalMap;
 uniform sampler2DRect confidenceMap;
-uniform int useConfidence;
-
+uniform sampler2DRect calibrationMap;
 uniform float elapsedTime;
-
-//Lighthouse
-uniform float beamAngle;
-uniform float beamWidth;
-
-//Spotlight
-uniform float spotlightSize;
-uniform vec3 spotlightPos;
-
-uniform int stage;
-uniform int substage;
-uniform float stageAmp;
-
 uniform vec2 mouse;
 
 const vec3 center = vec3(0.3, .105, 0.05);
@@ -117,12 +102,9 @@ void main() {
     vec3 centered = position - center;
     // vec3 normal = texture2DRect(normalMap, gl_TexCoord[0].st + projectionOffset).xyz;
     float confidence = texture2DRect(confidenceMap, gl_TexCoord[0].st).r;
-    if(useConfidence == 0) {
-        confidence = 1.;
-    }
 
-    if(confidence < 0.2) {
-        gl_FragColor = vec4(vec3(0), 1);
+    if(confidence < 0.1) {
+        gl_FragColor = vec4(vec3(0.), 1.);
         return;
     }
 

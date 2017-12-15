@@ -14,8 +14,8 @@ public:
 		ofFile file(name);
 		if(file.exists()) {
             time_t timestamp = filesystem::last_write_time(file);
-            cout << "timestamp for " << name << ": " << timestamp << endl;
 			if(timestamp != lastTimestamp) {
+                cout << "timestamp for " << name << ": " << timestamp << endl;
                 ofImage_<T>::load(name);
 				lastTimestamp = timestamp;
 			}
