@@ -51,24 +51,30 @@ void main() {
         confidence = 1.;
     }
 
-    if(confidence < .1) {
+    //gl_FragColor = vec4(vec3(confidence > 0.1 ? 1. : 0.),1.);
+    //return;
+
+    if(confidence < 0.1) {
         gl_FragColor = vec4(vec3(0), 1);
         return;
     }
 
     float b = 0.;
+    // int _stage = stage;
+    int _stage = 2;
+    int _substage = 0;
 
     // handle time
     float time = elapsedTime;
     time = elapsedTime + sin(elapsedTime); // step time
     // handle space
-    if(stage == 0) {
+    if(_stage == 0) {
         //Lighthouse beam
         vec2 rotated = rotate(centered.xy, beamAngle);
         float positionAngle = atan(rotated.y, rotated.x);
         b = 1. - ((positionAngle + PI) / TWO_PI);
     }
-    else if(stage == 1){
+    else if(_stage == 1){
         //Spotlight
         float spotlightDistance = length(position - spotlightPos) / spotlightSize;
         b = 0;
@@ -80,25 +86,26 @@ void main() {
             b += 1.;
         }
         b = min(b, 1.);
-    } else if(stage == 2) {
-        if(substage < 1) {
+    } else 
+    if(_stage == 2) {
+        if(_substage < 1) {
             // fast rising stripes
-            b = mod(position.z * 10. - time * 1.5, 1.);
+            b = mod(position.z * 20. - time * 1, 1.);
             b *= b;
-        } else if(substage < 2) {
+        } else if(_substage < 2) {
             // glittering floor
             float t = sin(time)*.5;
             vec2 rot = vec2(sin(t), cos(t)) * (1. + sin(time) * .5) + time;
             b = sin(50. * dot(rot, centered.xy));
-        } else if(substage < 3) {
+        } else if(_substage < 3) {
             // concentric spheres
             b = sin(200.*mod(length(centered)+(0.02*sin(time*1.)), 10.));
-        } else if(substage < 4) {
+        } else if(_substage < 4) {
             // unstable floor
             float t = sin(time)*.25;
             vec2 rot = vec2(sin(t), cos(t));
             b = sin(50.*dot(rot, centered.xz));
-        } else if(substage < 5)     {
+        } else if(_substage < 5)     {
             // checkerboard (needs to be animated)
             vec3 modp = mod(time + position.xyz * 10., 2.);
             if(modp.x > 1) {
@@ -106,13 +113,13 @@ void main() {
             } else {
                 b = (modp.z > 1 || modp.y < 1) ? 1 : 0;
             }
-        } else if(substage < 6) {
+        } else if(_substage < 6) {
             // slower rising stripes
             b = mod(position.z - time * 0.5, 1.);
             b *= b;
         }
     }
-    else if(stage == 3){
+    else if(_stage == 3){
         // Linescan
         float scan = mouse.x;
 

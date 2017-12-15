@@ -41,35 +41,33 @@ string getStageName(int stage) {
 
 
 void ofApp::setup() {
-    if(!setupCalled){
-
-        setupCalled = true;
-        ofSetLogLevel(OF_LOG_VERBOSE);
-        
-        previousTime = 0;
-        
-        //Shader
-        shader.load("shader");
-        
-        xyzMap.load("xyzMap.exr");
-//        normalMap.load("../../../SharedData/normalMap.exr");
-        confidenceMap.load("confidenceMap.exr");
-        
-        xyzMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
-//        normalMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
-        confidenceMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
-        
-        stage = Lighthouse;
-        substage = 0;
-        
-    }
+    ofSetLogLevel(OF_LOG_VERBOSE);
+    ofSetVerticalSync(true);
+    ofSetFrameRate(60);
     
-    int numWindows = 1;
+    previousTime = 0;
+    
+    //Shader
+    shader.load("shader");
+    
+    xyzMap.load("../../../SharedData/xyzMap.exr");
+//        normalMap.load("../../../SharedData/normalMap.exr");
+    confidenceMap.load("../../../SharedData/confidenceMap.exr");
+
+    ofLog() << xyzMap.getWidth() << " x " << xyzMap.getHeight();
+    ofLog() << confidenceMap.getWidth() << " x " << confidenceMap.getHeight();
+    
+    xyzMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+//        normalMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    confidenceMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    
+    stage = Lighthouse;
+    substage = 0;
 }
 
 void ofApp::update() {
     
-    if(ofGetFrameNum() % 60 == 0){
+    if(ofGetFrameNum() % 120 == 0){
         shader.load("shader");
     }
     
