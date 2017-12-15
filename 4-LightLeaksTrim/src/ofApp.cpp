@@ -48,11 +48,12 @@ void ofApp::setup() {
     previousTime = 0;
     
     //Shader
-    shader.load("shader");
+    shader.loadAuto("shader");
     
-    xyzMap.load("../../../SharedData/xyzMap.exr");
+    xyzMap.loadAuto("../../../SharedData/xyzMap.exr");
 //        normalMap.load("../../../SharedData/normalMap.exr");
-    confidenceMap.load("../../../SharedData/confidenceMap.exr");
+    confidenceMap.loadAuto("../../../SharedData/confidenceMap.exr");
+    calibrationMap.loadAuto("../../../SharedData/calibrationIndexMap.png");
 
     ofLog() << xyzMap.getWidth() << " x " << xyzMap.getHeight();
     ofLog() << confidenceMap.getWidth() << " x " << confidenceMap.getHeight();
@@ -177,6 +178,7 @@ void ofApp::draw() {
         shader.setUniformTexture("xyzMap", xyzMap, 0);
         //shader.setUniformTexture("normalMap", normalMap, 2);
         shader.setUniformTexture("confidenceMap", confidenceMap, 3);
+        shader.setUniformTexture("calibrationMap", calibrationMap, 4);
 //        shader.setUniformTexture("kl", kl, 4);
         shader.setUniform1i("useConfidence", 1);
         

@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofAutoShader.h"
+#include "ofAutoImage.h"
 
 enum Stage {
     Lighthouse=0,
@@ -26,10 +27,10 @@ public:
     
     float dt, previousTime;
 	
-	ofFloatImage xyzMap;
-    ofFloatImage normalMap;
-    ofFloatImage confidenceMap;
-	ofShader shader;
+	ofAutoImage<float> xyzMap;
+    ofAutoImage<float> confidenceMap;
+    ofAutoImage<unsigned char> calibrationMap;
+	ofAutoShader shader;
     
     void startStage(Stage stage);
     Stage stage;

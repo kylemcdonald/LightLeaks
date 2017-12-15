@@ -2,7 +2,7 @@
 
 class ofAutoShader : public ofShader {
 public:
-	void setup(string name) {
+	void loadAuto(string name) {
 		this->name = name;
 		ofEventArgs args;
 		update(args);
@@ -16,6 +16,7 @@ public:
 		ofFile fragFile(fragName);
 		if(fragFile.exists()) {
             time_t fragTimestamp = filesystem::last_write_time(fragFile);
+            cout << "timestamp for " << fragFile << ": " << fragTimestamp << endl;
 			if(fragTimestamp != lastFragTimestamp) {
 				needsReload = true;
 				lastFragTimestamp = fragTimestamp;
@@ -28,6 +29,7 @@ public:
 		ofFile vertFile(vertName);
         if(vertFile.exists()) {
             time_t vertTimestamp = filesystem::last_write_time(vertFile);
+            cout << "timestamp for " << vertFile << ": " << vertTimestamp << endl;
 			if(vertTimestamp != lastVertTimestamp) {
 				needsReload = true;
 				lastVertTimestamp = vertTimestamp;
