@@ -97,22 +97,22 @@ float unstableFloor(float time, vec2 position, float size){
 
 
 void main() {
-    vec2 projectionOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
+    vec2 projectionOffset = vec2(0., -8.0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
     vec2 projectionPosition = gl_TexCoord[0].st;
     
-    if(gl_TexCoord[0].st.x < 1920 && gl_TexCoord[0].st.y < 1080){
-        // red
-        projectionOffset += vec2(0.,-10.0);
-    } else if(gl_TexCoord[0].st.x > 1920 && gl_TexCoord[0].st.y < 1080){
-        // green
-        projectionOffset += vec2(0.,-10.0);
-    } else if(gl_TexCoord[0].st.x < 1920 && gl_TexCoord[0].st.y > 1080){
-        // blue
-        projectionOffset += vec2(0.,-10.0);
-    } else if(gl_TexCoord[0].st.x > 1920 && gl_TexCoord[0].st.y > 1080){
-        // yellow
-        projectionOffset += vec2(0.,-10.0);
-    }
+    // if(gl_TexCoord[0].st.x < 1920 && gl_TexCoord[0].st.y < 1080){
+    //     // red
+    //     projectionOffset += vec2(0.,-10.0);
+    // } else if(gl_TexCoord[0].st.x > 1920 && gl_TexCoord[0].st.y < 1080){
+    //     // green
+    //     projectionOffset += vec2(0.,-10.0);
+    // } else if(gl_TexCoord[0].st.x < 1920 && gl_TexCoord[0].st.y > 1080){
+    //     // blue
+    //     projectionOffset += vec2(0.,-10.0);
+    // } else if(gl_TexCoord[0].st.x > 1920 && gl_TexCoord[0].st.y > 1080){
+    //     // yellow
+    //     projectionOffset += vec2(0.,-10.0);
+    // }
 
     vec3 position = texture2DRect(xyzMap, projectionPosition + projectionOffset).xyz;
     float calibration = 255 * texture2DRect(calibrationMap, gl_TexCoord[0].st + projectionOffset).x;
@@ -170,7 +170,7 @@ void main() {
     }
 
     
-    _stage = 5.; // Overwrite stage
+    // _stage = 5.; // Overwrite stage
     _stage = mod(_stage,numStages);
     
     int s = 0;
@@ -230,7 +230,7 @@ void main() {
     gl_FragColor = vec4(vec3(w) + c, 1.);
 
     if(position.x == 0){
-        // gl_FragColor = vec4(0.);
+        gl_FragColor = vec4(0.);
     }
 
     // if(gl_TexCoord[0].st.x < 1920 && gl_TexCoord[0].st.y < 1080){
