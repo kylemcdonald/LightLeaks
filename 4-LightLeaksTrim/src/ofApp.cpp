@@ -26,6 +26,7 @@ void ofApp::draw() {
     ofBackground(0);
     ofEnableAlphaBlending();
     ofSetColor(255);
+    ofHideCursor();
     
     shader.begin(); {
         shader.setUniformTexture("xyzMap", xyzMap, 0);

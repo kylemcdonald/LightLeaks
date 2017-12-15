@@ -1,4 +1,4 @@
-#version 120
+#version 150
 
 #define PI (3.1415926536)
 #define TWO_PI (6.2831853072)
@@ -9,6 +9,9 @@ uniform sampler2DRect confidenceMap;
 uniform sampler2DRect calibrationMap;
 uniform float elapsedTime;
 uniform vec2 mouse;
+
+in vec2 texCoordVarying;
+out vec4 outputColor;
 
 const vec3 center = vec3(0.3, .105, 0.05);
 
@@ -98,27 +101,26 @@ float unstableFloor(float time, vec2 position, float size){
 
 void main() {
     vec2 projectionOffset = vec2(0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
-    vec3 position = texture2DRect(xyzMap, gl_TexCoord[0].st + projectionOffset).xyz;
+    vec3 position = texture(xyzMap, texCoordVarying.st + projectionOffset).xyz;
     vec3 centered = position - center;
-    // vec3 normal = texture2DRect(normalMap, gl_TexCoord[0].st + projectionOffset).xyz;
-    float confidence = texture2DRect(confidenceMap, gl_TexCoord[0].st).r;
+    float confidence = texture(confidenceMap, texCoordVarying.st).r;
 
     if(confidence < 0.1) {
-        gl_FragColor = vec4(vec3(0.), 1.);
+        outputColor = vec4(vec3(0.), 1.);
         return;
     }
 
     // Position tester:
     if(position.x > center.x + sin(elapsedTime) * 0.03){
-      gl_FragColor = vec4(1.,0.,0.,1.);  
+      outputColor = vec4(1.,0.,0.,1.);  
       return;
     } else {
-        gl_FragColor = vec4(0.,1.,0.,1.);  
+        outputColor = vec4(0.,1.,0.,1.);  
       return;
     }
 
 
-    //gl_FragColor = vec4(vec3(confidence > 0.1 ? 1. : 0.),1.);
+    //outputColor = vec4(vec3(confidence > 0.1 ? 1. : 0.),1.);
     //return;
 
 
@@ -263,5 +265,5 @@ void main() {
 
 //    b *= smoothStep(stageAmp); // should be more like fast in/out near 0
 //    b *= confidence; // for previs
-    gl_FragColor = vec4(vec3(w) + c, 1.);
+    outputColor = vec4(vec3(w) + c, 1.);
 }
