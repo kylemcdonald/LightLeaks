@@ -121,20 +121,24 @@ void main() {
         confidence = 1.;
     }
 
-    // // Position tester:
-    // if(position.y > 0.105){
-    //   gl_FragColor = vec4(1.,0.,0.,1.);  
-    //   return;
-    // }
+    if(confidence < 0.2) {
+        gl_FragColor = vec4(vec3(0), 1);
+        return;
+    }
+
+    // Position tester:
+    if(position.x > center.x + sin(elapsedTime) * 0.03){
+      gl_FragColor = vec4(1.,0.,0.,1.);  
+      return;
+    } else {
+        gl_FragColor = vec4(0.,1.,0.,1.);  
+      return;
+    }
 
 
     //gl_FragColor = vec4(vec3(confidence > 0.1 ? 1. : 0.),1.);
     //return;
 
-    if(confidence < 0.2) {
-        gl_FragColor = vec4(vec3(0), 1);
-        return;
-    }
 
     int numStages = 7;
 
