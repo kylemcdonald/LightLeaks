@@ -19,6 +19,7 @@ public:
     
 	
 	cv::Mat proXyzCombined, proXyzTotalCombined, proNormalCombined, proConfidenceCombined;
+    cv::Mat proDistCombined;
     
     ofEasyCam cam;
     ofxAssimpModelLoader model;
@@ -30,6 +31,7 @@ public:
     ofVec3f zero;
     
     ofVbo pointCloud;
+    ofMesh meanPoints;
     
     ofMesh mesh, meshOutput;
     ofMesh referencePointsMesh;

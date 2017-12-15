@@ -2,8 +2,6 @@
 
 #include "LightLeaksUtilities.h"
 
-#define NUM_REFERENCE_POINTS 130
-
 using namespace cv;
 using namespace ofxCv;
 
@@ -53,7 +51,7 @@ void ofApp::setup() {
     setCalibrationDataPathRoot();
     
 //    ofXml settings("settings.xml");
-    confidenceThreshold = 0.05; //settings.getFloatValue("buildXyz/confidenceThreshold");
+    confidenceThreshold = 0.01; //0.05; //settings.getFloatValue("buildXyz/confidenceThreshold");
     viewBetternes = 1.0; //settings.getFloatValue("buildXyz/viewBetternes");
     scaleFactor = 4; //settings.getIntValue("buildXyz/scaleFactor");
     
@@ -94,6 +92,8 @@ void ofApp::setup() {
     meshOutput.enableColors();
     meshOutput.setMode(OF_PRIMITIVE_POINTS);
     
+    meanPoints.enableColors();
+    meanPoints.setMode(OF_PRIMITIVE_POINTS);
     
     ///----
     
@@ -137,7 +137,7 @@ void ofApp::draw() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     
-    glPointSize(3);
+    glPointSize(2);
     
     if(ofGetKeyPressed()){
         meshOutput.draw();
@@ -145,8 +145,20 @@ void ofApp::draw() {
         mesh.draw();
     }
     ofSetColor(255);
-    glPointSize(8);
+    glPointSize(6);
     referencePointsMesh.draw();
+    
+    ofPushStyle();
+    ofDisableDepthTest();
+    glPointSize(32);
+    meanPoints.enableColors();
+    meanPoints.draw();
+    
+    glPointSize(16);
+    meanPoints.disableColors();
+    meanPoints.draw();
+    ofPopStyle();
+    
     glPointSize(1);
     cam.end();
     
@@ -202,6 +214,7 @@ void ofApp::keyPressed( int key ){
     }
     if(key=='c'){
         proXyzCombined = Mat::zeros(0,0, CV_32FC4);
+        proDistCombined = Mat::zeros(0,0, CV_32FC1);
 
         
         mesh.clear();
@@ -220,6 +233,7 @@ void ofApp::autoCalibrateXyz(string path, cv::Mat proConfidenceMat, cv::Mat proM
     settings.width = referenceImage.getWidth()/scaleFactor;
     settings.height = referenceImage.getHeight()/scaleFactor;
     settings.useDepth = true;
+    settings.numSamples = 1;
     settings.internalformat = GL_RGBA32F_ARB;
     
     xyzFbo.allocate(settings);
@@ -402,33 +416,6 @@ void ofApp::autoCalibrateXyz(string path, cv::Mat proConfidenceMat, cv::Mat proM
     debugFbo.readToPixels(debugPix);
     ofSaveImage(debugPix, path+"/_debug.png");
     
-    /*
-     normalFbo.begin();{
-     ofClear(0,0,0,255);
-     ofSetColor(255,255,255);
-     
-     glPushAttrib(GL_ALL_ATTRIB_BITS);
-     glPushMatrix();
-     glMatrixMode(GL_PROJECTION);
-     glPushMatrix();
-     glMatrixMode(GL_MODELVIEW);
-     
-     glEnable(GL_DEPTH_TEST);
-     glEnable(GL_CULL_FACE);
-     glCullFace(GL_BACK);
-     
-     intrinsics.loadProjectionMatrix(10, 2000);
-     applyMatrix(modelMatrix);
-     
-     normalShader.begin();
-     objectMesh.drawFaces();
-     normalShader.end();
-     
-     glDisable(GL_DEPTH_TEST);
-     glDisable(GL_CULL_FACE);
-     } normalFbo.end();*/
-    
-    
     xyzFbo.begin(); {
         ofClear(0,0,0,255);
         ofSetColor(255,255,255);
@@ -497,7 +484,6 @@ void ofApp::processScan(ofFile scanName){
         ofFloatImage xyzMap, proConfidence, normalMap;
         ofShortImage proMap;
         
-        
         proConfidence.load(path + "/proConfidence.exr");
         proMap.load(path + "/proMap.png");
         
@@ -516,38 +502,85 @@ void ofApp::processScan(ofFile scanName){
         Mat xyzMapMat = toCv(xyzMap);
         //Mat normalMapMat = toCv(normalMap);
         
+        int w = proMapMat.cols, h = proMapMat.rows;
         if(proXyzCombined.cols == 0) {
-            proXyzCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
-            proXyzTotalCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
-            //proNormalCombined = Mat::zeros(proMapMat.rows, proMapMat.cols, CV_32FC4);
-            proConfidenceCombined = Mat::zeros(proConfidenceMat.rows, proConfidenceMat.cols, CV_32FC1);
-            debugViewOutput.allocate(proMapMat.cols, proMapMat.rows, OF_IMAGE_COLOR);
+            proXyzCombined = Mat::zeros(h, w, CV_32FC4);
+            proXyzTotalCombined = Mat::zeros(h, w, CV_32FC4);
+            //proNormalCombined = Mat::zeros(h, w, CV_32FC4);
+            proConfidenceCombined = Mat::zeros(h, w, CV_32FC1);
+            debugViewOutput.allocate(w, h, OF_IMAGE_COLOR);
+            proDistCombined = Mat::zeros(h, w, CV_32FC1);
         }
         
-        int w = proXyzCombined.cols, h = proXyzCombined.rows;
+        // loop through once to compute the mean xyz points weighted by confidence
+        ofVec3f pointSum;
+        float pointWeights;
         for(int y = 0; y < h; y++) {
             for(int x = 0; x < w; x++) {
-                float curConfidence = proConfidenceMat.at<float>(y, x) * confidenceMultiplier;
-                Vec3w cur = proMapMat.at<Vec3w>(y, x);
-                Vec4f xyz = xyzMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
-                if(curConfidence > proConfidenceCombined.at<float>(y, x)*viewBetternes && curConfidence > confidenceThreshold) {
-                    proConfidenceCombined.at<float>(y, x) = curConfidence;
-                    proXyzCombined.at<Vec4f>(y, x) = xyz;
-                    if(isTotal){
-                        proXyzTotalCombined.at<Vec4f>(y, x) = xyz;
-                    }
-                    //proNormalCombined.at<Vec4f>(y, x) = normalMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
-                    
-                    //  if(curConfidence > 0.5){
-                    ofColor c = colors[colorCounter%10];
-                    debugViewOutput.setColor(x,y,c);
-                    // }
-                    
+                const float& curConfidence = proConfidenceMat.at<float>(y, x);
+                if(curConfidence > confidenceThreshold) {
+                    const Vec3w& cur = proMapMat.at<Vec3w>(y, x);
+                    const Vec4f& xyzNorm = xyzMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
+                    ofVec3f xyz(xyzNorm[0], xyzNorm[1], xyzNorm[2]);
+                    xyz = xyz * range + zero;
+                    pointSum += xyz * curConfidence;
+                    pointWeights += curConfidence;
                 }
+            }
+        }
+        ofVec3f pointMean = pointSum / pointWeights;
+        ofLog() << "mean point: " << pointMean;
+        meanPoints.addVertex(pointMean);
+        meanPoints.addColor(colors[colorCounter%10]);
+        
+        // loop through again to compute distances from the mean
+        Mat dist = Mat::zeros(h, w, CV_32FC1);
+        for(int y = 0; y < h; y++) {
+            for(int x = 0; x < w; x++) {
+                const float& curConfidence = proConfidenceMat.at<float>(y, x);
+                if(curConfidence > confidenceThreshold) {
+                    const Vec3w& cur = proMapMat.at<Vec3w>(y, x);
+                    const Vec4f& xyzNorm = xyzMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
+                    ofVec3f xyz(xyzNorm[0], xyzNorm[1], xyzNorm[2]);
+                    xyz = xyz * range + zero;
+                    dist.at<float>(y, x) = xyz.distance(pointMean);
+                }
+            }
+        }
+        
+        // resolve these confidences and distances relative to all the others
+        for(int y = 0; y < h; y++) {
+            for(int x = 0; x < w; x++) {
+                const float& curConfidence = proConfidenceMat.at<float>(y, x) * confidenceMultiplier;
                 
-                if(curConfidence > confidenceThreshold){
+                if(curConfidence > confidenceThreshold) {
+                    const float& curDist = dist.at<float>(y, x);
+                    const Vec3w& cur = proMapMat.at<Vec3w>(y, x); // this is just 2d
+                    const Vec4f& xyzNorm = xyzMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor); // this is just 3d
+                    
+                    float& confidenceCombined = proConfidenceCombined.at<float>(y, x);
+                    float& combinedDist = proDistCombined.at<float>(y, x);
+                    
+                    // one way to rectify this is to only use a pixel if the confidence is also better
+                    // within a threshold than the previous confidence
+//                    if(curConfidence > confidenceCombined * viewBetternes) {
+                    if(combinedDist == 0 || (curDist > 0 && curDist < combinedDist)) {
+                        combinedDist = curDist;
+                        confidenceCombined = curConfidence;
+                        proXyzCombined.at<Vec4f>(y, x) = xyzNorm;
+                        if(isTotal){
+                            proXyzTotalCombined.at<Vec4f>(y, x) = xyzNorm;
+                        }
+                        //proNormalCombined.at<Vec4f>(y, x) = normalMapMat.at<Vec4f>(cur[1] / scaleFactor, cur[0] / scaleFactor);
+                        
+                        ofColor c = colors[colorCounter%10];
+                        debugViewOutput.setColor(x,y,c);
+                    }
+                
+                    ofVec3f xyz(xyzNorm[0], xyzNorm[1], xyzNorm[2]);
+                    xyz = xyz * range + zero;
+                    mesh.addVertex(xyz);
                     mesh.addColor(colors[colorCounter%10]);
-                    mesh.addVertex(ofVec3f(xyz[0],xyz[1],xyz[2])*range + zero);
                 }
             }
             
