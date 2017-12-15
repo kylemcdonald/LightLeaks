@@ -32,3 +32,4 @@ build/
 SharedData*/
 2-camamok/bin/data/calibration-*
 LightLeaksRuntime
+.AppleDouble
