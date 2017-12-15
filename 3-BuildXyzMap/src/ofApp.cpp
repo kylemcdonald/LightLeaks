@@ -181,7 +181,7 @@ void ofApp::draw() {
 
 
 void ofApp::dragged(ofDragInfo & drag){
-    statusText = "";
+//    statusText = "";
     
     for(int i=0;i<drag.files.size();i++){
         ofLog()<<drag.files[i];
@@ -605,6 +605,16 @@ void ofApp::saveResult(){
 //        }
 //    }
     
+    ofImage mask;
+    mask.setUseTexture(false);
+    mask.load("mask-0.png");
+    mask.setImageType(OF_IMAGE_GRAYSCALE);
+
+    Mat maskMat = toCv(mask);
+    
+//    proXyzCombined &= maskMat;
+//    proConfidenceCombined *= maskMat;
+    
     toOf(proXyzCombined, proMapFinal);
     //toOf(proNormalCombined, proNormalFinal);
     toOf(proConfidenceCombined, proConfidenceFinal);
@@ -613,9 +623,10 @@ void ofApp::saveResult(){
     
     for(int y = 0; y < h; y++) {
         for(int x = 0; x < w; x++) {
-            if(!proConfidenceCombined.at<float>(y, x)) {
+            if(!proConfidenceCombined.at<float>(y, x) || mask.getColor(x, y).r < 128) {
                 proXyzCombined.at<Vec4f>(y, x) = Vec4f(0, 0, 0, 0);
-                //proNormalCombined.at<Vec4f>(y, x) = Vec4f(0, 0, 0, 0);
+                proConfidenceCombined.at<float>(y, x) = 0;
+//                proNormalCombined.at<Vec4f>(y, x) = Vec4f(0, 0, 0, 0);
             } else {
                 ofColor c =debugViewOutput.getColor(x,y);
                 meshOutput.addColor(c);

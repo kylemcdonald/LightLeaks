@@ -12,7 +12,7 @@ public:
 	void update(ofEventArgs &args) {	
 		bool needsReload = false;
 			
-		string fragName = name + ".fs";
+		string fragName = name + ".frag";
 		ofFile fragFile(fragName);
 		if(fragFile.exists()) {
             time_t fragTimestamp = filesystem::last_write_time(fragFile);
@@ -24,7 +24,7 @@ public:
 			fragName = "";
 		}
 		
-		string vertName = name + ".vs";
+		string vertName = name + ".vert";
 		ofFile vertFile(vertName);
         if(vertFile.exists()) {
             time_t vertTimestamp = filesystem::last_write_time(vertFile);
