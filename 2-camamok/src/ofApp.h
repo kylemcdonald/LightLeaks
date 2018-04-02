@@ -3,45 +3,59 @@
 #include "ofMain.h"
 #include "ofxCv.h"
 #include "ofxAssimpModelLoader.h"
-#include "ofxProCamToolkit.h"
+#include "../../SharedCode/ofxProCamToolkit.h"
 #include "ofxAutoControlPanel.h"
-#include "LineArt.h"
+#include "../../SharedCode/LineArt.h"
 #include "ofxGrabCam.h"
 
 class ofApp : public ofBaseApp {
 public:
+
+	
+	void setup();
+
+	void setupControlPanel();
+	void setupMesh();
+	void setupReference();
+	void setupShader();
+
+
+
+	void update();
+	void updateRenderMode();
+
+	void draw();
+	void drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg = ofColor::black, ofColor fg = ofColor::white);
+	void drawSelectionMode();
+	void drawOverlay();
+	void drawRenderMode();
+	void render();
+
+
+	void keyPressed(int key);
+	void mousePressed(int x, int y, int button);
+	void mouseReleased(int x, int y, int button);
+	
+
 	void setb(string name, bool value);
 	void seti(string name, int value);
 	void setf(string name, float value);
 	bool getb(string name);
 	int geti(string name);
 	float getf(string name);
-	
-	void setup();
-	void update();
-	void draw();
-	void keyPressed(int key);
-	void mousePressed(int x, int y, int button);
-	void mouseReleased(int x, int y, int button);
-	
-	void setupControlPanel();
-	void setupMesh();
-	void drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg = ofColor::black, ofColor fg = ofColor::white);
-	void updateRenderMode();
-	void drawSelectionMode();
-	void drawOverlay();
-	void drawRenderMode();
-	void render();
 	void saveCalibration();
 	void saveXyzMap();
+
+
+	bool bDisableCamera;
+	ofxAssimpModelLoader loader;
 	
 	ofImage referenceImage;
 	ofShader xyzShader, normalShader;
 	float range;
 	ofVec3f zero;
 	ofFbo fboPositions, fboNormals;
-	
-	ofxAssimpModelLoader model;	
+		
 	ofxGrabCam cam;
 	ofVboMesh objectMesh;
 	ofMesh imageMesh;
@@ -60,4 +74,7 @@ public:
 	time_t lastFragTimestamp, lastVertTimestamp;
 	time_t lastFragTimestampXyz, lastVertTimestampXyz;
 	ofShader shader;
+
+	bool bRenderRGB;
+	bool bRenderNormal;
 };
