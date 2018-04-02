@@ -1,0 +1,114 @@
+<setupMode>
+    <val_0>1.000000000</val_0>
+</setupMode>
+<scale>
+    <val_0>1.000000000</val_0>
+</scale>
+<backgroundColor>
+    <val_0>0.000000000</val_0>
+</backgroundColor>
+<drawMode>
+    <val_0>3.000000000</val_0>
+</drawMode>
+<shading>
+    <val_0>0.000000000</val_0>
+</shading>
+<saveCalibration>
+    <val_0>0.000000000</val_0>
+</saveCalibration>
+<saveXyzMap>
+    <val_0>0.000000000</val_0>
+</saveXyzMap>
+<highlight>
+    <val_0>0.000000000</val_0>
+</highlight>
+<highlightPosition>
+    <val_0>0.000000000</val_0>
+</highlightPosition>
+<highlightOffset>
+    <val_0>0.100000001</val_0>
+</highlightOffset>
+<aov>
+    <val_0>80.000000000</val_0>
+</aov>
+<CV_CALIB_FIX_ASPECT_RATIO>
+    <val_0>1.000000000</val_0>
+</CV_CALIB_FIX_ASPECT_RATIO>
+<CV_CALIB_FIX_K1>
+    <val_0>1.000000000</val_0>
+</CV_CALIB_FIX_K1>
+<CV_CALIB_FIX_K2>
+    <val_0>1.000000000</val_0>
+</CV_CALIB_FIX_K2>
+<CV_CALIB_FIX_K3>
+    <val_0>1.000000000</val_0>
+</CV_CALIB_FIX_K3>
+<CV_CALIB_ZERO_TANGENT_DIST>
+    <val_0>1.000000000</val_0>
+</CV_CALIB_ZERO_TANGENT_DIST>
+<CV_CALIB_FIX_PRINCIPAL_POINT>
+    <val_0>0.000000000</val_0>
+</CV_CALIB_FIX_PRINCIPAL_POINT>
+<lineWidth>
+    <val_0>2.000000000</val_0>
+</lineWidth>
+<useSmoothing>
+    <val_0>0.000000000</val_0>
+</useSmoothing>
+<useFog>
+    <val_0>0.000000000</val_0>
+</useFog>
+<fogNear>
+    <val_0>200.000000000</val_0>
+</fogNear>
+<fogFar>
+    <val_0>1850.000000000</val_0>
+</fogFar>
+<screenPointSize>
+    <val_0>8.000000000</val_0>
+</screenPointSize>
+<selectedPointSize>
+    <val_0>8.000000000</val_0>
+</selectedPointSize>
+<selectionRadius>
+    <val_0>12.000000000</val_0>
+</selectionRadius>
+<lightX>
+    <val_0>200.000000000</val_0>
+</lightX>
+<lightY>
+    <val_0>400.000000000</val_0>
+</lightY>
+<lightZ>
+    <val_0>800.000000000</val_0>
+</lightZ>
+<randomLighting>
+    <val_0>0.000000000</val_0>
+</randomLighting>
+<validShader>
+    <val_0>1.000000000</val_0>
+</validShader>
+<selectionMode>
+    <val_0>1.000000000</val_0>
+</selectionMode>
+<hoverSelected>
+    <val_0>0.000000000</val_0>
+</hoverSelected>
+<hoverChoice>
+    <val_0>1304.000000000</val_0>
+</hoverChoice>
+<selected>
+    <val_0>0.000000000</val_0>
+</selected>
+<dragging>
+    <val_0>0.000000000</val_0>
+</dragging>
+<selectionChoice>
+    <val_0>1304.000000000</val_0>
+</selectionChoice>
+<slowLerpRate>
+    <val_0>0.001000000</val_0>
+</slowLerpRate>
+<fastLerpRate>
+    <val_0>1.000000000</val_0>
+</fastLerpRate>
