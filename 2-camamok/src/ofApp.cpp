@@ -100,6 +100,9 @@ void ofApp::keyPressed(int key) {
 	if (key == 'r') {
 		setb("drawReferenceImage", !getb("drawReferenceImage"));
 	}
+	if (key == 'c') {
+		setb("selectionModeWithCalibration", !getb("selectionModeWithCalibration"));
+	}
 	if (key == '\n') { // deselect
 		setb("selected", false);
 	}
@@ -329,6 +332,19 @@ void ofApp::setupControlPanel() {
 }
 
 void ofApp::setupReference() {
+	
+	//if (ofDirectory::doesDirectoryExist("../../../SharedData/model/reference-images")) {
+	//	ofDirectory dir;
+	//	dir.open("../../../SharedData/model/reference-images");
+	//	dir.sort();
+	//	for (int i = 0; i < dir.size(); i++) {
+	//		ofImage ref;
+	//		ref.load(dir.getPath(i));
+	//		ref.resize(referenceImage.getWidth() / 2, referenceImage.getHeight() / 2);
+	//		referenceImages.insert(std::pair<string, ofImage>(dir.getFile(i).getFileName(), ref));
+	//	}
+	//}
+
 	bool referenceImageLoaded = referenceImage.load("../../../SharedData/model/reference-image.jpg");
 
 	referenceImage.resize(referenceImage.getWidth() / 2, referenceImage.getHeight() / 2);
