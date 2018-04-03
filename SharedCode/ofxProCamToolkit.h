@@ -3,7 +3,6 @@
 #include "ofMain.h"
 #include "ofxCv.h"
 #include "Plane.h"
-#include "glu.h"
 
 enum GrayCodeMode {GRAYCODE_MODE_OPPOSITES, GRAYCODE_MODE_GRAY};
 
