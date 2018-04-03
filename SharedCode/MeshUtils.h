@@ -1,13 +1,9 @@
 #pragma once
-#include "ofGraphicsBaseTypes.h"
-#include "ofVectorMath.h"
-#include "ofMath.h"
-#include "ofLog.h"
 #include "ofxAssimpModelLoader.h"
 
 
-void getBoundingBox(const ofMesh& mesh, glm::vec3& cornerMin, glm::vec3& cornerMax) {
-	const vector<glm::vec3>& vertices = mesh.getVertices();
+void getBoundingBox(const ofMesh& mesh, ofVec3f& cornerMin, ofVec3f& cornerMax) {
+	auto& vertices = mesh.getVertices();
 	if(vertices.size() > 0) {
 		cornerMin = vertices[0];
 		cornerMax = vertices[0];
@@ -23,16 +19,16 @@ void getBoundingBox(const ofMesh& mesh, glm::vec3& cornerMin, glm::vec3& cornerM
 }
 
 void centerAndNormalize(ofMesh& mesh) {
-	glm::vec3 cornerMin, cornerMax;
+	ofVec3f cornerMin, cornerMax;
 	getBoundingBox(mesh, cornerMin, cornerMax);
-	glm::vec3 translate = -(cornerMax + cornerMin) / 2;
-	glm::vec3 range = (cornerMax - cornerMin);
+	ofVec3f translate = -(cornerMax + cornerMin) / 2;
+	ofVec3f range = (cornerMax - cornerMin);
 	float maxRange = 0;
 	maxRange = MAX(maxRange, range.x);
 	maxRange = MAX(maxRange, range.y);
 	maxRange = MAX(maxRange, range.z);
 	float scale = 1 / maxRange;
-	vector<glm::vec3>& vertices = mesh.getVertices();
+	vector<ofVec3f>& vertices = mesh.getVertices();
 	for(int i = 0; i < vertices.size(); i++) {
 		vertices[i] += translate;
 		vertices[i] *= scale;

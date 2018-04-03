@@ -131,18 +131,18 @@ void ofApp::setupMesh() {
 		auto center = objectMesh.getCentroid();
 	
 
-		glm::vec3 min, max;
+		ofVec3f min, max;
 		getBoundingBox(objectMesh, min, max);
 		zero = min;
-		glm::vec3 diagonal = max - min;
+		ofVec3f diagonal = max - min;
 		range = MAX(MAX(diagonal.x, diagonal.y), diagonal.z);
 		cout << "Using min " << min << " max " << max << " and range " << range << endl;
 
 		// move camera outside bounding box
 		cam.setFixUpDirectionEnabled(true);
 
-		cam.setPosition(max + glm::vec3(100, 0, 100));
-		cam.lookAt(center, glm::vec3(0, 0, 1));
+		cam.setPosition(max + ofVec3f(100, 0, 100));
+		cam.lookAt(center, ofVec3f(0, 0, 1));
 	}
 	else {
 	
@@ -393,10 +393,11 @@ void ofApp::drawSelectionMode() {
 	ofSetColor(255);
 	cam.begin(ofGetCurrentViewport());
 	render();
+	imageMesh = getProjectedMesh(objectMesh);
 	cam.end();
 
 	if (getb("setupMode")) {
-		imageMesh = getProjectedMesh(objectMesh, cam);
+	
 		// draw all points cyan small
 		glPointSize(geti("screenPointSize"));
 		glEnable(GL_POINT_SMOOTH);
@@ -513,6 +514,7 @@ void ofApp::drawRenderMode() {
 		intrinsics.loadProjectionMatrix(10, 20000000);
 		applyMatrix(modelMatrix);
 		render();
+		imageMesh = getProjectedMesh(objectMesh);
 	}
 
 	glPopMatrix();

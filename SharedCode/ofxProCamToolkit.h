@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxCv.h"
 #include "Plane.h"
+#include "glu.h"
 
 enum GrayCodeMode {GRAYCODE_MODE_OPPOSITES, GRAYCODE_MODE_GRAY};
 
@@ -47,14 +48,19 @@ void drawCamera(string name, cv::Mat camMatrix, cv::Size size,
 	ofImage& image,
 	cv::Mat rotation = cv::Mat(), cv::Mat translation = cv::Mat());
 
-glm::vec3 ofWorldToScreen(glm::vec3 world, glm::mat4x4 modelviewMatrix, glm::mat4x4 projectionMatrix, glm::vec4 viewport);
-glm::vec3 ofScreenToWorld(glm::vec3 screen, glm::mat4x4 modelviewMatrix, glm::mat4x4 projectionMatrix, glm::vec4 viewport);
-ofMesh getProjectedMesh(const ofMesh& mesh, glm::mat4x4 modelviewMatrix, glm::mat4x4 projectionMatrix, glm::vec4 viewport);
-ofMesh getProjectedMesh(const ofMesh& mesh, ofCamera & cam);
-bool pointInFrustum(ofVec3f &p, Plane pl[6]);
-void updateFrustrum(ofCamera & cam, Plane pl[6]);
+void updateProjectionState();
+ofVec3f ofWorldToScreen(ofVec3f world);
+ofVec3f ofScreenToWorld(ofVec3f screen);
+ofMesh getProjectedMesh(const ofMesh& mesh);
+
 
 cv::Point2f getClosestPoint(const vector<cv::Point2f>& vertices, float x, float y, int* choice = NULL, float* distance = NULL);
-glm::vec3 getClosestPointOnMesh(const ofMesh& mesh, float x, float y, int* choice = NULL, float* distance = NULL);
+ofVec3f getClosestPointOnMesh(const ofMesh& mesh, float x, float y, int* choice = NULL, float* distance = NULL);
 
 void exportPlyCloud(string filename, ofMesh& cloud);
+
+int glhUnProjectf(float winx, float winy, float winz, float *modelview, float *projection, int *viewport, float *objectCoordinate);
+int glhProjectf(float objx, float objy, float objz, float *modelview, float *projection, int *viewport, float *windowCoordinate);
+int glhInvertMatrixf2(float *m, float *out);
+void MultiplyMatrixByVector4by4OpenGL_FLOAT(float *resultvector, const float *matrix, const float *pvector);
+void MultiplyMatrices4by4OpenGL_FLOAT(float *result, float *matrix1, float *matrix2);
