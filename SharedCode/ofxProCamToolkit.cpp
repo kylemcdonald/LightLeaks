@@ -430,10 +430,6 @@ ofVec3f ofWorldToScreen(ofVec3f world) {
 	return screen;
 }
 
-
-
-
-
 ofVec3f ofScreenToWorld(ofVec3f screen) {
 	updateProjectionState();
 	GLfloat pos[3];
@@ -447,7 +443,8 @@ ofMesh getProjectedMesh(const ofMesh& mesh) {
 	ofMesh projected = mesh;
 	for (int i = 0; i < mesh.getNumVertices(); i++) {
 		ofVec3f cur = ofWorldToScreen(mesh.getVerticesPointer()[i]);
-		if (cur.z >= 1) {
+		if (cur.z == 0) {
+			ofLog() << "GREATER THAN 1" << endl;
 			projected.addColor(ofFloatColor(0, 0, 0, 0));
 		}
 		else {

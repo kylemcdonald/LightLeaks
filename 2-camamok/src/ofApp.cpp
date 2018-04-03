@@ -60,16 +60,31 @@ void ofApp::update() {
 
 void ofApp::draw() {
 	ofBackground(geti("backgroundColor"));
-	if (getb("saveCalibration")) {
-		saveCalibration();
-		setb("saveCalibration", false);
+	if (getb("drawReferenceImage")) {
+		drawReferenceImage();
 	}
+
 	if (getb("selectionMode")) {
+		if (calibrationReady && getb("selectionModeWithCalibration")) {
+			drawCalibration(false);
+		}
+		else {
+			drawCamera();
+		}
 		drawSelectionMode();
 	}
 	else {
+		if (calibrationReady) {
+			drawCalibration(false);
+		}
 		drawOverlay();
-		drawRenderMode();
+		drawSetupMode();
+	}
+
+
+	if (getb("saveCalibration")) {
+		saveCalibration();
+		setb("saveCalibration", false);
 	}
 }
 
@@ -81,6 +96,9 @@ void ofApp::keyPressed(int key) {
 			referencePoints[choice] = false;
 			imagePoints[choice] = Point2f();
 		}
+	}
+	if (key == 'r') {
+		setb("drawReferenceImage", !getb("drawReferenceImage"));
 	}
 	if (key == '\n') { // deselect
 		setb("selected", false);
@@ -149,7 +167,7 @@ void ofApp::setupMesh() {
 	}
 }
 
-void ofApp::render() {
+void ofApp::render(bool pink) {
 	ofPushStyle();
 	ofSetLineWidth(geti("lineWidth"));
 	if (getb("useSmoothing")) {
@@ -175,12 +193,15 @@ void ofApp::render() {
 		if (bRenderRGB) xyzShader.end();
 		break;
 	case 1: // fullWireframe
+		if (pink) ofSetColor(ofColor::hotPink);
 		objectMesh.drawWireframe();
 		break;
 	case 2: // outlineWireframe
+		if (pink) ofSetColor(ofColor::hotPink);
 		LineArt::draw(objectMesh, true, transparentBlack, NULL);
 		break;
 	case 3: // occludedWireframe
+		if (pink) ofSetColor(ofColor::hotPink);
 		LineArt::draw(objectMesh, false, transparentBlack, NULL);
 		break;
 	}
@@ -282,6 +303,8 @@ void ofApp::setupControlPanel() {
 	panel.addSlider("screenPointSize", 2, 1, 16, true);
 	panel.addSlider("selectedPointSize", 8, 1, 16, true);
 	panel.addSlider("selectionRadius", 12, 1, 32);
+	panel.addToggle("drawReferenceImage", true);
+	panel.addToggle("selectionModeWithCalibration", false);
 
 	panel.addPanel("Internal");
 	panel.addToggle("selectionMode", true);
@@ -387,62 +410,23 @@ void ofApp::drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor
 	ofPopStyle();
 }
 
-void ofApp::drawSelectionMode() {
-
-
+void ofApp::drawCamera() {
 	ofSetColor(255);
 	cam.begin(ofGetCurrentViewport());
-	render();
+	render(false);
 	imageMesh = getProjectedMesh(objectMesh);
 	cam.end();
-
-	if (getb("setupMode")) {
-	
-		// draw all points cyan small
-		glPointSize(geti("screenPointSize"));
-		glEnable(GL_POINT_SMOOTH);
-		imageMesh.drawVertices();
-
-		// draw all reference points cyan
-		int n = referencePoints.size();
-		for (int i = 0; i < n; i++) {
-			if (referencePoints[i]) {
-				drawLabeledPoint(i, imageMesh.getVertex(i), cyanPrint);
-			}
-		}
-
-		// check to see if anything is selected
-		// draw hover point magenta
-		int choice;
-		float distance;
-		ofVec3f selected = getClosestPointOnMesh(imageMesh, mouseX, mouseY, &choice, &distance);
-		if (!ofGetMousePressed() && distance < getf("selectionRadius")) {
-			seti("hoverChoice", choice);
-			setb("hoverSelected", true);
-			drawLabeledPoint(choice, selected, magentaPrint);
-		}
-		else {
-			setb("hoverSelected", false);
-		}
-
-		// draw selected point yellow
-		if (getb("selected")) {
-			int choice = geti("selectionChoice");
-			ofVec2f selected = imageMesh.getVertex(choice);
-			drawLabeledPoint(choice, selected, yellowPrint, ofColor::white, ofColor::black);
-		}
-	}
 }
 
-void ofApp::drawOverlay() {
+void ofApp::drawReferenceImage() {
 	ofPushStyle();
 	ofSetColor(255);
 	referenceImage.draw(0, 0);
 	ofPopStyle();
+}
 
+void ofApp::drawOverlay() {
 	if (calibrationReady) {
-
-
 		fboPositions.begin();
 		ofClear(0);
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -504,7 +488,7 @@ void ofApp::drawOverlay() {
 	}
 }
 
-void ofApp::drawRenderMode() {
+void ofApp::drawCalibration(bool pink) {
 	glPushMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -513,7 +497,7 @@ void ofApp::drawRenderMode() {
 	if (calibrationReady) {
 		intrinsics.loadProjectionMatrix(10, 20000000);
 		applyMatrix(modelMatrix);
-		render();
+		render(pink);
 		imageMesh = getProjectedMesh(objectMesh);
 	}
 
@@ -521,7 +505,48 @@ void ofApp::drawRenderMode() {
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
+}
 
+void ofApp::drawSelectionMode() {
+	if (getb("setupMode")) {
+
+		// draw all points cyan small
+		glPointSize(geti("screenPointSize"));
+		glEnable(GL_POINT_SMOOTH);
+		imageMesh.drawVertices();
+
+		// draw all reference points cyan
+		int n = referencePoints.size();
+		for (int i = 0; i < n; i++) {
+			if (referencePoints[i]) {
+				drawLabeledPoint(i, imageMesh.getVertex(i), cyanPrint);
+			}
+		}
+
+		// check to see if anything is selected
+		// draw hover point magenta
+		int choice;
+		float distance;
+		ofVec3f selected = getClosestPointOnMesh(imageMesh, mouseX, mouseY, &choice, &distance);
+		if (!ofGetMousePressed() && distance < getf("selectionRadius")) {
+			seti("hoverChoice", choice);
+			setb("hoverSelected", true);
+			drawLabeledPoint(choice, selected, magentaPrint);
+		}
+		else {
+			setb("hoverSelected", false);
+		}
+
+		// draw selected point yellow
+		if (getb("selected")) {
+			int choice = geti("selectionChoice");
+			ofVec2f selected = imageMesh.getVertex(choice);
+			drawLabeledPoint(choice, selected, yellowPrint, ofColor::white, ofColor::black);
+		}
+	}
+}
+
+void ofApp::drawSetupMode() {
 	if (getb("setupMode")) {
 		// draw all reference points cyan
 		int n = referencePoints.size();
