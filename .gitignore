@@ -33,3 +33,14 @@ SharedData*/
 2-camamok/bin/data/calibration-*
 LightLeaksRuntime
 .AppleDouble
+
+*.sln
+*.vcxproj
+*.rc
+*.vcxproj.filters
+*.vcxproj.user
+*.db
+*.VC.VC.opendb
+*.lib
+*.ilk
+*.pdb
