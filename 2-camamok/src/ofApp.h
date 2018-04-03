@@ -16,7 +16,8 @@ public:
 
 	void setupControlPanel();
 	void setupMesh();
-	void setupReference();
+	bool setupReference(string path);
+	void setupFolders();
 	void setupShader();
 
 
@@ -51,11 +52,18 @@ public:
 	void saveCalibration();
 	void saveXyzMap();
 
+	void clearCalibration();
+
+	ofDirectory workingDir;
+	int currentIndex;
+	string currentWorkingDir;
+	vector<string> directoryList;
 
 	bool bDisableCamera;
 	ofxAssimpModelLoader loader;
 	
 	ofImage referenceImage;
+
 	ofShader xyzShader, normalShader;
 	float range;
 	ofVec3f zero;

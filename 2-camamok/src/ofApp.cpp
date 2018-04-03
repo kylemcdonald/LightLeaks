@@ -36,12 +36,30 @@ void ofApp::setup() {
 	// LOAD SHADER FUNCTION
 	setupShader();
 	// Setup Reference Image
-	setupReference();
+	setupFolders();
+	setupReference(directoryList[currentIndex]);
 
 	cam.setNearClip(1);
 	cam.setFarClip(10000);
 }
 
+void ofApp::setupFolders() {
+	workingDir.open("../../../SharedData/");
+	workingDir.sort();
+	
+	for (int i = 0; i < workingDir.size(); i++) {
+		string name = workingDir[i].getFileName();
+		if (workingDir[i].isDirectory() && ofIsStringInString(name, "scan-") && !ofIsStringInString(name, "_")) {
+			directoryList.push_back(workingDir.getPath(i));
+		}
+	}
+	if (directoryList.size() > 0) {
+		currentIndex = 0;
+	}
+	else {
+		ofExit();
+	}
+}
 
 void ofApp::setupShader() {
 	xyzShader.load("../../../SharedData/shader/xyz.vs", "../../../SharedData/shader/xyz.fs");
@@ -115,6 +133,25 @@ void ofApp::keyPressed(int key) {
 			cam.setMouseActionsEnabled(false);
 		}
 	}
+	if (key == 's') {
+		setb("saveCalibration", true);
+	}
+	if (key == '=') {
+		currentIndex++;
+		if (currentIndex >= directoryList.size()) {
+			currentIndex = 0;
+		}
+		setupReference(directoryList[currentIndex]);
+		clearCalibration();
+	}
+	if (key == '-') {
+		currentIndex--;
+		if (currentIndex < 0) {
+			currentIndex = directoryList.size()-1;
+		}
+		setupReference(directoryList[currentIndex]);
+		clearCalibration();
+	}
 }
 
 void ofApp::mousePressed(int x, int y, int button) {
@@ -138,8 +175,22 @@ void ofApp::mouseReleased(int x, int y, int button) {
 	setb("dragging", false);
 }
 
+void ofApp::clearCalibration() {
+	objectPoints.clear();
+	imagePoints.clear();
+	referencePoints.clear();
+
+	int n = objectMesh.getNumVertices();
+	objectPoints.resize(n);
+	imagePoints.resize(n);
+	referencePoints.resize(n, false);
+	for (int i = 0; i < n; i++) {
+		objectPoints[i] = toCv(objectMesh.getVertex(i));
+	}
+}
+
 void ofApp::setupMesh() {
-	if (loader.loadModel("../../../SharedData/model/model.dae", false)) { // must be false to avoid crashing
+	if (loader.loadModel("../../../SharedData/model.dae", false)) { // must be false to avoid crashing
 		objectMesh = collapseModel(loader);
 		int n = objectMesh.getNumVertices();
 		objectPoints.resize(n);
@@ -214,11 +265,11 @@ void ofApp::render(bool pink) {
 
 void ofApp::saveCalibration() {
 	if (calibrationReady) {
-		string dirName = "../../../SharedData/calibration-" + ofGetTimestampString() + "/";
+		string dirName = directoryList[currentIndex];
 		ofDirectory dir(dirName);
 		dir.create();
 
-		FileStorage fs(dirName + "calibration-advanced.yml", FileStorage::WRITE);
+		FileStorage fs(dirName + "/calibration-advanced.yml", FileStorage::WRITE);
 
 		Mat cameraMatrix = intrinsics.getCameraMatrix();
 		fs << "cameraMatrix" << cameraMatrix;
@@ -279,14 +330,14 @@ void ofApp::saveCalibration() {
 		basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
 		basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
 
-		saveMat(Mat(objectPoints), dirName + "objectPoints.yml");
-		saveMat(Mat(imagePoints), dirName + "imagePoints.yml");
+		saveMat(Mat(objectPoints), dirName + "/objectPoints.yml");
+		saveMat(Mat(imagePoints), dirName + "/imagePoints.yml");
 
 		ofFloatPixels pix;
 		fboPositions.readToPixels(pix);
-		ofSaveImage(pix, dirName + "xyzMap.exr");
+		ofSaveImage(pix, dirName + "/xyzMap.exr");
 		fboNormals.readToPixels(pix);
-		ofSaveImage(pix, dirName + "normalMap.exr");
+		ofSaveImage(pix, dirName + "/normalMap.exr");
 	}
 }
 
@@ -331,33 +382,23 @@ void ofApp::setupControlPanel() {
 	
 }
 
-void ofApp::setupReference() {
-	
-	//if (ofDirectory::doesDirectoryExist("../../../SharedData/model/reference-images")) {
-	//	ofDirectory dir;
-	//	dir.open("../../../SharedData/model/reference-images");
-	//	dir.sort();
-	//	for (int i = 0; i < dir.size(); i++) {
-	//		ofImage ref;
-	//		ref.load(dir.getPath(i));
-	//		ref.resize(referenceImage.getWidth() / 2, referenceImage.getHeight() / 2);
-	//		referenceImages.insert(std::pair<string, ofImage>(dir.getFile(i).getFileName(), ref));
-	//	}
-	//}
+bool ofApp::setupReference(string path) {
+	bool referenceImageLoaded = referenceImage.load(path+"/reference-image.jpg");
+	if (referenceImageLoaded) {
 
-	bool referenceImageLoaded = referenceImage.load("../../../SharedData/model/reference-image.jpg");
+		referenceImage.resize(referenceImage.getWidth() / 2, referenceImage.getHeight() / 2);
+		ofSetWindowShape(referenceImage.getWidth(), referenceImage.getHeight());
 
-	referenceImage.resize(referenceImage.getWidth() / 2, referenceImage.getHeight() / 2);
+		ofFbo::Settings settings;
+		settings.width = referenceImage.getWidth();
+		settings.height = referenceImage.getHeight();
+		settings.useDepth = true;
+		settings.internalformat = GL_RGBA32F_ARB;
+		fboPositions.allocate(settings);
+		fboNormals.allocate(settings);
+	}
 
-	ofSetWindowShape(referenceImage.getWidth(), referenceImage.getHeight());
-
-	ofFbo::Settings settings;
-	settings.width = referenceImage.getWidth();
-	settings.height = referenceImage.getHeight();
-	settings.useDepth = true;
-	settings.internalformat = GL_RGBA32F_ARB;
-	fboPositions.allocate(settings);
-	fboNormals.allocate(settings);
+	return referenceImageLoaded;
 }
 
 void ofApp::updateRenderMode() {
@@ -592,7 +633,7 @@ void ofApp::drawSetupMode() {
 		}
 		if (getb("dragging")) {
 			Point2f& cur = imagePoints[choice];
-			float rate = ofGetMousePressed(0) ? getf("slowLerpRate") : getf("fastLerpRate");
+			float rate = ofGetMousePressed(0) ?getf("fastLerpRate") : getf("slowLerpRate");
 			cur = Point2f(ofLerp(cur.x, mouseX, rate), ofLerp(cur.y, mouseY, rate));
 			drawLabeledPoint(choice, toOf(cur), yellowPrint, ofColor::white, ofColor::black);
 			ofSetColor(ofColor::black);
