@@ -44,3 +44,6 @@ LightLeaksRuntime
 *.lib
 *.ilk
 *.pdb
+*.obj
+*.dll
+*.exe

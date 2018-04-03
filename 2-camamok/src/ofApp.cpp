@@ -129,7 +129,7 @@ void ofApp::setupMesh() {
 		}
 
 		auto center = objectMesh.getCentroid();
-		cam.setPosition(center);
+	
 
 		glm::vec3 min, max;
 		getBoundingBox(objectMesh, min, max);
@@ -137,6 +137,12 @@ void ofApp::setupMesh() {
 		glm::vec3 diagonal = max - min;
 		range = MAX(MAX(diagonal.x, diagonal.y), diagonal.z);
 		cout << "Using min " << min << " max " << max << " and range " << range << endl;
+
+		// move camera outside bounding box
+		cam.setFixUpDirectionEnabled(true);
+
+		cam.setPosition(max + glm::vec3(100, 0, 100));
+		cam.lookAt(center, glm::vec3(0, 0, 1));
 	}
 	else {
 	
@@ -296,7 +302,6 @@ void ofApp::setupControlPanel() {
 	panel.addToggle("CV_CALIB_ZERO_TANGENT_DIST", true);
 	panel.addToggle("CV_CALIB_FIX_PRINCIPAL_POINT", false);
 
-	panel.loadSettings("../../../SharedData/camamok/settings.xml");
 	
 }
 
