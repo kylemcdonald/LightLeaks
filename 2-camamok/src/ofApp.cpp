@@ -455,8 +455,8 @@ void ofApp::drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor
 	//glEnable(GL_DEPTH_TEST);
 	ofVec2f tooltipOffset(5, -25);
 	ofSetColor(color);
-	float w = ofGetWidth();
-	float h = ofGetHeight();
+	float w = ofGetWindowWidth();
+	float h = ofGetWindowHeight();
 	ofSetLineWidth(0);
 	ofNoFill();
 	ofDrawLine(position - ofVec2f(w, 0), position + ofVec2f(w, 0));
@@ -610,6 +610,7 @@ void ofApp::drawSetupMode() {
 		for (int i = 0; i < n; i++) {
 			if (referencePoints[i]) {
 				drawLabeledPoint(i, toOf(imagePoints[i]), cyanPrint);
+				drawLabeledPoint(i, imageMesh.getVertex(i), ofColor::white);
 			}
 		}
 
