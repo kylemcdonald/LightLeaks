@@ -26,6 +26,7 @@ void ofApp::setup() {
 
 	ofSetVerticalSync(true);
 	ofSetFrameRate(60);
+	
 
 	ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
 	ofSetLogLevel(OF_LOG_VERBOSE);
@@ -84,7 +85,7 @@ void ofApp::draw() {
 
 	if (getb("selectionMode")) {
 		if (calibrationReady && getb("selectionModeWithCalibration")) {
-			drawCalibration(false);
+			drawCalibration(ofColor(255, 255, 255, 75));
 		}
 		else {
 			drawCamera();
@@ -93,7 +94,12 @@ void ofApp::draw() {
 	}
 	else {
 		if (calibrationReady) {
-			drawCalibration(false);
+			if (getb("drawMesh") && getb("selectionModeWithCalibration")) {
+				drawCalibration(ofColor(255, 255, 255, 75));
+			}
+			else {
+				drawCalibration(ofColor(255, 255, 255, 100));
+			}
 		}
 		drawOverlay();
 		drawSetupMode();
@@ -221,7 +227,7 @@ void ofApp::setupMesh() {
 	}
 }
 
-void ofApp::render(bool pink) {
+void ofApp::render(ofColor color) {
 	ofPushStyle();
 	ofSetLineWidth(geti("lineWidth"));
 	if (getb("useSmoothing")) {
@@ -247,15 +253,15 @@ void ofApp::render(bool pink) {
 		if (bRenderRGB) xyzShader.end();
 		break;
 	case 1: // fullWireframe
-		if (pink) ofSetColor(ofColor::hotPink);
+		ofSetColor(color);
 		objectMesh.drawWireframe();
 		break;
 	case 2: // outlineWireframe
-		if (pink) ofSetColor(ofColor::hotPink);
+		ofSetColor(color);
 		LineArt::draw(objectMesh, true, transparentBlack, NULL);
 		break;
 	case 3: // occludedWireframe
-		if (pink) ofSetColor(ofColor::hotPink);
+		ofSetColor(color);
 		LineArt::draw(objectMesh, false, transparentBlack, NULL);
 		break;
 	}
@@ -353,6 +359,7 @@ void ofApp::setupControlPanel() {
 	panel.addToggle("drawXYZ", false);
 	panel.addToggle("drawNormal", false);
 	panel.addSlider("lineWidth", 2, 1, 8, true);
+	panel.addToggle("drawMesh", true);
 	panel.addToggle("useSmoothing", false);
 	panel.addSlider("screenPointSize", 2, 1, 16, true);
 	panel.addSlider("selectedPointSize", 8, 1, 16, true);
@@ -379,7 +386,7 @@ void ofApp::setupControlPanel() {
 	panel.addToggle("CV_CALIB_ZERO_TANGENT_DIST", true);
 	panel.addToggle("CV_CALIB_FIX_PRINCIPAL_POINT", false);
 
-	
+	offWhite = ofColor(255, 255, 255, 150);
 }
 
 bool ofApp::setupReference(string path) {
@@ -470,7 +477,7 @@ void ofApp::drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor
 void ofApp::drawCamera() {
 	ofSetColor(255);
 	cam.begin(ofGetCurrentViewport());
-	render(false);
+	render(ofColor(255, 255, 255, 100));
 	imageMesh = getProjectedMesh(objectMesh);
 	cam.end();
 }
@@ -545,7 +552,7 @@ void ofApp::drawOverlay() {
 	}
 }
 
-void ofApp::drawCalibration(bool pink) {
+void ofApp::drawCalibration(ofColor color) {
 	glPushMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -554,7 +561,7 @@ void ofApp::drawCalibration(bool pink) {
 	if (calibrationReady) {
 		intrinsics.loadProjectionMatrix(10, 20000000);
 		applyMatrix(modelMatrix);
-		render(pink);
+		render(color);
 		imageMesh = getProjectedMesh(objectMesh);
 	}
 
@@ -610,7 +617,7 @@ void ofApp::drawSetupMode() {
 		for (int i = 0; i < n; i++) {
 			if (referencePoints[i]) {
 				drawLabeledPoint(i, toOf(imagePoints[i]), cyanPrint);
-				drawLabeledPoint(i, imageMesh.getVertex(i), ofColor::white);
+				drawLabeledPoint(i, imageMesh.getVertex(i), offWhite, ofColor(0, 0, 0, 0), ofColor(0, 0, 0, 0));
 			}
 		}
 
