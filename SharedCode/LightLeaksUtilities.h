@@ -107,7 +107,7 @@ vector<ofFile> getScanNames(){
     
     vector<ofFile> ret;
     for(int i=0;i<rootDir.size();i++){
-        if(rootDir.getName(i)[0] != '_' && rootDir.getName(i)[0] != '.'){
+        if(rootDir.getName(i).rfind("scan-") == 0){ // starts with "scan-"
             ret.push_back(ofFile(rootDir.getPath(i)));
         }
     }

@@ -45,12 +45,9 @@ void ofApp::setup() {
     ofSetVerticalSync(true);
     ofSetFrameRate(120);
     
-    xyzShader.load("xyz.vs", "xyz.fs");
-    //normalShader.load("normal.vs", "normal.fs");
-    
     setCalibrationDataPathRoot();
+    xyzShader.load("shader/xyz.vs", "shader/xyz.fs");
     
-//    ofXml settings("settings.xml");
     confidenceThreshold = 0.01; //0.05; //settings.getFloatValue("buildXyz/confidenceThreshold");
     viewBetternes = 1.0; //settings.getFloatValue("buildXyz/viewBetternes");
     scaleFactor = 4; //settings.getIntValue("buildXyz/scaleFactor");
@@ -639,7 +636,7 @@ void ofApp::saveResult(){
     }
 
     ofLogVerbose() << "saving images";
-    ofSaveImage(proConfidenceFinal, "confidenceMap.exr");
-    ofSaveImage(proMapFinal, "xyzMap.exr");
-    ofSaveImage(debugViewOutput, "_BuildXYZDebug.jpg", OF_IMAGE_QUALITY_BEST);
+    ofSaveImage(proConfidenceFinal, "confidenceMap-0.exr");
+    ofSaveImage(proMapFinal, "xyzMap-0.exr");
+    ofSaveImage(debugViewOutput, "BuildXYZDebug.jpg", OF_IMAGE_QUALITY_BEST);
 }

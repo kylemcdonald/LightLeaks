@@ -38,7 +38,7 @@ public:
         ofSetLogLevel(OF_LOG_VERBOSE);
         ofSetVerticalSync(true);
         ofDisableAntiAliasing();
-        ofSetBackgroundAuto(false);
+        ofBackground(0);
         
         shader.loadAuto("../../../SharedData/shader/shader");
         
@@ -56,7 +56,6 @@ public:
     }
     
     void draw() {
-//        ofBackground(0);
         ofEnableAlphaBlending();
         ofSetColor(255);
         ofHideCursor();
