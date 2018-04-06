@@ -22,20 +22,6 @@ void getRemapPoints(string filename, int width, int height, vector<Point2f>& cam
 	}
 }
 
-void getProCamImages(string filename, Mat& pro, Mat& cam, int width, int height, GrayCodeMode mode) {
-	ofLogVerbose() << "getProCamImages()";
-	Mat codex, codey, mask;
-	grayDecode(filename + "vertical/", codex, cam, mode);
-	grayDecode(filename + "horizontal/", codey, cam, mode);
-	cv::threshold(cam, mask, 0, 255, CV_THRESH_OTSU);
-	Mat remap = buildRemap(codex, codey, mask, width, height);
-	// closing remap gives better results than closing pro
-	Mat kernel(3, 3, CV_8U, cv::Scalar(1));
-	morphologyEx(remap, remap, cv::MORPH_CLOSE, kernel);
-	applyRemap(remap, cam, pro, width, height);
-	medianBlur(pro, 3);
-}
-
 void grayDecode(string path, Mat& binaryCoded, Mat& cam, GrayCodeMode mode) {
 	ofLogVerbose() << "grayDecode()";
 	vector<Mat> thresholded;

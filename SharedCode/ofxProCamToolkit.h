@@ -16,14 +16,6 @@ void grayToBinary(cv::Mat& binaryCoded, int n);
 cv::Mat buildRemap(cv::Mat& binaryCodedX, cv::Mat& binaryCodedY, cv::Mat& mask, int tw, int th);
 void applyRemap(cv::Mat& remap, cv::Mat& input, cv::Mat& output, int width, int height);
 
-// you have to handle allocation
-template <class C, class P>
-void getProCamImages(string path, C& cam, P& pro, int width, int height, GrayCodeMode mode) {
-	cv::Mat camMat = toCv(cam);
-	cv::Mat proMat = toCv(pro);
-	getProCamImages(path, camMat, proMat, width, height, mode);
-}
-
 void drawChessboardCorners(cv::Size patternSize, const vector<cv::Point2f>& centers);
 vector<vector<cv::Point3f> > buildObjectPoints(cv::Size patternSize, float squareSize, int objectCount, ofxCv::CalibrationPattern patternType);
 

@@ -5,8 +5,8 @@
 using namespace ofxCv;
 using namespace cv;
 
-#define USE_GDC
-#define SAVE_DEBUG
+#define USE_PARALLEL
+//#define SAVE_DEBUG
 #define FINETUNE_TRANSLATION
 //#define USE_LCP
 
@@ -220,6 +220,7 @@ void ofApp::setup() {
         ofLogVerbose() << "No file called mask-0.png in SharedData/ folder. Continuing without a projector mask";
     }
 
+    unsigned int totalProcessed = 0;
     vector<ofFile> scans = getScanNames();
     for(auto& scanFile : scans){
 		if(scanFile.isFile()) {
@@ -309,7 +310,7 @@ void ofApp::setup() {
 #endif
         }
         
-        cout << "converted to mat " << cameraMaskMat.rows << "x" << cameraMaskMat.cols << endl;
+        ofLogVerbose() << "converted to mat " << cameraMaskMat.rows << "x" << cameraMaskMat.cols << endl;
         
         hnImageNormal.resize(horizontalBits, 0);
         hnImageInverse.resize(horizontalBits, 0);
@@ -331,7 +332,7 @@ void ofApp::setup() {
         calibration.undistort(baseMat, calibrationMode);
 #endif
         
-#ifdef USE_GDC
+#ifdef USE_PARALLEL
         //A dispatch group that the horizontal job and vertical job will be added to
         dispatch_group_t group = dispatch_group_create();
 
@@ -340,14 +341,14 @@ void ofApp::setup() {
 #endif
             //Load Horizontal images
             ofLogVerbose() << "Loading " <<  horizontalBits << " horizontal images";
-#ifdef USE_GDC
+#ifdef USE_PARALLEL
             dispatch_apply(horizontalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i){
 #else
             for(int i = 0; i < horizontalBits; i++) {
 #endif
                processImageSet(hnFiles[i], hiFiles[i], hnImageNormal[i], hnImageInverse[i], cameraMaskMat, baseMat, "h_"+ofToString(i));
             }
-#ifdef USE_GDC
+#ifdef USE_PARALLEL
             );
 #endif
             
@@ -364,7 +365,7 @@ void ofApp::setup() {
                 delete hnImageNormal[i];
                 delete hnImageInverse[i];
             }
-#ifdef USE_GDC
+#ifdef USE_PARALLEL
         });
         
         //Create the async job for handling vertical images
@@ -374,7 +375,7 @@ void ofApp::setup() {
             //Load Vertical images
             ofLogVerbose() << "Loading " <<  verticalBits << " vertical images";
 
-#ifdef USE_GDC
+#ifdef USE_PARALLEL
             dispatch_apply(verticalBits, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t i) {
 #else
             for(int i = 0; i < verticalBits; i++) {
@@ -382,7 +383,7 @@ void ofApp::setup() {
                 processImageSet(vnFiles[i], viFiles[i], viImageNormal[i], viImageInverse[i], cameraMaskMat, baseMat,"v_"+ofToString(i));
 
             }
-#ifdef USE_GDC
+#ifdef USE_PARALLEL
             );
 #endif
             
@@ -398,7 +399,7 @@ void ofApp::setup() {
                 delete viImageNormal[i];
                 delete viImageInverse[i];
             }
-#ifdef USE_GDC
+#ifdef USE_PARALLEL
         });
         
         //Wait for the group to finish before continuing
@@ -437,36 +438,40 @@ void ofApp::setup() {
         channels.push_back(binaryCodedHorizontal);
         channels.push_back(emptyChannel);
         merge(channels, binaryCoded);
-
-//            ofLogVerbose() << "saving binaryCoded";
-//            saveImage(binaryCoded, path+"/binaryCoded.png");
-        
+            
+#ifdef SAVE_DEBUG
+        ofLogVerbose() << "saving binaryCoded";
+        saveImage(binaryCoded, path+"/binaryCoded.png");
+#endif
         
         ofJson settings = ofLoadJson("settings.json");
-            int width=0, height=0;
-            for(auto p : settings["projectors"]){
-                width = MAX(width, int(p["width"]) + int(p["xcode"]));
-                height = MAX(height, int(p["height"]) + int(p["ycode"]));
-            }
+        int width=0, height=0;
+        for(auto p : settings["projectors"]){
+            width = MAX(width, int(p["width"]) + int(p["xcode"]));
+            height = MAX(height, int(p["height"]) + int(p["ycode"]));
+        }
             
 //            proWidth = settings.getIntValue("projectors/width");
 //			proHeight = settings.getIntValue("projectors/height");
 //			proCount = settings.getIntValue("projectors/count");
             
         ofLogVerbose() << "Build Pro Map: "<<width<<" X "<<height;
-//            buildProMap(width, height,
-//                        binaryCoded,
-//                        camConfidence,
-//                        proConfidence,
-//                        proMap);
+//        // this one is simpler
+//        buildProMap(width, height,
+//                    binaryCoded,
+//                    camConfidence,
+//                    proConfidence,
+//                    proMap);
             
-            
-            buildProMapDist(width, height,
-                    binaryCoded,
-                    camConfidence,
-                    proConfidence,
-                    proMap,
-                    3);
+        // this one draws into a window around the mapped points
+        // check the result of different window sizes. bigger
+        // isn't always better.
+        buildProMapDist(width, height,
+                binaryCoded,
+                camConfidence,
+                proConfidence,
+                proMap,
+                1);
 
         if(!projectorMaskMat.empty()) {
             cv::multiply(projectorMaskMat, proConfidence, proConfidence);
@@ -474,9 +479,14 @@ void ofApp::setup() {
 
         saveImage(proConfidence, path+"/proConfidence.exr");
         saveImage(proMap, path+"/proMap.png");
+            
+        totalProcessed++;
     }
     time = ofGetElapsedTimef();
-    ofLogVerbose() <<" Done in "+ofToString(ofGetElapsedTimef())+" seconds";
+    ofLogVerbose() <<"Processed " << totalProcessed << " scans in " << ofGetElapsedTimef() << " seconds";
+    if(totalProcessed > 0) {
+        ofLogVerbose() << (ofGetElapsedTimef() / totalProcessed) << " seconds per scans";
+    }
 }
 
 void ofApp::update() {
