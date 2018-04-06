@@ -8,7 +8,7 @@
 			"ycode": 0,
 			"xwindow": 0,
 			"ywindow": 0,
-			"multidisplay": true,
+			"multimonitor": true,
 			"fullscreen": true
 		}
 	],
