@@ -7,6 +7,7 @@
 
 #include "ofMain.h"
 #include "ofAppNoWindow.h"
+#include "ofAutoImage.h"
 #include "ofxWebServer.h"
 
 ofJson jsonconfig;
@@ -236,19 +237,6 @@ public:
     }
 };
 
-template <class T>
-void loadImage(string fn, ofImage_<T>& img) {
-    if(ofFile::doesFileExist(fn)) {
-        if(img.load(fn)) {
-            cout << "Exists, loaded: " << fn << endl;
-        } else {
-            cout << "Exists, but error loading: " << fn << endl;
-        }
-    } else {
-        cout << "Does not exist: " << fn << endl;
-    }
-}
-
 class ClientApp : public ofBaseApp {
 public:
     int id, xcode, ycode;
@@ -256,7 +244,7 @@ public:
     shared_ptr<ServerApp> server;
     
     ofShader shader;
-    ofImage mask;
+    ofAutoImage<unsigned char> mask;
     
     void config(int id, int n, int xcode, int ycode, shared_ptr<ServerApp> server) {
         this->id = id;
@@ -264,7 +252,7 @@ public:
         this->xcode = xcode;
         this->ycode = ycode;
         this->server = server;
-        loadImage("../../../SharedData/mask-" + ofToString(id) + ".png", mask);
+        mask.loadAuto("../../../SharedData/mask-" + ofToString(id) + ".png");
     }
     void setup() {
         ofBackground(0);
@@ -337,9 +325,10 @@ int main() {
     for(int i = 0; i < n; i++) {
         ofJson curConfig = jsonconfig["projectors"][i];
         settings.monitor = curConfig["monitor"];
-        settings.width = curConfig["width"];
-        settings.height = curConfig["height"];
+        settings.setSize(curConfig["width"], curConfig["height"]);
         settings.setPosition(ofVec2f(curConfig["xwindow"], curConfig["ywindow"]));
+        settings.multiMonitorFullScreen = curConfig["multimonitor"];
+        settings.windowMode = curConfig["fullscreen"] ? OF_FULLSCREEN : OF_WINDOW;
         shared_ptr<ofAppBaseWindow> winClient = ofCreateWindow(settings);
         shared_ptr<ClientApp> appClient(new ClientApp);
         appClient->config(i, n, curConfig["xcode"], curConfig["ycode"], appServer);

@@ -44,6 +44,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		27B352BA207744DA009D913A /* ofAutoImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofAutoImage.h; path = ../../SharedCode/ofAutoImage.h; sourceTree = "<group>"; };
 		3E28BF73389A54EFA3F40A94 /* ofxWSRequestHandler.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxWSRequestHandler.h; path = ../../../addons/ofxWebServer/src/ofxWSRequestHandler.h; sourceTree = SOURCE_ROOT; };
 		73671D3734DAEBEB8AFF6E2D /* mongoose.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 30; name = mongoose.c; path = ../../../addons/ofxWebServer/libs/mongoose.c; sourceTree = SOURCE_ROOT; };
 		B120B6CA5908C170BA22E88F /* mongoose.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = mongoose.h; path = ../../../addons/ofxWebServer/libs/mongoose.h; sourceTree = SOURCE_ROOT; };
@@ -138,6 +139,7 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				27B352BA207744DA009D913A /* ofAutoImage.h */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 			);
 			path = src;
