@@ -2,12 +2,14 @@
 	"projectors": [
 		{
 			"monitor": 0,
-			"width": 3840,
-			"height": 2160,
+			"width": 5760,
+			"height": 1080,
 			"xcode": 0,
 			"ycode": 0,
 			"xwindow": 0,
-			"ywindow": 0
+			"ywindow": 0,
+			"multidisplay": true,
+			"fullscreen": true
 		}
 	],
 	"sample": {
@@ -19,7 +21,7 @@
 		"scaleFactor": 4
 	},
 	"osc": {
-		"camera": "10.0.1.101",
-		"projector": "iyoiyo-gpu.local"
+		"camera": "remote.local",
+		"projector": "kyle.local"
 	}
 }
