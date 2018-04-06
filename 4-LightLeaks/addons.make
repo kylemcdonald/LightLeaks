@@ -1,6 +1,0 @@
-ofxAssimpModelLoader
-ofxBiquadFilter
-ofxCv
-ofxOpenCv
-ofxOsc
-ofxXmlSettings
