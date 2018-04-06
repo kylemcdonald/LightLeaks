@@ -390,7 +390,7 @@ void ofApp::setupControlPanel() {
 }
 
 bool ofApp::setupReference(string path) {
-	bool referenceImageLoaded = referenceImage.load(path+"/reference-image.jpg");
+	bool referenceImageLoaded = referenceImage.load(path+"/referenceImage.jpg");
 	if (referenceImageLoaded) {
 
 		referenceImage.resize(referenceImage.getWidth() / 4, referenceImage.getHeight() / 4);

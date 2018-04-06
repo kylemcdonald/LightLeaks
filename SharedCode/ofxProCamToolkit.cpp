@@ -444,7 +444,7 @@ ofMesh getProjectedMesh(const ofMesh& mesh) {
 	for (int i = 0; i < mesh.getNumVertices(); i++) {
 		ofVec3f cur = ofWorldToScreen(mesh.getVerticesPointer()[i]);
 		if (cur.z > 1) {
-			ofLog() << "GREATER THAN 1" << endl;
+//            ofLog() << "GREATER THAN 1" << endl;
 			projected.addColor(ofFloatColor(0, 0, 0, 0));
 		}
 		else {
