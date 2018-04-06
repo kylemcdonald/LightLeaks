@@ -425,7 +425,7 @@ ofVec3f ofWorldToScreen(ofVec3f world) {
 	updateProjectionState();
 	GLdouble  pos[3];
 	glhProjectd(world.x, world.y, world.z, modelviewMatrix, projectionMatrix, viewport, pos);
-	ofVec3f screen(pos[0], pos[1], pos[3]);
+	ofVec3f screen(pos[0], pos[1], pos[2]);
 	screen.y = ofGetHeight() - screen.y;
 	return screen;
 }
