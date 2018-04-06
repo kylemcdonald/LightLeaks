@@ -1,4 +1,8 @@
 #include "ofxProCamToolkit.h"
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace ofxCv;
 using namespace cv;
@@ -411,41 +415,103 @@ void drawCamera(string name, Mat camMatrix, cv::Size size,
 	ofPopMatrix();
 }
 
-GLdouble modelviewMatrix[16], projectionMatrix[16];
-GLint viewport[4];
-void updateProjectionState() {
-	glGetDoublev(GL_MODELVIEW_MATRIX, modelviewMatrix);
-	glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
-	glGetIntegerv(GL_VIEWPORT, viewport);
-}
 
-ofVec3f ofWorldToScreen(ofVec3f world) {
-	updateProjectionState();
+glm::vec3 ofWorldToScreen(glm::vec3 world, glm::mat4 modelviewMatrix, glm::mat4 projectionMatrix, glm::vec4 viewport) {
 	GLdouble x, y, z;
-	gluProject(world.x, world.y, world.z, modelviewMatrix, projectionMatrix, viewport, &x, &y, &z);
-	ofVec3f screen(x, y, z);
+	glm::vec3 screen = glm::project(world, modelviewMatrix, projectionMatrix, viewport);
 	screen.y = ofGetHeight() - screen.y;
 	return screen;
 }
 
-ofVec3f ofScreenToWorld(ofVec3f screen) {
-	updateProjectionState();
-	GLdouble x, y, z;
+glm::vec3 ofScreenToWorld(glm::vec3 screen, glm::mat4 modelviewMatrix, glm::mat4 projectionMatrix, glm::vec4 viewport) {
 	screen.y = ofGetHeight() - screen.y;
-	gluUnProject(screen.x, screen.y, screen.z, modelviewMatrix, projectionMatrix, viewport, &x, &y, &z);
-	ofVec3f world(x, y, z);
+	glm::vec3 world = glm::unProject(screen, modelviewMatrix, projectionMatrix, viewport);
 	return world;
 }
 
-ofMesh getProjectedMesh(const ofMesh& mesh) {
+ofMesh getProjectedMesh(const ofMesh& mesh, ofCamera & cam) {
+	Plane pl[6];
+	updateFrustrum(cam, pl);
+
+	ofRectangle vp = ofGetCurrentViewport();
+	glm::mat4 modelviewMatrix = cam.getModelViewMatrix();
+	glm::mat4 projectionMatrix = cam.getProjectionMatrix();
+	glm::vec4 viewport = glm::vec4(vp.x, vp.y, vp.width, vp.height);
 	ofMesh projected = mesh;
-	for(int i = 0; i < mesh.getNumVertices(); i++) {
-		ofVec3f cur = ofWorldToScreen(mesh.getVerticesPointer()[i]);
+	vector<ofColor> c;
+	for (int i = 0; i < mesh.getNumVertices(); i++) {
+		glm::vec3 cur = ofWorldToScreen(mesh.getVerticesPointer()[i], modelviewMatrix, projectionMatrix, viewport);
 		cur.z = 0;
 		projected.setVertex(i, cur);
+		if (pointInFrustum((ofVec3f)mesh.getVerticesPointer()[i], pl)) {
+			projected.addColor(ofColor::cyan);
+		}
+		else {
+			projected.addColor(ofColor(0, 0, 0, 0));
+		}
 	}
 	return projected;
 }
+
+ofMesh getProjectedMesh(const ofMesh& mesh, glm::mat4x4 modelviewMatrix, glm::mat4x4 projectionMatrix, glm::vec4 viewport) {
+	ofMesh projected = mesh;
+	for(int i = 0; i < mesh.getNumVertices(); i++) {
+		glm::vec3 cur = ofWorldToScreen(mesh.getVerticesPointer()[i], modelviewMatrix, projectionMatrix, viewport);
+		cur.z = 0;
+		projected.setVertex(i, cur);
+		projected.addColor(ofColor::cyan);
+	}
+	return projected;
+}
+
+bool pointInFrustum(ofVec3f &p, Plane pl[6]) {
+	for (int i = 0; i < 6; i++) {
+		if (pl[i].distance(p) < 0) return false;
+	}
+	return true;
+}
+
+void updateFrustrum(ofCamera & cam, Plane pl[6]) {
+	ofRectangle viewport = ofGetCurrentViewport();
+
+	float ratio = viewport.width / viewport.height;
+	float nearH = 2 * tan(cam.getFov() / 2.0) * -cam.getNearClip();
+	float nearW = nearH * ratio;
+
+	float farH = 2 * tan(cam.getFov() / 2.0) * -cam.getFarClip();
+	float farW = farH * ratio;
+
+	ofVec3f p = cam.getPosition();
+	ofVec3f l = cam.getLookAtDir();
+	ofVec3f u = cam.getUpDir();
+
+	ofVec3f fc = p + l * cam.getFarClip();
+	ofVec3f nc = p + l * cam.getNearClip();
+
+
+	ofVec3f up = cam.getUpDir();
+	ofVec3f right = cam.getXAxis();
+
+	ofVec3f ftl = fc + (up * farH / 2) - (right * farW / 2);
+	ofVec3f ftr = fc + (up * farH / 2) + (right * farW / 2);
+	ofVec3f fbl = fc - (up * farH / 2) - (right * farW / 2);
+	ofVec3f fbr = fc - (up * farH / 2) + (right * farW / 2);
+
+	ofVec3f ntl = nc + (up * nearH / 2) - (right * nearW / 2);
+	ofVec3f ntr = nc + (up * nearH / 2) + (right * nearW / 2);
+	ofVec3f nbl = nc - (up * nearH / 2) - (right * nearW / 2);
+	ofVec3f nbr = nc - (up * nearH / 2) + (right * nearW / 2);
+
+
+	pl[0].set(ntr, ntl, ftl);
+	pl[1].set(nbl, nbr, fbr);
+	pl[2].set(ntl, nbl, fbl);
+	pl[3].set(nbr, ntr, fbr);
+	pl[4].set(ntl, ntr, nbr);
+	pl[5].set(ftr, ftl, fbl);
+}
+
+
 
 Point2f getClosestPoint(const vector<Point2f>& vertices, float x, float y, int* choice, float* distance) {
 	float bestDistance = numeric_limits<float>::infinity();
@@ -469,17 +535,20 @@ Point2f getClosestPoint(const vector<Point2f>& vertices, float x, float y, int* 
 	return vertices[bestChoice];
 }
 
-ofVec3f getClosestPointOnMesh(const ofMesh& mesh, float x, float y, int* choice, float* distance) {
+glm::vec3 getClosestPointOnMesh(const ofMesh& mesh, float x, float y, int* choice, float* distance) {
 	float bestDistance = numeric_limits<float>::infinity();
 	int bestChoice = 0;
 	for(int i = 0; i < mesh.getNumVertices(); i++) {
-		const ofVec3f& cur = mesh.getVerticesPointer()[i];
-		float dx = x - cur.x;
-		float dy = y - cur.y;
-		float curDistance = dx * dx + dy * dy;
-		if(curDistance < bestDistance) {
-			bestDistance = curDistance;
-			bestChoice = i;
+		const glm::vec3& cur = mesh.getVerticesPointer()[i];
+		ofColor col = mesh.getColor(i);
+		if (col.a != 0) {
+			float dx = x - cur.x;
+			float dy = y - cur.y;
+			float curDistance = dx * dx + dy * dy;
+			if (curDistance < bestDistance) {
+				bestDistance = curDistance;
+				bestChoice = i;
+			}
 		}
 	}
 	if(choice != NULL) {
@@ -494,11 +563,11 @@ ofVec3f getClosestPointOnMesh(const ofMesh& mesh, float x, float y, int* choice,
 int exportPlyVertices(ostream& ply, ofMesh& cloud) {
 	int total = 0;
 	int i = 0;
-	ofVec3f zero(0, 0, 0);
+	glm::vec3 zero(0, 0, 0);
 	vector<ofFloatColor>& colors = cloud.getColors();
     auto& surface = cloud.getVertices();
 	for(int i = 0; i < surface.size(); i++) {
-		if (ofVec3f(surface[i]) != zero) {
+		if (glm::vec3(surface[i]) != zero) {
 			ply.write(reinterpret_cast<char*>(&(surface[i].x)), sizeof(float));
 			ply.write(reinterpret_cast<char*>(&(surface[i].y)), sizeof(float));
 			ply.write(reinterpret_cast<char*>(&(surface[i].z)), sizeof(float));
