@@ -393,7 +393,7 @@ bool ofApp::setupReference(string path) {
 	bool referenceImageLoaded = referenceImage.load(path+"/reference-image.jpg");
 	if (referenceImageLoaded) {
 
-		referenceImage.resize(referenceImage.getWidth() / 2, referenceImage.getHeight() / 2);
+		referenceImage.resize(referenceImage.getWidth() / 4, referenceImage.getHeight() / 4);
 		ofSetWindowShape(referenceImage.getWidth(), referenceImage.getHeight());
 
 		ofFbo::Settings settings;

@@ -412,19 +412,19 @@ void drawCamera(string name, Mat camMatrix, cv::Size size,
 	ofPopMatrix();
 }
 
-GLfloat modelviewMatrix[16], projectionMatrix[16];
+GLdouble  modelviewMatrix[16], projectionMatrix[16];
 GLint viewport[4];
 void updateProjectionState() {
-	glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
-	glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelviewMatrix);
+	glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
 	glGetIntegerv(GL_VIEWPORT, viewport);
 }
 
 
 ofVec3f ofWorldToScreen(ofVec3f world) {
 	updateProjectionState();
-	GLfloat pos[3];
-	glhProjectf(world.x, world.y, world.z, modelviewMatrix, projectionMatrix, viewport, pos);
+	GLdouble  pos[3];
+	glhProjectd(world.x, world.y, world.z, modelviewMatrix, projectionMatrix, viewport, pos);
 	ofVec3f screen(pos[0], pos[1], pos[3]);
 	screen.y = ofGetHeight() - screen.y;
 	return screen;
@@ -432,9 +432,9 @@ ofVec3f ofWorldToScreen(ofVec3f world) {
 
 ofVec3f ofScreenToWorld(ofVec3f screen) {
 	updateProjectionState();
-	GLfloat pos[3];
+	GLdouble  pos[3];
 	screen.y = ofGetHeight() - screen.y;
-	glhUnProjectf(screen.x, screen.y, screen.z, modelviewMatrix, projectionMatrix, viewport, pos);
+	glhUnProjectd(screen.x, screen.y, screen.z, modelviewMatrix, projectionMatrix, viewport, pos);
 	ofVec3f world(pos[0], pos[1], pos[2]);
 	return world;
 }
@@ -443,7 +443,7 @@ ofMesh getProjectedMesh(const ofMesh& mesh) {
 	ofMesh projected = mesh;
 	for (int i = 0; i < mesh.getNumVertices(); i++) {
 		ofVec3f cur = ofWorldToScreen(mesh.getVerticesPointer()[i]);
-		if (cur.z == 0) {
+		if (cur.z > 1) {
 			ofLog() << "GREATER THAN 1" << endl;
 			projected.addColor(ofFloatColor(0, 0, 0, 0));
 		}
@@ -560,11 +560,11 @@ void exportPlyCloud(string filename, ofMesh& cloud) {
 #define MAT(m, r, c) (m)[(c) * 4 + (r)]
 
 // This code comes directly from GLU except that it is for float
-int glhInvertMatrixf2(float *m, float *out)
+int glhInvertMatrixd(double *m, double *out)
 {
-	float wtmp[4][8];
-	float m0, m1, m2, m3, s;
-	float *r0, *r1, *r2, *r3;
+	double wtmp[4][8];
+	double m0, m1, m2, m3, s;
+	double *r0, *r1, *r2, *r3;
 	r0 = wtmp[0], r1 = wtmp[1], r2 = wtmp[2], r3 = wtmp[3];
 	r0[0] = MAT(m, 0, 0), r0[1] = MAT(m, 0, 1),
 		r0[2] = MAT(m, 0, 2), r0[3] = MAT(m, 0, 3),
@@ -580,11 +580,11 @@ int glhInvertMatrixf2(float *m, float *out)
 		r3[7] = 1.0, r3[4] = r3[5] = r3[6] = 0.0;
 	/* choose pivot - or die */
 	if (fabsf(r3[0]) > fabsf(r2[0]))
-		SWAP_ROWS_FLOAT(r3, r2);
+		SWAP_ROWS_DOUBLE(r3, r2);
 	if (fabsf(r2[0]) > fabsf(r1[0]))
-		SWAP_ROWS_FLOAT(r2, r1);
+		SWAP_ROWS_DOUBLE(r2, r1);
 	if (fabsf(r1[0]) > fabsf(r0[0]))
-		SWAP_ROWS_FLOAT(r1, r0);
+		SWAP_ROWS_DOUBLE(r1, r0);
 	if (0.0 == r0[0])
 		return 0;
 	/* eliminate first variable */
@@ -629,9 +629,9 @@ int glhInvertMatrixf2(float *m, float *out)
 	}
 	/* choose pivot - or die */
 	if (fabsf(r3[1]) > fabsf(r2[1]))
-		SWAP_ROWS_FLOAT(r3, r2);
+		SWAP_ROWS_DOUBLE(r3, r2);
 	if (fabsf(r2[1]) > fabsf(r1[1]))
-		SWAP_ROWS_FLOAT(r2, r1);
+		SWAP_ROWS_DOUBLE(r2, r1);
 	if (0.0 == r1[1])
 		return 0;
 	/* eliminate second variable */
@@ -663,7 +663,7 @@ int glhInvertMatrixf2(float *m, float *out)
 	}
 	/* choose pivot - or die */
 	if (fabsf(r3[2]) > fabsf(r2[2]))
-		SWAP_ROWS_FLOAT(r3, r2);
+		SWAP_ROWS_DOUBLE(r3, r2);
 	if (0.0 == r2[2])
 		return 0;
 	/* eliminate third variable */
@@ -711,7 +711,7 @@ int glhInvertMatrixf2(float *m, float *out)
 	return 1;
 }
 
-int glhProjectf(float objx, float objy, float objz, float *modelview, float *projection, int *viewport, float *windowCoordinate)
+int glhProjectd(double objx, double objy, double objz, double *modelview, double *projection, int *viewport, double *windowCoordinate)
 {
 	// Transformation vectors
 	float fTempo[8];
@@ -743,24 +743,24 @@ int glhProjectf(float objx, float objy, float objz, float *modelview, float *pro
 	return 1;
 }
 
-int glhUnProjectf(float winx, float winy, float winz, float *modelview, float *projection, int *viewport, float *objectCoordinate)
+int glhUnProjectd(double winx, double winy, double winz, double *modelview, double *projection, int *viewport, double *objectCoordinate)
 {
 	// Transformation matrices
-	float m[16], A[16];
-	float in[4], out[4];
+	double m[16], A[16];
+	double in[4], out[4];
 	// Calculation for inverting a matrix, compute projection x modelview
 	// and store in A[16]
-	MultiplyMatrices4by4OpenGL_FLOAT(A, projection, modelview);
+	MultiplyMatrices4by4OpenGL_DOUBLE(A, projection, modelview);
 	// Now compute the inverse of matrix A
-	if (glhInvertMatrixf2(A, m) == 0)
+	if (glhInvertMatrixd(A, m) == 0)
 		return 0;
 	// Transformation of normalized coordinates between -1 and 1
-	in[0] = (winx - (float)viewport[0]) / (float)viewport[2] * 2.0 - 1.0;
-	in[1] = (winy - (float)viewport[1]) / (float)viewport[3] * 2.0 - 1.0;
+	in[0] = (winx - (double)viewport[0]) / (double)viewport[2] * 2.0 - 1.0;
+	in[1] = (winy - (double)viewport[1]) / (double)viewport[3] * 2.0 - 1.0;
 	in[2] = 2.0*winz - 1.0;
 	in[3] = 1.0;
 	// Objects coordinates
-	MultiplyMatrixByVector4by4OpenGL_FLOAT(out, m, in);
+	MultiplyMatrices4by4OpenGL_DOUBLE(out, m, in);
 	if (out[3] == 0.0)
 		return 0;
 	out[3] = 1.0 / out[3];
@@ -770,7 +770,7 @@ int glhUnProjectf(float winx, float winy, float winz, float *modelview, float *p
 	return 1;
 }
 
-void MultiplyMatrices4by4OpenGL_FLOAT(float *result, float *matrix1, float *matrix2)
+void MultiplyMatrices4by4OpenGL_DOUBLE(double *result, double *matrix1, double *matrix2)
 {
 	result[0] = matrix1[0] * matrix2[0] +
 		matrix1[4] * matrix2[1] +
@@ -838,7 +838,7 @@ void MultiplyMatrices4by4OpenGL_FLOAT(float *result, float *matrix1, float *matr
 		matrix1[15] * matrix2[15];
 }
 
-void MultiplyMatrixByVector4by4OpenGL_FLOAT(float *resultvector, const float *matrix, const float *pvector)
+void MultiplyMatrixByVector4by4OpenGL_FLOAT(double *resultvector, const double *matrix, const double *pvector)
 {
 	resultvector[0] = matrix[0] * pvector[0] + matrix[4] * pvector[1] + matrix[8] * pvector[2] + matrix[12] * pvector[3];
 	resultvector[1] = matrix[1] * pvector[0] + matrix[5] * pvector[1] + matrix[9] * pvector[2] + matrix[13] * pvector[3];

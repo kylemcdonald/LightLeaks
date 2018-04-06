@@ -29,13 +29,13 @@ public:
 	void drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg = ofColor::black, ofColor fg = ofColor::white);
 
 	void drawOverlay();
-	void drawCalibration(bool pink);
+	void drawCalibration(ofColor pink);
 	void drawReferenceImage();
 	void drawSetupMode();
 	void drawSelectionMode();
 	void drawCamera();
 
-	void render(bool pink);
+	void render(ofColor color);
 
 
 	void keyPressed(int key);
@@ -91,4 +91,6 @@ public:
 	bool bRenderRGB;
 	bool bRenderNormal;
 	bool bDrawReferenceImage;
+
+	ofColor offWhite;
 };
