@@ -17,7 +17,7 @@ public:
 		if(fragFile.exists()) {
             time_t fragTimestamp = filesystem::last_write_time(fragFile);
 			if(fragTimestamp != lastFragTimestamp) {
-                cout << "timestamp for " << fragName << ": " << fragTimestamp << endl;
+                cout << "[ofAutoShader] Timestamp for " << fragName << ": " << fragTimestamp << endl;
 				needsReload = true;
 				lastFragTimestamp = fragTimestamp;
 			}
@@ -30,7 +30,7 @@ public:
         if(vertFile.exists()) {
             time_t vertTimestamp = filesystem::last_write_time(vertFile);
 			if(vertTimestamp != lastVertTimestamp) {
-                cout << "timestamp for " << vertName << ": " << vertTimestamp << endl;
+                cout << "[ofAutoShader] Timestamp for " << vertName << ": " << vertTimestamp << endl;
 				needsReload = true;
 				lastVertTimestamp = vertTimestamp;
 			}
