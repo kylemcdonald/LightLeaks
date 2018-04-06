@@ -1,3 +1,2 @@
 ofxEdsdk
-ofxOsc
 ofxWebServer
