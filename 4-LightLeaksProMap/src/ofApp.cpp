@@ -4,12 +4,12 @@ void ofApp::setup() {
     ofSetLogLevel(OF_LOG_VERBOSE);
     ofSetVerticalSync(true);
     
-    shader.loadAuto("shader");
+    shader.loadAuto("../../../SharedData/shader/shader");
     
-    proMap.loadAuto("../../../SharedData/scan-0130/proMap.png");
+    proMap.loadAuto("../../../SharedData/scan-1811-center/proMap.png");
     proMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
     
-    proConfidence.loadAuto("../../../SharedData/scan-0130/proConfidence.exr");
+    proConfidence.loadAuto("../../../SharedData/scan-1811-center/proConfidence.exr");
     proConfidence.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
 }
 
@@ -26,7 +26,7 @@ void ofApp::draw() {
         shader.setUniformTexture("proConfidence", proConfidence, 0);
         shader.setUniformTexture("proMap", proMap, 1);
         shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
-        proConfidence.draw(0, 0);
+        proMap.draw(0, 0);
     } shader.end();
 }
 

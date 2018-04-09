@@ -8,8 +8,8 @@ int main() {
     settings.decorated = false;
     settings.numSamples = 1;
     settings.resizable = true;
-    settings.width = 3840;
-    settings.height = 2160;
+    settings.setSize(5760, 1080);
+    settings.setPosition(ofVec2f(-5760, 0));
     
     shared_ptr<ofAppBaseWindow> win = ofCreateWindow(settings);
     win->setVerticalSync(false);

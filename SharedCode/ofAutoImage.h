@@ -15,10 +15,11 @@ public:
 		if(file.exists()) {
             time_t timestamp = filesystem::last_write_time(file);
 			if(timestamp != lastTimestamp) {
-                cout << "[ofAutoImage] Timestamp for " << name << ": " << timestamp << endl;
-                lastTimestamp = timestamp;
                 if(!ofImage_<T>::load(name)) {
                     cout << "[ofAutoImage] Exists, but error loading: " << name << endl;
+                } else {
+                    cout << "[ofAutoImage] Timestamp for " << name << ": " << timestamp << endl;
+                    lastTimestamp = timestamp;
                 }
 			}
         } else {

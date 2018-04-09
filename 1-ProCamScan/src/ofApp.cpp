@@ -465,13 +465,13 @@ void ofApp::setup() {
             
         // this one draws into a window around the mapped points
         // check the result of different window sizes. bigger
-        // isn't always better.
+        // isn't always better. originally 3
         buildProMapDist(width, height,
                 binaryCoded,
                 camConfidence,
                 proConfidence,
                 proMap,
-                1);
+                3);
 
         if(!projectorMaskMat.empty()) {
             cv::multiply(projectorMaskMat, proConfidence, proConfidence);

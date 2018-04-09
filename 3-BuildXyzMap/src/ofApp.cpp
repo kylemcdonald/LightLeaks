@@ -225,7 +225,7 @@ void ofApp::keyPressed( int key ){
 
 void ofApp::autoCalibrateXyz(string path, cv::Mat proConfidenceMat, cv::Mat proMapMat){
     ofImage referenceImage;
-    referenceImage.load(path+"/maxImage.jpg");
+    referenceImage.load(path+"/referenceImage.jpg");
     
     ofFbo::Settings settings;
     settings.width = referenceImage.getWidth()/scaleFactor;
@@ -638,5 +638,5 @@ void ofApp::saveResult(){
     ofLogVerbose() << "saving images";
     ofSaveImage(proConfidenceFinal, "confidenceMap-0.exr");
     ofSaveImage(proMapFinal, "xyzMap-0.exr");
-    ofSaveImage(debugViewOutput, "BuildXYZDebug.jpg", OF_IMAGE_QUALITY_BEST);
+    ofSaveImage(debugViewOutput, "BuildXYZDebug.png");
 }

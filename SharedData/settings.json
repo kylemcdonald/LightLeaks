@@ -6,10 +6,10 @@
 			"height": 1080,
 			"xcode": 0,
 			"ycode": 0,
-			"xwindow": 0,
+			"xwindow": -5760,
 			"ywindow": 0,
 			"multimonitor": true,
-			"fullscreen": true
+			"fullscreen": false
 		}
 	],
 	"sample": {

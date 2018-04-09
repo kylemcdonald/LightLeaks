@@ -64,6 +64,7 @@ public:
             shader.setUniformTexture("xyzMap", xyzMap, 0);
             shader.setUniformTexture("confidenceMap", confidenceMap, 1);
             shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
+            shader.setUniform1i("frameNumber", ofGetFrameNum());
             shader.setUniform2f("mouse", ofVec2f((float)mouseX/ofGetWidth(), (float)mouseY/ofGetHeight()));
             xyzMap.draw(0, 0, ofGetWidth(), ofGetHeight());
         } shader.end();
