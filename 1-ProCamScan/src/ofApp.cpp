@@ -58,7 +58,7 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat& confidence, Mat& bi
 				binaryCoded.at<unsigned short>(y, x) |= curMask;
 			}
 			float range = fabsf((float) normal - (float) inverse);
-            confidence.at<float>(y, x) += range;
+            confidence.at<float>(y, x) += range * curMask;
 		}
     }
     
@@ -415,7 +415,8 @@ void ofApp::setup() {
 
 
         // convert camConfidence to 0-1 range
-        camConfidence /= 255 * (horizontalBits + verticalBits);
+//        camConfidence /= 255 * (horizontalBits + verticalBits); // before scaling by curMask in processGraycodeLevel
+        camConfidence /= 255 * ((1 << horizontalBits) + (1 << verticalBits)); // with scaling by curMask
         
         grayToBinary(binaryCodedHorizontal, horizontalBits);
         grayToBinary(binaryCodedVertical, verticalBits);
