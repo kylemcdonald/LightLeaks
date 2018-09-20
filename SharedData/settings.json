@@ -2,12 +2,12 @@
 	"projectors": [
 		{
 			"monitor": 0,
-			"width": 5760,
-			"height": 1080,
+			"width": 800,
+			"height": 800,
 			"xcode": 0,
 			"ycode": 0,
-			"xwindow": -5760,
-			"ywindow": 0,
+			"xwindow": 100,
+			"ywindow": 100,
 			"multimonitor": true,
 			"fullscreen": false
 		}
@@ -21,7 +21,7 @@
 		"scaleFactor": 4
 	},
 	"osc": {
-		"camera": "remote.local",
-		"projector": "kyle.local"
+		"camera": "kyle.local",
+		"projector": "lightleaks.local"
 	}
 }

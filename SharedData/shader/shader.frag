@@ -33,8 +33,8 @@ float sinp(float x) {
 }
 
 
-float stageAlpha(float stageNum, float _stage){
-    float d = distance(_stage, stageNum);
+float stageAlpha(float stageNum, float stage){
+    float d = distance(stage, stageNum);
     if(d < 1.){
         return 1.-d;
     }
@@ -103,25 +103,29 @@ float unstableFloor(float time, vec2 position, float size){
 
 
 void main() {
-    outputColor = vec4(1);
-    return;
-    float q = .1;
-    if(mod(elapsedTime,q) > (q/2)) {
-        outputColor = vec4(1);
-    } else {
-        outputColor = vec4(0,0,0,1);
-    }
-    return;
 
+    // test white
+    // outputColor = vec4(1);
+    // return;
 
-    // DO NOT IGNORE THE NEXT PARAMETER!
-    // it should probably be all 0
-    vec2 projectionOffset = vec2(0., .0);//+vec2(floor( sin(elapsedTime*1)*10) ,0);
-    vec3 position = texture(xyzMap, texCoordVarying.st + projectionOffset).xyz;
+    // test strobe
+    // float q = .1;
+    // if(mod(elapsedTime,q) > (q/2)) {
+    //     outputColor = vec4(1);
+    // } else {
+    //     outputColor = vec4(0,0,0,1);
+    // }
+    // return;
+
+    vec3 position = texture(xyzMap, texCoordVarying.st).xyz;
     
     vec3 centered = position - center;
     float confidence = texture(confidenceMap, texCoordVarying.st).r;
     
+    // test confidence
+    // outputColor = vec4(vec3(confidence), 1);
+    // return;
+
     if(confidence < 0.1) {
         outputColor = vec4(vec3(0.), 1.);
         return;
@@ -164,65 +168,65 @@ void main() {
     
     // Calculate stage
     float t = elapsedTime / 30.; // duration of each stage
-    float i = mod(t,1.);
-    float _stage = t-i;
+    float stage = floor(t); // index of current stage
+    float i = t - stage; // progress in current stage
     
     // Crossfade
     if(i > 0.9){
-        _stage += 1.0 - (1.0 - i) * 10.;
+        stage += 1.0 - (1.0 - i) * 10.;
     }
     
-    _stage = mod(_stage,numStages);
-    // _stage = 0; // Overwrite stage
+    stage = mod(stage, numStages);
+    // stage = 0; // Overwrite stage
     
     int s = 0;
     
-    if(stageAlpha(s, _stage) > 0. && stageAlpha(s, _stage) <= 1.) {
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += lighthouse(elapsedTime, position, centered)
-        * stageAlpha(s, _stage);
+        * stageAlpha(s, stage);
     }
     
     s++;
     
-    if(stageAlpha(s, _stage) > 0. && stageAlpha(s, _stage) <= 1.) {
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += stripes(elapsedTime + sin(elapsedTime)
                      * 0.4, position.z, 8)
-        * stageAlpha(s, _stage);
+        * stageAlpha(s, stage);
     }
     
     s++;
     
-    if(stageAlpha(s, _stage) > 0. && stageAlpha(s, _stage) <= 1.) {
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += glitter(elapsedTime, centered)
-        * stageAlpha(s, _stage);
+        * stageAlpha(s, stage);
     }
     
     s++;
     
-    if(stageAlpha(s, _stage) > 0. && stageAlpha(s, _stage) <= 1.) {
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += circles(sin(elapsedTime * 0.5) * 1.8, centered, 160.)
-        * stageAlpha(s, _stage);
+        * stageAlpha(s, stage);
     }
     
     s++;
     
-    if(stageAlpha(s, _stage) > 0. && stageAlpha(s, _stage) <= 1.) {
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += unstableFloor(elapsedTime, centered.xz, 150.)
-        * stageAlpha(s, _stage);;
+        * stageAlpha(s, stage);;
     }
     
     s++;
     
-    if(stageAlpha(s, _stage) > 0. && stageAlpha(s, _stage) <= 1.) {
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += hardStripes(elapsedTime * 0.1, position.x, 0.15)
-        * stageAlpha(s, _stage);;
+        * stageAlpha(s, stage);;
     }
     
     s++;
     
-    if(stageAlpha(s, _stage) > 0. && stageAlpha(s, _stage) <= 1.) {
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += hardStripes(elapsedTime * 0.1, position.z + position.y * 0.5, 0.3)
-        * stageAlpha(s, _stage);;
+        * stageAlpha(s, stage);;
         // c.r = hardStripes(elapsedTime * 0.3, position.z + position.y * 0.5, 0.3);
         // c.b = hardStripes(elapsedTime * 0.2, position.z + position.y * 0.5, 0.3);
     }
@@ -267,5 +271,7 @@ void main() {
     //     return;
     // }
 
+    // force alpha = 1
+    // outputColor.a = 1.;
 }
 
