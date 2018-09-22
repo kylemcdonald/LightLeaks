@@ -76,49 +76,6 @@ Before doing any calibration, it's essential to measure the room and produce a `
 0. Run `BuildXyzMap` and drag `SharedData/scan` into the app. This will produce `SharedData/scan/camConfidence.exr` and `SharedData/scan/xyzMap.exr`. Repeat this step for multiple scans, then hit "s" to save the output. This will produce `SharedData/confidenceMap.exr` and `SharedData/xyzMap.exr`.
 0. Run `LightLeaks`.
 
-## Install Notes
-
-* Each projector should be focused on the mirror balls, outputting native pixels (no scaling or keystoning) and framing the entire collection of mirror balls.
-
-## Click Festival (DK, 2012)
-
-* Mac Mini
-* 1024x768 (native resolution) with TripleHead2Go
-
-## La Gaîté Lyrique (FR, 2014)
-
-* iMac
-* 1280x1024 with TH2G on projectiondesign F32 sx+ (native 1400x1050) inset on the sensor
-* When calibrating, create a network from the calibration computer that shares the ethernet and therefore provides DHCP.
-* BlackMagic grabber and SDI camera for interaction
-
-## Scopitone Festival (FR, 2015)
-
-* Mac Pro (the bin)
-* 3x [Mitsubishi UD8350U](http://www.mitsubishielectric.com/bu/projectors/products/data/high_resolution/ud8350u_lu_features.html) 6,500 Lumens, 1920x1200
-* 2 projectors running through TripleHead2Go, the last directly from the Mac Pro
-* One monitor hidden in the back closet
-
-## BLACK Festival (US, 2017)
-
-20x15x4.4m room with 42 mirror balls on floor and 4 projectors at 3.25m high, 7.2m away from center of mirror balls.
-
-Temporarily used a laptop and Mac Pro together for calibration, leading to the "Primary" and "Secondary" ProCamSample instances. This solution doesn't really work because lost OSC messages to the Secondary machine cause irrecoverable problems.
-
-* Mac Pro with 4x [Apple Mini DisplayPort to Dual-Link Display Adapter, with USB Extension](https://www.apple.com/shop/product/MB571LL/A/mini-displayport-to-dual-link-dvi-adapter)
-* 4x [Christie D12HD-H 1DLP projectors](https://www.christiedigital.com/en-us/business/products/projectors/1-chip-dlp/h-series/Christie-D12HD-H) at 10,500 ANSI Lumens, all running at 1920x1080.
-* Additional monitor for debugging. Display arrangement was set so the monitor was the last screen to the right.
-* [Scarlett Focusrite 18i8](https://us.focusrite.com/usb-audio-interfaces/scarlett-18i8) audio interface.
-
-## Day for Night (US, 2017)
-
-* 4 Projectors connected to Linux machine running headless 
-
-## Los Angeles Music Center (US, 2018)
-
-## Todaysart Festival (NL, 2018)
-
-
 # Future ideas
 
 ## Redesign
