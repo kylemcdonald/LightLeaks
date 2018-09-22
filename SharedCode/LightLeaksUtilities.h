@@ -5,6 +5,7 @@
 using namespace ofxCv;
 using namespace cv;
 
+// this can be used to make the confidence map more sparse
 void medianThreshold(cv::Mat& src, float thresholdValue) {
     cv::Mat thresholded, filtered;
     ofxCv::threshold(src, thresholded, thresholdValue);
@@ -65,6 +66,7 @@ void buildProMapDist(int pw, int ph,
             }
         }
     }
+    // maybe this should be uncommented... still testing
     medianThreshold(proConfidence, .25);
 }
 

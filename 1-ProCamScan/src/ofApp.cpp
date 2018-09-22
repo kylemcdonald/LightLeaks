@@ -13,6 +13,9 @@ using namespace cv;
 // Situations like capturing a lcd screen, highpass should be disabled since it blurs the image
 #define RUN_HIGHPASS
 
+// disable this when building the first mask
+#define USE_PROMAPDIST
+
 // 180 is good with reflections that are about 30x30px
 // (similar to photoshop's "30px")
 // this should scale to match the size of the reflections in the image
@@ -58,7 +61,7 @@ void processGraycodeLevel(int i, int n, int dimensions, Mat& confidence, Mat& bi
 				binaryCoded.at<unsigned short>(y, x) |= curMask;
 			}
 			float range = fabsf((float) normal - (float) inverse);
-            confidence.at<float>(y, x) += range;
+            confidence.at<float>(y, x) += range * curMask;
 		}
     }
     
@@ -160,7 +163,7 @@ void ofApp::processImageSet(ofFile fileNormal, ofFile fileInverse, ofImage *& im
         matInverse &= cameraMask;
     }
     
-    // Run Highpass
+    // Run Highpass (this takes almost half the time)
     highpass(matNormal);
     highpass(matInverse);
     
@@ -415,7 +418,8 @@ void ofApp::setup() {
 
 
         // convert camConfidence to 0-1 range
-        camConfidence /= 255 * (horizontalBits + verticalBits);
+//        camConfidence /= 255 * (horizontalBits + verticalBits); // before scaling by curMask in processGraycodeLevel
+        camConfidence /= 255 * ((1 << horizontalBits) + (1 << verticalBits)); // with scaling by curMask
         
         grayToBinary(binaryCodedHorizontal, horizontalBits);
         grayToBinary(binaryCodedVertical, verticalBits);
@@ -423,13 +427,13 @@ void ofApp::setup() {
 #ifdef SAVE_DEBUG
         ofLogVerbose() << "saving debug results";
         saveImage(camConfidence, path+"/camConfidence.exr");
-        saveImage(minImage, path+"/minImage.jpg", OF_IMAGE_QUALITY_LOW);
-        saveImage(maxImage, path+"/maxImage.jpg", OF_IMAGE_QUALITY_LOW);
+        saveImage(minImage, path+"/minImage.png");
+        saveImage(maxImage, path+"/maxImage.png");
 #endif
         ofLogVerbose() << "building and saving reference image";
         Mat referenceImage;
         ofxCv::equalizeHist(minImage, referenceImage);
-        saveImage(referenceImage, path+"/referenceImage.jpg", OF_IMAGE_QUALITY_LOW);
+        saveImage(referenceImage, path+"/referenceImage.jpg");
         
         Mat binaryCoded, emptyChannel;
         emptyChannel = Mat::zeros(camHeight, camWidth, CV_16UC1);
@@ -456,22 +460,26 @@ void ofApp::setup() {
 //			proCount = settings.getIntValue("projectors/count");
             
         ofLogVerbose() << "Build Pro Map: "<<width<<" X "<<height;
-//        // this one is simpler
-//        buildProMap(width, height,
-//                    binaryCoded,
-//                    camConfidence,
-//                    proConfidence,
-//                    proMap);
             
+#ifdef USE_PROMAPDIST
         // this one draws into a window around the mapped points
         // check the result of different window sizes. bigger
         // isn't always better. originally 3
         buildProMapDist(width, height,
-                binaryCoded,
-                camConfidence,
-                proConfidence,
-                proMap,
-                3);
+                        binaryCoded,
+                        camConfidence,
+                        proConfidence,
+                        proMap,
+                        3);
+#else
+//        // this one is simpler
+        buildProMap(width, height,
+                    binaryCoded,
+                    camConfidence,
+                    proConfidence,
+                    proMap);
+#endif
+            
 
         if(!projectorMaskMat.empty()) {
             cv::multiply(projectorMaskMat, proConfidence, proConfidence);
