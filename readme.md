@@ -65,6 +65,10 @@ The repo is meant to be used with openFrameworks 0.10.0 (a0bd41a75).
 * https://github.com/mazbox/ofxWebServer # 6472ba043075c685977ecca36851d51db1ec4648
 * https://github.com/HalfdanJ/ofxGrabCam
 
+## Python implementation
+At TodaysArt we ported the ProCamScan and BuildXYZ from openFrameworks to python. The notebook can be found here: 
+https://colab.research.google.com/drive/1ILHpHZh_wtbxHYK6HjzBxqqp-wCsJk6M
+
 ### Calibration Process
 
 Before doing any calibration, it's essential to measure the room and produce a `model.dae` file that includes all the geometry you want to project on. We usually build this file in SketchUp with a laser rangefinder for measurements, then save with "export two-sided faces" enabled, and finally load the model into MeshLab and save it again. MeshLab changes the order of the axes, and saves the geometry in a way that makes it easier to load into OpenFrameworks. (Note: at BLACK we ignored the "export two-sided faces" step and the MeshLab step, and camamok was modified slightly to work for this situation.)
