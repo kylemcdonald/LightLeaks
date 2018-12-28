@@ -6,17 +6,23 @@
 
 uniform sampler2DRect xyzMap;
 uniform sampler2DRect confidenceMap;
+uniform sampler2DRect mask;
+uniform sampler2DRect syphon;
 uniform float elapsedTime;
 uniform int frameNumber;
 uniform vec2 mouse;
+uniform vec2 syphonSize;
 
 in vec2 texCoordVarying;
+in vec4 positionVarying;
 out vec4 outputColor;
 
-// first axis is along the length of the room, with 0 towards the entrance
-// second axis is along the width of the room, with 0 towards the bar
-// third axis is floor to ceiling, with 0 on the floor
-const vec3 center = vec3(0.495, 0.2, 0.1);
+// x first axis is along the length of the room, with 0 towards the entrance
+// y second axis is along the width of the room, with 0 towards the bar
+// z third axis is floor to ceiling, with 0 on the floor
+const vec3 center = vec3(0.295, 0.49, 0.06); // balls
+const vec3 center_stage = vec3(0.05, 0.50, 0.00); // stage
+// 0.25220504 0.47130203 0.05398171
 
 vec2 rotate(vec2 position, float amount) {
     mat2 rotation = mat2(vec2( cos(amount),  sin(amount)),
@@ -72,21 +78,21 @@ float hardStripes(float time, float position, float size){
     return 0.0;
 }
 
-// float checkerboard(float time,vec3 position){
-//     // checkerboard (needs to be animated)
-//     vec3 modp = mod(time + position.xyz * 5., 2.);
-//     if(modp.x > 1) {
-//         return (modp.z < 1 || modp.y > 1) ? 1 : 0;
-//     } else {
-//         return (modp.z > 1 || modp.y < 1) ? 1 : 0;
-//     }
-// }
+float checkerboard(float time,vec3 position){
+    // checkerboard 
+    vec3 modp = mod(time + position.xyz * 5., 2.);
+    if(modp.x > 1) {
+        return (modp.z < 1 || modp.y > 1) ? 1 : 0;
+    } else {
+        return (modp.z > 1 || modp.y < 1) ? 1 : 0;
+    }
+}
 
 // glittering floor
 float glitter(float time, vec3 centered){
     float t = sin(time)*.5;
     vec2 rot = vec2(sin(t), cos(t)) * (1. + sin(time) * .5) + time;
-    return sin(50. * dot(rot, centered.xy));
+    return sin(5 * dot(rot, 1+centered.xy));
 }
 
 // concentric spheres
@@ -96,71 +102,75 @@ float circles(float time, vec3 centered, float size){
 
 float unstableFloor(float time, vec2 position, float size){
     //         // unstable floor
-    float t = sin(time)*.25;
+    float t = sin(time)*.35;
     vec2 rot = vec2(sin(t), cos(t));
-    return sin(size * dot(rot, position));
+    return sin(size * dot(rot, position + vec2(time/ 3000.0))) > 0.8 ? 1.0 : 0.0;
 }
 
 
 void main() {
+    vec3 position = texture(xyzMap, texCoordVarying.st).xyz;
+    vec3 centered = position - center;
+    vec3 centered_stage = position -  center_stage;
+    float confidence = texture(confidenceMap, texCoordVarying.st).r;
+    float masked = texture(mask, texCoordVarying.st).r;
 
-    // test white
+    /* test white */
     // outputColor = vec4(1);
     // return;
 
-    // test strobe
-    // float q = .1;
+    /* test strobe */
+    // float q = .01;
     // if(mod(elapsedTime,q) > (q/2)) {
     //     outputColor = vec4(1);
     // } else {
     //     outputColor = vec4(0,0,0,1);
     // }
     // return;
-
-    vec3 position = texture(xyzMap, texCoordVarying.st).xyz;
     
-    vec3 centered = position - center;
-    float confidence = texture(confidenceMap, texCoordVarying.st).r;
-    
-    // test confidence
+    /* test confidence */
     // outputColor = vec4(vec3(confidence), 1);
     // return;
+    
+    /* test mask */
+    // if(mod(elapsedTime / 2., 1) > 0.5  ){    //     
+    //     outputColor = vec4(vec3(masked), 1);
+    //     return;
+    // }
 
-    if(confidence < 0.1) {
+    /* Discard low confidence and masked */
+    if(confidence < 0.08 || masked == 0) {
         outputColor = vec4(vec3(0.), 1.);
         return;
     }
-    
-    // Position tester:
-    //    if(position.x > center.x + sin(elapsedTime) * 0.03){
-    //      outputColor = vec4(1.,0.,0.,1.);
-    //      return;
-    //    } else {
-    //        outputColor = vec4(0.,1.,0.,1.);
-    //      return;
-    //    }
-    
-    //      outputColor = vec4(vec3(1.), 1.);
+
+    /* Test full white */
+    // outputColor = vec4(1);
     // return;
     
-    // if(gl_TexCoord[0].st.x > 1920){
-    //     // outputColor *= vec4(vec3(0.,1.0,0.0), 1.);
+    /* Position tester: */
+    // int axis = 1;
+    // if(position[axis] > center[axis] + sin(elapsedTime) * 0.005){
+    //     outputColor = vec4(1.,0.,0.,1.);
     //     return;
-    // }
-    // if(gl_TexCoord[0].st.y > 1080){
-    //     return;
-    // }
-    // // Position tester:
-    // if(position.x > center.x + sin(elapsedTime) * .03){
-    // // if(position.x > center.x - 0.3){
-    //   outputColor = vec4(1.,0.,0.,1.);
-    //   return;
     // } else {
     //     outputColor = vec4(0.,1.,0.,1.);
-    //   return;
+    //     return;
     // }
     
-    int numStages = 7;
+    /*  Syphon render
+        max side of syphon texture = max side of room */
+    float syphonScale = max(syphonSize.x, syphonSize.y);
+    
+    /* use centered.xy it to sample across syphon texture
+       this should lay an image on the floor
+       change .xy to .yz or .xz to put it on two walls */    
+    vec2 syphonCoord = syphonSize/2 + centered.xy * syphonScale;
+   
+    /* Output syphon */
+    // outputColor = texture(syphon, syphonCoord);
+    // return; 
+    
     
     float w = 0.;
     vec3 c = vec3(0.,0.,0.);
@@ -175,9 +185,10 @@ void main() {
     if(i > 0.9){
         stage += 1.0 - (1.0 - i) * 10.;
     }
-    
+
+    int numStages = 9;
     stage = mod(stage, numStages);
-    // stage = 0; // Overwrite stage
+    // stage = 8; // Overwrite stage
     
     int s = 0;
     
@@ -190,7 +201,7 @@ void main() {
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += stripes(elapsedTime + sin(elapsedTime)
-                     * 0.4, position.z, 8)
+                     * 0.4, position.z + position.x * 0.1, 8)
         * stageAlpha(s, stage);
     }
     
@@ -204,33 +215,56 @@ void main() {
     s++;
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += circles(sin(elapsedTime * 0.5) * 1.8, centered, 160.)
+        w += circles(sin(0.4 * elapsedTime) * 1.8, centered, 160.)
+        * stageAlpha(s, stage);
+    }
+    
+    s++;
+
+   
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+        w += unstableFloor(elapsedTime, centered.yx, 150.)
+        * stageAlpha(s, stage);;
+    }
+    
+    s++;
+   
+    
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+        w += hardStripes(elapsedTime * 0.10, position.z + position.x * 0.8, 0.1)
+        * stageAlpha(s, stage);;
+        // c.r = hardStripes(elapsedTime * 0.3, position.z + position.y * 0.5, 0.3);
+        // c.b = hardStripes(elapsedTime * 0.2, position.z + position.y * 0.5, 0.3);
+    }
+    
+    s++;
+    
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+        w += circles(sin(0.4 * elapsedTime) * 1.8, centered_stage , 160.)
         * stageAlpha(s, stage);
     }
     
     s++;
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += unstableFloor(elapsedTime, centered.xz, 150.)
+        float ss = sin(elapsedTime/1.0)/2.0;
+        float cc = cos(elapsedTime/1.3)/2.0;
+        w += hardStripes(elapsedTime * 0.07, position.z + position.x * (ss/ 5.0) + position.y * (cc/ 5.0), 0.15)
         * stageAlpha(s, stage);;
     }
     
     s++;
-    
+
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += hardStripes(elapsedTime * 0.1, position.x, 0.15)
-        * stageAlpha(s, stage);;
+        vec3 p = position - (vec3(cos(elapsedTime*0.5) * 0.10,
+                                sin(elapsedTime*0.4) * 0.1,
+                                sin(elapsedTime*0.2) * 0.10 ) + center);
+
+        w += (circles(elapsedTime * - 0.5, p, 260.) * stageAlpha(s, stage) > 0.5 ? 1. : 0.);
+        
     }
     
     s++;
-    
-    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += hardStripes(elapsedTime * 0.1, position.z + position.y * 0.5, 0.3)
-        * stageAlpha(s, stage);;
-        // c.r = hardStripes(elapsedTime * 0.3, position.z + position.y * 0.5, 0.3);
-        // c.b = hardStripes(elapsedTime * 0.2, position.z + position.y * 0.5, 0.3);
-    }
-    
     // w = hardStripes(elapsedTime * 0.1, position.x, 0.1) ;
     
     outputColor = vec4(vec3(w) + c, 1.);
