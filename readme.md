@@ -51,8 +51,15 @@ Temporarily used a laptop and Mac Pro together for calibration, leading to the "
 ### Los Angeles Music Center (US, 2018)
 ![la, photo by Kyle McDonald](photos/la.jpg)
 
-
 ### Todaysart Festival (NL, 2018)
+![Todays Art, Photo by Jonas Jongejan](photos/todaysart.jpg)
+
+### Lights all Night (US, 2018)
+Installation at Lights All Night festival, using 4 x 30K projectors
+![Lights All Night, Photo by Jonas Jongejan](photos/lan.jpg)
+
+### LLUM (ES, 2019)
+Outdoor installation in couryard of [Can Framis Museum](https://goo.gl/maps/dArwnudpRqq)
 
 
 ## Technical notes
