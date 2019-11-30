@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.camera2.formats.fragments
+package com.lightleaks.camera.fragments
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -33,34 +33,30 @@ import android.os.HandlerThread
 import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
-import com.example.android.camera2.common.computeExifOrientation
-import com.example.android.camera2.common.getPreviewOutputSize
-import com.example.android.camera2.common.AutoFitSurfaceView
-import com.example.android.camera2.common.OrientationLiveData
-import com.example.android.camera2.formats.CameraActivity.Companion.ANIMATION_FAST_MILLIS
-import com.example.android.camera2.formats.CameraActivity.Companion.ANIMATION_SLOW_MILLIS
-import com.example.android.camera2.formats.R
+import com.lightleaks.android.camera2.common.computeExifOrientation
+import com.lightleaks.android.camera2.common.getPreviewOutputSize
+import com.lightleaks.android.camera2.common.AutoFitSurfaceView
+import com.lightleaks.android.camera2.common.OrientationLiveData
+import com.lightleaks.camera.CameraActivity.Companion.ANIMATION_FAST_MILLIS
+import com.lightleaks.camera.CameraActivity.Companion.ANIMATION_SLOW_MILLIS
+import com.lightleaks.camera.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.*
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
 import java.io.*
-import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeoutException
 import java.util.Date
 import java.util.Locale
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 import kotlin.RuntimeException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException

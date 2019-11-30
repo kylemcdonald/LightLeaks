@@ -1,4 +1,4 @@
-package com.example.android.camera2.formats.fragments
+package com.lightleaks.camera.fragments
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -13,10 +13,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.navigation.Navigation
 
-import com.example.android.camera2.formats.R
+import com.lightleaks.camera.R
 import kotlinx.android.synthetic.main.config_fragment.view.*
 
 class ConfigFragment : Fragment() {

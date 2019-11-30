@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.camera2.common
+package com.lightleaks.android.camera2.common
 
 import android.graphics.Point
 import android.hardware.camera2.CameraCharacteristics

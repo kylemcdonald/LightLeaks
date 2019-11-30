@@ -23,7 +23,7 @@
 
     <fragment
         android:id="@+id/permissions_fragment"
-        android:name="com.example.android.camera2.formats.fragments.PermissionsFragment"
+        android:name="com.lightleaks.camera.fragments.PermissionsFragment"
         android:label="Permissions" >
 
         <action
@@ -34,7 +34,7 @@
 
     <fragment
         android:id="@+id/config_fragment"
-        android:name="com.example.android.camera2.formats.fragments.ConfigFragment"
+        android:name="com.lightleaks.camera.fragments.ConfigFragment"
         android:label="Selector"
         tools:layout="@layout/config_fragment">
 
@@ -46,7 +46,7 @@
     </fragment>
     <fragment
         android:id="@+id/camera_fragment"
-        android:name="com.example.android.camera2.formats.fragments.CameraFragment"
+        android:name="com.lightleaks.camera.fragments.CameraFragment"
         android:label="Camera" >
 
         <argument

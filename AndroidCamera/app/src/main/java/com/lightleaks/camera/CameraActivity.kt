@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.camera2.formats
+package com.lightleaks.camera
 
 import android.os.Bundle
 import android.view.View

@@ -1,4 +1,4 @@
-package com.example.android.camera2.formats.fragments
+package com.lightleaks.camera.fragments
 
 import androidx.lifecycle.ViewModel
 
