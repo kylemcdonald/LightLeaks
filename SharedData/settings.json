@@ -25,9 +25,10 @@
     "projector": "lightleaks.local"
   },
   "camera": {
-    "iso": "2500",
-    "exposureTime": "0.01",
-    "opticalStabilization": "false",
-    "fastPreview": "false"
+    "iso": "100",
+    "exposureTime": "0.5",
+    "opticalStabilization": "true",
+    "fastPreview": "false",
+    "noiseReduction": "true"
   }
 }

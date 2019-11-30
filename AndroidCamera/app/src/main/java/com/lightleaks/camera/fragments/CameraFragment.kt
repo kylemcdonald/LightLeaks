@@ -116,6 +116,8 @@ class CameraFragment : Fragment() {
     private var exposureTime: Double = 0.01;
     private var iso: Int = 55;
     private var opticalStabilization: Boolean = false;
+    private var noiseReduction: Boolean = false;
+    private var torch: Boolean = false;
 
     private lateinit var websocketClient: WebSocket
 
@@ -197,6 +199,14 @@ class CameraFragment : Fragment() {
         captureRequest.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, if(opticalStabilization) CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_ON else CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF)
         captureRequest.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT)
         captureRequest.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_OFF)
+
+        captureRequest.set(CaptureRequest.NOISE_REDUCTION_MODE, if(noiseReduction) CaptureRequest.NOISE_REDUCTION_MODE_HIGH_QUALITY else CaptureRequest.NOISE_REDUCTION_MODE_OFF)
+
+        captureRequest.set(CaptureRequest.FLASH_MODE, if(torch) CaptureRequest.FLASH_MODE_TORCH else CaptureRequest.FLASH_MODE_OFF)
+
+        captureRequest.set(CaptureRequest.STATISTICS_OIS_DATA_MODE, CaptureRequest.STATISTICS_OIS_DATA_MODE_ON)
+
+
 
 
     }
@@ -300,6 +310,8 @@ class CameraFragment : Fragment() {
 //        return characteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF) >= 1;
 //    }
 
+    private var lastOffsetX = 0.0;
+    private var lastOffsetY = 0.0;
 
     private fun sendPhoto() {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -307,9 +319,33 @@ class CameraFragment : Fragment() {
 //                val focusDistance = result.metadata.get(CaptureResult.LENS_FOCUS_DISTANCE)
 //                Log.i(TAG, "Focus distance "+   focusDistance!!)
 
+//                val ois = result.metadata.get(CaptureResult.STATISTICS_OIS_SAMPLES)
+//
+//                var avgX = 0.0;
+//                var avgY = 0.0;
+//                for(frame in ois!!.iterator()) {
+////                    Log.i(TAG, ""+ frame.timestamp)
+//                    avgX += frame.xshift;
+//                    avgY += frame.yshift
+//                }
+//                avgX /= ois.size
+//                avgY /= ois.size
+
+
+//                avgX = ois[0].xshift.toDouble()
+//                avgY = ois[0].yshift.toDouble()
+//                Log.i(TAG, "X: " + avgX + "Y: "+avgY)
+//                Log.i(TAG, "First X: " + ois[0].xshift  + "Y: "+ois[0].yshift )
+//                Log.i(TAG, /"X: " + (lastOffsetX - avgX)+ "Y: "+(lastOffsetY - avgY))
+
+//                lastOffsetX = avgX
+//                lastOffsetY = avgY
+
                 val buffer = result.image.planes[0].buffer
                 val bytes = ByteArray(buffer.remaining()).apply { buffer.get(this) }
                 websocketClient.send(bytes.toByteString())
+
+//                websocketClient.send("oisOffset:"+avgX+":"+avgY)
 //                websocketClient.send("next")
             }
         }
@@ -364,7 +400,12 @@ class CameraFragment : Fragment() {
                             iso = ar[2].toInt()
                         } else if(ar[1] == "opticalStabilization") {
                             opticalStabilization = ar[2].toBoolean()
+                        } else if(ar[1] == "noiseReduction") {
+                            noiseReduction = ar[2].toBoolean()
+                        } else if(ar[1] == "torch") {
+                            torch  = ar[2].toBoolean()
                         }
+
                         setCameraSettings(captureRequest)
                         session.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
 

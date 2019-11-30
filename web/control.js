@@ -11,6 +11,8 @@ ws.onopen =  () => {
     setTimeout(() =>grabPreview(), 100);
 };
 
+let imageWidth;
+let imageHeight;
 ws.onmessage = (data) => {
     console.log(data)
     if(data.data instanceof Blob){
@@ -24,13 +26,30 @@ ws.onmessage = (data) => {
         document.body.querySelector('#grab').innerText = "Grab preview"
 
         img.onload = () => {
+            imageWidth = img.naturalWidth
+            imageHeight = img.naturalHeight
             document.getElementById('resolution').innerText = `Resolution: ${img.naturalWidth}x${img.naturalHeight}`
         }
 
     } else if (typeof data.data == "string" ) {
-        if(data.data.indexOf('setConfigComplete:') == 0) {
+        if(data.data.indexOf('oisOffset:') == 0) {
+            console.log(data.data)
+
+
+            const ar = data.data.split(':')
+
+            const img = document.getElementById('image')
+            if(imageWidth){
+                const scale = img.width / imageWidth 
+                console.log(scale,img.width, imageWidth)
+                img.style.left = parseFloat(ar[1] * scale)+'px'
+                img.style.top = parseFloat(ar[2] * scale)+'px'
+            }
+        }
+        else if(data.data.indexOf('setConfigComplete:') == 0) {
             setTimeout(() => grabPreview(), 500)   
-        } else if(data.data.indexOf('settings:')== 0) {
+        } 
+        else if(data.data.indexOf('settings:')== 0) {
             settings = JSON.parse(data.data.replace('settings:',''))
             console.log(settings)
 
@@ -79,6 +98,9 @@ function grabPreview() {
     })
     document.body.querySelector('#opticalStabilization').addEventListener('change', (ev) => {
         setConfig('opticalStabilization', (ev.target.checked));
+    })
+    document.body.querySelector('#noiseReduction').addEventListener('change', (ev) => {
+        setConfig('noiseReduction', (ev.target.checked));
     })
     document.body.querySelector('#fastPreview').addEventListener('change', (ev) => {
         setConfig('fastPreview', (ev.target.checked));
