@@ -28,7 +28,8 @@ console.log(settings)
 
 app.ws('/cam', function(ws, req) {
     index = 0;
-
+    fetchingImage = false;
+    
     ws.on('message', async function(msg) {
         // console.log("Cam msg", msg)
         // ws.send(msg);
