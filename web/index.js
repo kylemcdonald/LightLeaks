@@ -29,7 +29,7 @@ console.log(settings)
 app.ws('/cam', function(ws, req) {
     index = 0;
     fetchingImage = false;
-    
+
     ws.on('message', async function(msg) {
         // console.log("Cam msg", msg)
         // ws.send(msg);
@@ -37,10 +37,7 @@ app.ws('/cam', function(ws, req) {
         if(Buffer.isBuffer(msg)) {
             fetchingImage = false
             if(photoState === 'preview') {
-                if(controlWs && controlWs.readyState === 1){
-                    controlWs.send(msg)
-                    photoState = undefined;
-                }
+                photoState = undefined;
             } 
             else if(photoState === 'run') { 
                 const fpath = patternPath +'.jpg';
@@ -51,6 +48,10 @@ app.ws('/cam', function(ws, req) {
 
                 onPhotoStored();
             }
+
+            if(controlWs && controlWs.readyState === 1){
+                controlWs.send(msg)                
+            }
         } else {
             console.log("Cam txt msg", msg)
             if(controlWs && controlWs.readyState === 1){
@@ -60,10 +61,12 @@ app.ws('/cam', function(ws, req) {
     });
 
     console.log ("Connection on /cam")
-    for(const k of Object.keys(settings['camera'])){
-        ws.send('setConfig:'+k+':'+settings['camera'][k])
-        console.log('setConfig:'+k+':'+settings['camera'][k])
-    }
+    setTimeout(()=> {
+        for(const k of Object.keys(settings['camera'])){
+            ws.send('setConfig:'+k+':'+settings['camera'][k])
+            console.log('setConfig:'+k+':'+settings['camera'][k])
+        }
+    }, 100)
     
     cameraWs = ws;
         
@@ -118,7 +121,8 @@ app.ws('/control', (ws, req) => {
 })
 
 async function onPhotoStored() {
-    if(pattern ++ < numPatterns - 1){
+    pattern ++
+    if(pattern < numPatterns - 1){
         await setPattern(pattern);
         if(fetchingImage) {
             console.error("Already fetching image")
@@ -126,7 +130,20 @@ async function onPhotoStored() {
         }
         fetchingImage = true;
         cameraWs.send('photo:'+patternPath)
+    } else if(pattern == numPatterns - 1){ 
+        setReferencePattern()
+        cameraWs.send('setConfig:torch:true')
+        cameraWs.send('setConfig:iso:'+(parseInt(settings['camera']['iso']) * 2))
+
+        if(fetchingImage) {
+            console.error("Already fetching image")
+            return;
+        }
+        fetchingImage = true;
+        cameraWs.send('photo:'+patternPath)
     } else {
+        cameraWs.send('setConfig:torch:false')
+        cameraWs.send('setConfig:iso:'+settings['camera']['iso'])
         cameraWs.send('scanComplete');
         controlWs.send('scanComplete');
         console.log("~~DONE~~")
@@ -159,6 +176,10 @@ async function setPattern(pattern) {
     patternPath = await fetch('http://localhost:8000/actions/pattern/'+pattern).then( res => res.text());
     patternPath = '../SharedData/' + folderName + '/cameraImages/' + patternPath
     console.log("Pattern "+ pattern+ " "+patternPath)
+}
+
+function setReferencePattern() { 
+    patternPath = '../SharedData/' + folderName + '/cameraImages/reference'
 }
 
 app.use(express.static('src'))

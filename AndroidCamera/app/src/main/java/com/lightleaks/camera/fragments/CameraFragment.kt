@@ -389,6 +389,8 @@ class CameraFragment : Fragment() {
                     val ar = text.split(':');
                     Log.i(TAG, "setConfig: "+ar)
 
+//                    if( captureRequest == null) return
+
                     if(ar[1] == "focus") {
                         focus(ar[2].toInt() , ar[3].toInt()) { complete ->
                             webSocket.send("setConfigComplete:" + ar[1])
@@ -570,7 +572,6 @@ class CameraFragment : Fragment() {
                                 CameraCharacteristics.LENS_FACING_FRONT
                         val exifOrientation = computeExifOrientation(rotation, mirrored)
 
-                        Log.i(TAG, "Resume")
                         // Build the result and resume progress
                         cont.resume(CombinedCaptureResult(
                                 image, result, exifOrientation, imageReader.imageFormat))
