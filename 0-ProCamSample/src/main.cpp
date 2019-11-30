@@ -234,6 +234,24 @@ public:
             httpResponse(ofToString(pattern)+"/"+ofToString(patterns.size()));
         }
         
+        if(ofIsStringInString(url, "/actions/numPatterns") == 1) {
+            httpResponse(ofToString(patterns.size()));
+        }
+        
+        if(ofIsStringInString(url, "/actions/pattern") == 1) {
+            string p = ""+url;
+            ofStringReplace(p, "/actions/pattern/", "");
+            pattern = ofToInt(p);
+            
+            string outputName = (getAxis() == 0 ? "vertical/" : "horizontal/");
+            outputName += (getInverted() == 0 ? "normal/" : "inverse/");
+            // we need to invert here to keep with an older style
+            string levelName = ofToString(getLevelCount() - getLevel() - 1);
+            outputName += levelName;
+            httpResponse(outputName);
+        }
+        
+        
     }
 };
 

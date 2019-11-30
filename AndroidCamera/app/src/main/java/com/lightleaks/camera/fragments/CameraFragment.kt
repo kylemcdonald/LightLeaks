@@ -237,42 +237,6 @@ class CameraFragment : Fragment() {
             }
             return@OnTouchListener true
         })
-//
-//            // Disable click listener to prevent multiple requests simultaneously in flight
-//            it.isEnabled = false
-//
-//            // Perform I/O heavy operations in a different scope
-//            lifecycleScope.launch(Dispatchers.IO) {
-//                takePhoto().use { result ->
-//                    Log.d(TAG, "Result received: $result")
-//
-//                    // Save the result to disk
-//                    val output = saveResult(result)
-//                    Log.d(TAG, "Image saved: ${output.absolutePath}")
-//
-//                    // If the result is a JPEG file, update EXIF metadata with orientation info
-//                    if (output.extension == "jpg") {
-//                        val exif = ExifInterface(output.absolutePath)
-//                        exif.setAttribute(
-//                                ExifInterface.TAG_ORIENTATION, result.orientation.toString())
-//                        exif.saveAttributes()
-//                        Log.d(TAG, "EXIF metadata saved: ${output.absolutePath}")
-//                    }
-//
-//                    // Display the photo taken to user
-//                    lifecycleScope.launch(Dispatchers.Main) {
-//                        navController.navigate(CameraFragmentDirections
-//                                .actionCameraToJpegViewer(output.absolutePath)
-//                                .setOrientation(result.orientation)
-//                                .setDepth(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-//                                        result.format == ImageFormat.DEPTH_JPEG))
-//                    }
-//                }
-//
-//                // Re-enable click listener after photo is taken
-//                it.post { it.isEnabled = true }
-//            }
-//        }
     }
 
     private fun focus(x: Int, y: Int, onFocusComplete : (success: Boolean) -> Unit ) {

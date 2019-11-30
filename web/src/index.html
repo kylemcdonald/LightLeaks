@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>🕺Light Leaks Control</title>
+    <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js"></' + 'script>')</script>
+    <style>
+        #image {
+            width: 100%;    
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            font-family: sans-serif;
+        }
+        #col-settings, #col-img {
+            
+        }
+
+        input[type="text"] {
+            display: block;
+        }
+
+        button {
+            border: 1px solid black;
+            height: 30px;
+            margin: 5px;
+
+        }
+
+        #col-settings {
+            width: 200px;
+            flex-shrink: 0;
+        }
+        #image {
+            cursor:crosshair;
+        }
+
+        #overlay {
+            display: none;
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            overflow: hidden;
+        }
+        #overlay-img {
+        }
+    </style>
+</head>
+<body>
+
+    <div id="col-settings">
+            <button id="grab">Grab preview</button><br>
+            <button id="start">Start calibration</button>
+
+            <br><br>
+            Exposure time (s)
+            <input type="text" id="exposureTime" value="0.1">
+            <br>
+            ISO 
+            <input type="text" id="iso" value="55">
+
+            <br>
+            Optical stabilization
+            <input type="checkbox" id="opticalStabilization" checked=false>
+
+            <br>
+            Fast preview
+            <input type="checkbox" id="fastPreview" checked=false>
+
+
+            <br><br>
+
+            <div id="resolution"></div>
+    </div>
+    <div id="col-img">
+        <img id="image"/>
+        <div id="overlay">
+            <img id="overlay-img"/>
+        </div>
+        
+    </div>
+    
+    
+
+    <script src="control.js"></script>
+</body>
+</html>
