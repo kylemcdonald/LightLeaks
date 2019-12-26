@@ -2,9 +2,9 @@
   "projectors": [
     {
       "monitor": 0,
-      "width": 1024,
-      "height": 640,
-      "xcode": 0,
+      "width": 3840,
+			"height": 2160,
+			"xcode": 0,
       "ycode": 0,
       "xwindow": 0,
       "ywindow": 0,
@@ -25,10 +25,11 @@
     "projector": "lightleaks.local"
   },
   "camera": {
-    "iso": "100",
-    "exposureTime": "0.5",
-    "opticalStabilization": "true",
+    "iso": "5000",
+    "exposureTime": "0.1",
+    "opticalStabilization": "false",
     "fastPreview": "false",
-    "noiseReduction": "true"
+    "noiseReduction": "true",
+    "torch": "false"
   }
 }
