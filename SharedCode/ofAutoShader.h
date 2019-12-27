@@ -8,7 +8,7 @@ public:
 		update(args);
 		ofAddListener(ofEvents().update, this, &ofAutoShader::update);
 	}
-	
+    
 	void update(ofEventArgs &args) {	
 		bool needsReload = false;
 			
@@ -39,10 +39,32 @@ public:
 		}
 		
 		if(needsReload) {
+            ofSleepMillis(100);
 			ofShader::load(vertName, fragName);
+            ready = checkReady();
 		}
 	}
+    
+    bool isReady() {
+        return ready;
+    }
+protected:
+    // originally checkProgramLinkStatus
+    bool checkReady() {
+        GLuint program = getProgram();
+        GLint status;
+        glGetProgramiv(program, GL_LINK_STATUS, &status);
+        GLuint err = glGetError();
+        if (err != GL_NO_ERROR){
+            return false;
+        }
+        if (status == GL_FALSE) {
+            return false;
+        }
+        return true;
+    }
 private:
 	string name;
 	time_t lastFragTimestamp, lastVertTimestamp;
+    bool ready = false;
 };
