@@ -4,7 +4,6 @@
 #include "ofxCv.h"
 #include "ofxAssimpModelLoader.h"
 #include "ofxProCamToolkit.h"
-#include "ofxAutoControlPanel.h"
 #include "LineArt.h"
 #include "ofxGrabCam.h"
 
@@ -24,7 +23,7 @@ public:
 	void mousePressed(int x, int y, int button);
 	void mouseReleased(int x, int y, int button);
 	
-	void setupControlPanel();
+	void setupState();
 	void setupMesh();
 	void drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg = ofColor::black, ofColor fg = ofColor::white);
 	void updateRenderMode();
@@ -46,7 +45,8 @@ public:
 	ofVboMesh objectMesh;
 	ofMesh imageMesh;
 	ofLight light;
-	ofxAutoControlPanel panel;
+    
+    ofJson state;
 	
 	vector<cv::Point3f> objectPoints;
 	vector<cv::Point2f> imagePoints;

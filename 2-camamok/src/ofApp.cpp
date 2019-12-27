@@ -4,22 +4,22 @@ using namespace ofxCv;
 using namespace cv;
 
 void ofApp::setb(string name, bool value) {
-	panel.setValueB(name, value);
+    state[name] = value;
 }
 void ofApp::seti(string name, int value) {
-	panel.setValueI(name, value);
+    state[name] = value;
 }
 void ofApp::setf(string name, float value) {
-	panel.setValueF(name, value);
+    state[name] = value;
 }
 bool ofApp::getb(string name) {
-	return panel.getValueB(name);
+    return state[name];
 }
 int ofApp::geti(string name) {
-	return panel.getValueI(name);
+    return state[name];
 }
 float ofApp::getf(string name) {
-	return panel.getValueF(name);
+	return state[name];
 }
 
 void getBoundingBox(const ofMesh& mesh, ofVec3f& min, ofVec3f& max) {
@@ -45,7 +45,7 @@ void ofApp::setup() {
 	ofSetFrameRate(120);
 	calibrationReady = false;
 	setupMesh();	
-	setupControlPanel();
+	setupState();
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	
 	xyzShader.load("xyz.vs", "xyz.fs");
@@ -341,57 +341,54 @@ void ofApp::saveXyzMap() {
 	ofSaveImage(pix, "normalMap.exr");
 }
 
-void ofApp::setupControlPanel() {
-	panel.setup();
-	panel.msg = "tab hides the panel, space toggles render/selection mode, 'f' toggles fullscreen.";
-	
-	panel.addPanel("Interaction");
-	panel.addToggle("setupMode", true);
-	panel.addSlider("scale", 1, .01, 2);
-	panel.addSlider("backgroundColor", 0, 0, 255, true);
-	panel.addMultiToggle("drawMode", 3, variadic("faces")("fullWireframe")("outlineWireframe")("occludedWireframe"));
-	panel.addMultiToggle("shading", 0, variadic("none")("lights")("shader"));
-	panel.addToggle("saveCalibration", false);
-	panel.addToggle("saveXyzMap", false);
-	
-	panel.addPanel("Highlight");
-	panel.addToggle("highlight", false);
-	panel.addSlider("highlightPosition", 0, 0, 1);
-	panel.addSlider("highlightOffset", .1, 0, 1);
-	
-	panel.addPanel("Calibration");
-	panel.addSlider("aov", 80, 50, 100);
-	panel.addToggle("CV_CALIB_FIX_ASPECT_RATIO", true);
-	panel.addToggle("CV_CALIB_FIX_K1", true);
-	panel.addToggle("CV_CALIB_FIX_K2", true);
-	panel.addToggle("CV_CALIB_FIX_K3", true);
-	panel.addToggle("CV_CALIB_ZERO_TANGENT_DIST", true);
-	panel.addToggle("CV_CALIB_FIX_PRINCIPAL_POINT", false);
-	
-	panel.addPanel("Rendering");
-	panel.addSlider("lineWidth", 2, 1, 8, true);
-	panel.addToggle("useSmoothing", false);
-	panel.addToggle("useFog", false);
-	panel.addSlider("fogNear", 200, 0, 1000);
-	panel.addSlider("fogFar", 1850, 0, 2500);
-	panel.addSlider("screenPointSize", 2, 1, 16, true);
-	panel.addSlider("selectedPointSize", 8, 1, 16, true);
-	panel.addSlider("selectionRadius", 12, 1, 32);
-	panel.addSlider("lightX", 200, -1000, 1000);
-	panel.addSlider("lightY", 400, -1000, 1000);
-	panel.addSlider("lightZ", 800, -1000, 1000);
-	panel.addToggle("randomLighting", false);
-	
-	panel.addPanel("Internal");
-	panel.addToggle("validShader", true);
-	panel.addToggle("selectionMode", true);
-	panel.addToggle("hoverSelected", false);
-	panel.addSlider("hoverChoice", 0, 0, objectPoints.size(), true);
-	panel.addToggle("selected", false);
-	panel.addToggle("dragging", false);
-	panel.addSlider("selectionChoice", 0, 0, objectPoints.size(), true);
-	panel.addSlider("slowLerpRate", .001, 0, .01);
-	panel.addSlider("fastLerpRate", 1, 0, 1);
+void ofApp::setupState() {
+    // Interaction
+    state["setupMode"] = true;
+    state["scale"] = 1;
+    state["backgroundColor"] = 0;
+    state["drawMode"] = "occludedWireframe"; // faces, fullWireframe, outlineWireframe, occludedWireframe
+    state["shading"] = "none";
+    state["saveCalibration"] = false;
+    state["saveXyzMap"] = false;
+    
+    // Highlight
+    state["highlight"] = false;
+    state["highlightPosition"] = 0;
+    state["highlightOffset"] = .1;
+    
+    // Calibration
+    state["aov"] = 80;
+    state["CV_CALIB_FIX_ASPECT_RATIO"] = true;
+    state["CV_CALIB_FIX_K1"] = true;
+    state["CV_CALIB_FIX_K2"] = true;
+    state["CV_CALIB_FIX_K3"] = true;
+    state["CV_CALIB_ZERO_TANGENT_DIST"] = true;
+    state["CV_CALIB_FIX_PRINCIPAL_POINT"] = false;
+    
+    // Rendering
+    state["lineWidth"] = 2;
+    state["useSmoothing"] = false;
+    state["useFog"] = false;
+    state["fogNear"] = 200;
+    state["fogFar"] = 1850;
+    state["screenPointSize"] = 2;
+    state["selectedPointSize"] = 8;
+    state["selectionRadius"] = 12;
+    state["lightX"] = 200;
+    state["lightY"] = 400;
+    state["lightZ"] = 800;
+    state["randomLighting"] = false;
+    
+    // Internal
+    state["validShader"] = true;
+    state["selectionMode"] = true;
+    state["hoverSelected"] = false;
+    state["hoverChoice"] = 0;
+    state["selected"] = false;
+    state["dragging"] = false;
+    state["selectionChoice"] = 0;
+    state["slowLerpRate"] = .001;
+    state["fastLerpRate"] = 1;
 }
 
 void ofApp::updateRenderMode() {
@@ -406,7 +403,7 @@ void ofApp::updateRenderMode() {
 		0, 0, 1);
 		
 	// generate flags
-	#define getFlag(flag) (panel.getValueB((#flag)) ? flag : 0)
+	#define getFlag(flag) (getb((#flag)) ? flag : 0)
 	int flags =
 		CV_CALIB_USE_INTRINSIC_GUESS |
 		getFlag(CV_CALIB_FIX_PRINCIPAL_POINT) |
