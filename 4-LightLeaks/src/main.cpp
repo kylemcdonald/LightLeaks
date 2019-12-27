@@ -8,23 +8,61 @@
 #include "ofAppNoWindow.h"
 #include "ofAutoShader.h"
 #include "ofAutoImage.h"
+#include "ofxWebServer.h"
+
+#define USE_AUDIO
+#ifdef USE_AUDIO
 #include "ofxOsc.h"
+#endif
+
+//#define USE_SYPHON
+#ifdef USE_SYPHON
+#include "ofxSyphon.h"
+#endif
 
 const int n_stages = 7;
 const int n_speakers = 4;
 const int n_samples = 100;
-#define USE_AUDIO
 
-void renderScene(ofAutoShader& shader, ofFloatImage& xyz, ofFloatImage& confidence) {
+float elapsed_time_start = 0;
+void startElapsedTimef() {
+    elapsed_time_start = ofGetElapsedTimef();
+}
+float getElapsedTimef() {
+    return ofGetElapsedTimef() - elapsed_time_start;
+}
+
+void renderScene(ofAutoShader& shader, ofFloatImage& xyz, ofFloatImage& confidence, ofFloatImage& mask, float fadeStatus, bool audio=false
+#ifdef USE_SYPHON
+                 ,ofxSyphonClient *syphonClient=nullptr
+#endif
+) {
     float mx = (float) ofGetMouseX() / ofGetWidth();
     float my = (float) ofGetMouseY() / ofGetHeight();
     shader.begin(); {
         shader.setUniformTexture("xyzMap", xyz, 0);
         shader.setUniformTexture("confidenceMap", confidence, 1);
-        shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
+        shader.setUniformTexture("mask", mask, 2);
+#ifdef USE_SYPHON
+        if(syphonClient != nullptr) {
+            syphonClient->bind();
+            shader.setUniformTexture("syphon", syphonClient->getTexture(), 3);
+            shader.setUniform2f("syphonSize", syphonClient->getWidth(), syphonClient->getHeight());
+            syphonClient->unbind();
+        }
+#endif
+        shader.setUniform1f("elapsedTime", getElapsedTimef());
         shader.setUniform1i("frameNumber", ofGetFrameNum());
         shader.setUniform2f("mouse", ofVec2f(mx,my));
-        xyz.draw(0, 0);
+        shader.setUniform1i("audio", audio ? 1 : 0);
+        shader.setUniform1f("fadeStatus", fadeStatus);
+        if(audio) {
+            // audio mode uses the xyz size
+            xyz.draw(0, 0);
+        } else {
+            // non-audio uses the screen size
+            xyz.draw(0, 0, ofGetWidth(), ofGetHeight());
+        }
     } shader.end();
 }
 
@@ -46,13 +84,18 @@ public:
     }
 };
 
-class ClientApp : public ofBaseApp {
+class ClientApp : public ofBaseApp, public ofxWSRequestHandler {
 public:
     int id;
     shared_ptr<ServerApp> server;
+    ofVec2f windowSize, windowPosition;
     
-    ofAutoShader shader;
-    ofAutoImage<float> xyzMap, confidenceMap;
+    ofAutoShader shader, defaultShader;
+    ofAutoImage<float> xyzMap, confidenceMap, mask;
+    
+    float fadeStatus = 1;
+    
+    ofxWebServer webserver;
     
 #ifdef USE_AUDIO
     // audio output and speakers
@@ -64,15 +107,38 @@ public:
     float previousStage = -1;
 #endif
     
-    void config(int id, shared_ptr<ServerApp> server) {
+#ifdef USE_SYPHON
+    ofxSyphonClient syphonClient;
+#endif
+    
+    void httpGet(string url){
+        if(ofIsStringInString(url,"/actions/start") == 1){
+            ofLog() << "starting";
+            fadeStatus = 1;
+            httpResponse("Started");
+            startElapsedTimef();
+        }
+        if(ofIsStringInString(url,"/actions/stop") == 1){
+            ofLog() << "stopping";
+            fadeStatus = 0;
+            httpResponse("Stopped");
+        }
+        
+    }
+    
+    void config(int id, shared_ptr<ServerApp> server, ofVec2f windowSize, ofVec2f windowPosition, string serverName, string appName) {
         this->id = id;
         this->server = server;
+        this->windowSize = windowSize;
+        this->windowPosition = windowPosition;
         
         ofSetVerticalSync(true);
+        ofSetFrameRate(60); // due to https://github.com/openframeworks/openFrameworks/issues/6146
         ofDisableAntiAliasing();
         ofBackground(0);
         
         shader.loadAuto("../../../SharedData/shader/shader");
+        defaultShader.loadAuto("../../../SharedData/shader/default");
         
         xyzMap.loadAuto("../../../SharedData/xyzMap-" + ofToString(id) + ".exr");
         xyzMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
@@ -80,13 +146,30 @@ public:
         confidenceMap.loadAuto("../../../SharedData/confidenceMap-" + ofToString(id) + ".exr");
         confidenceMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
         
+        mask.loadAuto("../../../SharedData/mask-" + ofToString(id) + ".png");
+        mask.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+        
         ofLog() << xyzMap.getWidth() << " x " << xyzMap.getHeight();
         ofLog() << confidenceMap.getWidth() << " x " << confidenceMap.getHeight();
+        
+        webserver.start("httpdocs", 8000);
+        webserver.addHandler(this, "actions/*");
         
 #ifdef USE_AUDIO
         oscSender.setup("localhost", 7777);
         setupSpeakers();
 #endif
+        
+#ifdef USE_SYPHON
+        syphonClient.setup();
+        syphonClient.set(serverName, appName);
+#endif
+    }
+    ofAutoShader& getShader() {
+        if(shader.isReady()) {
+            return shader;
+        }
+        return defaultShader;
     }
 #ifdef USE_AUDIO
     void setupSpeakers() {
@@ -128,54 +211,59 @@ public:
         speakerConfidenceMap.update();
         
         speakerFbo.allocate(n_samples, n_speakers);
-        speakerPixels.allocate(n_samples, n_speakers, OF_IMAGE_COLOR_ALPHA);
     }
 #endif
     void update() {
+        ofVec2f curSize(ofGetWindowWidth(), ofGetWindowHeight());
+        ofVec2f curPosition(ofGetWindowPositionX(), ofGetWindowPositionY());
+        if(curSize != windowSize || curPosition != windowPosition) {
+            ofSetWindowShape(windowSize.x, windowSize.y);
+            ofSetWindowPosition(windowPosition.x, windowPosition.y);
+        }
+        
 #ifdef USE_AUDIO
         //Speaker sampling code
         speakerFbo.begin();
-        renderScene(shader, speakerXyzMap, speakerConfidenceMap);
+        renderScene(getShader(), speakerXyzMap, speakerConfidenceMap, mask, fadeStatus, true);
         speakerFbo.end();
         
-        //Read back the fbo, and average it on the CPU
+        // Read back the fbo, and average it on the CPU
         speakerFbo.readToPixels(speakerPixels);
         speakerPixels.setImageType(OF_IMAGE_GRAYSCALE);
         
+        // Get the stage from the shader
+        float* pix = speakerPixels.getData();
+        int stage = speakerPixels[0] * 2;
+        speakerPixels[0] = speakerPixels[1]; // overwrite with adjacent value
+        
         ofxOscMessage brightnessMsg;
         brightnessMsg.setAddress("/audio/brightness");
-        float* pix = speakerPixels.getData();
         for(int i = 0; i < n_speakers; i++){
             float avg = 0;
             for(int j = 0; j < n_samples; j++){
                 avg += *pix++;
             }
             avg /= n_samples;
+            avg *= fadeStatus;
             brightnessMsg.addFloatArg(avg);
         }
         oscSender.sendMessage(brightnessMsg);
         
-        float elapsedTime = ofGetElapsedTimef();
-        // copied from shader --- 8< ---
-        float t = elapsedTime / 30.; // duration of each stage
-        float stage = floor(t); // index of current stage
-        float i = t - stage; // progress in current stage
-        // copied from shader --- 8< ---
-        
         if(stage != previousStage) {
             ofxOscMessage msg;
             msg.setAddress("/audio/scene_change_event");
-            msg.addIntArg(stage == 0 ? 0 : 2);
+            msg.addIntArg(stage);
             oscSender.sendMessage(msg);
         }
         previousStage = stage;
         
         if(stage == 0) {
-            float lighthouseAngle = ofGetElapsedTimef() / TWO_PI;
+            float lighthouseAngle = getElapsedTimef() / TWO_PI;
             lighthouseAngle += 0; // set offset here
             ofxOscMessage msg;
             msg.setAddress("/audio/lighthouse_angle");
-            msg.addFloatArg(fmodf(lighthouseAngle, 1));
+            // line it up here because max won't save the preset
+            msg.addFloatArg(1-fmodf(lighthouseAngle-0.33, 1));
             oscSender.sendMessage(msg);
         }
         
@@ -186,11 +274,17 @@ public:
         ofSetColor(255);
         ofHideCursor();
         
-        renderScene(shader, xyzMap, confidenceMap);
+        renderScene(getShader(), xyzMap, confidenceMap, mask, fadeStatus, false
+#ifdef USE_SYPHON
+                    , &syphonClient
+#endif
+                    );
         
         if (server->getDebug()) {
+#ifdef USE_AUDIO
             speakerXyzMap.draw(mouseX, mouseY);
             speakerFbo.draw(mouseX, mouseY+8);
+#endif
             string msg = ofToString(id) + ": " + ofToString(round(ofGetFrameRate())) + "fps";
             ofDrawBitmapString(msg, 10, 20);
         }
@@ -198,12 +292,25 @@ public:
     void keyPressed(int key) {
         server->keyPressed(key);
         
+        if(key == 'r') {
+            ofJson config = ofLoadJson("../../../SharedData/settings.json");
+            string scanName = config["scanName"];
+            string xyzMapFilename = "../../../SharedData/xyzMap-0" + scanName + ".exr";
+            string confidenceMapFilename = "../../../SharedData/confidenceMap-0" + scanName + ".exr";
+            xyzMap.setFilename(xyzMapFilename);
+            xyzMap.reload(true);
+            confidenceMap.setFilename(confidenceMapFilename);
+            confidenceMap.reload(true);
+        }
+        
+#ifdef USE_AUDIO
         if(key > '0' && key < '9') {
             ofxOscMessage msg;
             msg.setAddress("/audio/scene_change_event");
             msg.addIntArg(key - '0');
             oscSender.sendMessage(msg);
         }
+#endif
     }
 };
 
@@ -231,7 +338,11 @@ int main() {
         settings.windowMode = curConfig["fullscreen"] ? OF_FULLSCREEN : OF_WINDOW;
         shared_ptr<ofAppBaseWindow> winClient = ofCreateWindow(settings);
         shared_ptr<ClientApp> appClient(new ClientApp);
-        appClient->config(i, appServer);
+        ofVec2f windowSize(curConfig["width"], curConfig["height"]);
+        ofVec2f windowPosition(curConfig["xwindow"], curConfig["ywindow"]);
+        string serverName = config["syphon"]["serverName"];
+        string appName = config["syphon"]["appName"];
+        appClient->config(i, appServer, windowSize, windowPosition, serverName, appName);
         ofRunApp(winClient, appClient);
     }
     
