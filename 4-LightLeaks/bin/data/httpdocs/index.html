@@ -1,0 +1,56 @@
+<html>
+	<meta name="viewport" content ="width=device-width,initial-scale=1,user-scalable=yes" />
+	<head>
+		<title>Light Leaks</title>
+		<style>
+			body {
+				background-color: black;
+				color: white;
+				font-family: sans-serif;
+				display: fixed;
+			}
+			button {
+				font-size: 32px;
+				background-color: black;
+				color: white;				
+			}
+
+			.box.flex {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			.box {
+				height: 100%;
+				width: 100%;
+			}
+		</style>
+		<script>
+			let hostname = "localhost";
+			let timer;
+
+			fetch("/actions/cameraHostname").then((resp)=> resp.text())
+			.then((_hostname)=>{
+				hostname = _hostname;
+				console.log("Camera hostname",hostname);
+				
+			})
+
+			function start(){
+				fetch('/actions/start')
+				
+			}
+			function stop(){
+				fetch('/actions/stop')
+			}
+		</script>
+	</head>
+	
+	<body>
+		<div class="box flex">
+			<p><button onclick="start()">Start</button></p>
+			<p><button onclick="stop()">Stop</button></p>
+		</div>
+	</body>
+</html>

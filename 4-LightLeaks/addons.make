@@ -1,1 +1,3 @@
 ofxOsc
+ofxSyphon
+ofxWebServer
