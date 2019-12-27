@@ -1,27 +1,35 @@
 {
-	"projectors": [
-		{
-			"monitor": 0,
-			"width": 7680,
-			"height": 1080,
+  "projectors": [
+    {
+      "monitor": 0,
+      "width": 3840,
+			"height": 2160,
 			"xcode": 0,
-			"ycode": 0,
-			"xwindow": 1920,
-			"ywindow": 0,
-			"multimonitor": true,
-			"fullscreen": false
-		}
-	],
-	"sample": {
-		"singlepass": 1
-	},
-	"buildXyz": {
-		"confidenceThreshold": 0.05,
-		"viewBetternes": 1.0,
-		"scaleFactor": 4
-	},
-	"osc": {
-		"camera": "kyle.local",
-		"projector": "lightleaks.local"
-	}
+      "ycode": 0,
+      "xwindow": 0,
+      "ywindow": 0,
+      "multimonitor": true,
+      "fullscreen": false
+    }
+  ],
+  "sample": {
+    "singlepass": 1
+  },
+  "buildXyz": {
+    "confidenceThreshold": 0.05,
+    "viewBetternes": 1,
+    "scaleFactor": 4
+  },
+  "osc": {
+    "camera": "kyle.local",
+    "projector": "lightleaks.local"
+  },
+  "camera": {
+    "iso": "5000",
+    "exposureTime": "0.1",
+    "opticalStabilization": "false",
+    "fastPreview": "false",
+    "noiseReduction": "true",
+    "torch": "false"
+  }
 }
