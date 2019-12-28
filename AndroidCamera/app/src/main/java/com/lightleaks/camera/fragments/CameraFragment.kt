@@ -23,6 +23,7 @@ import android.graphics.ImageFormat
 import android.graphics.drawable.ColorDrawable
 import android.hardware.camera2.*
 import android.hardware.camera2.params.MeteringRectangle
+import android.hardware.camera2.params.TonemapCurve
 import android.media.Image
 import android.media.ImageReader
 import android.media.RingtoneManager
@@ -61,6 +62,7 @@ import kotlin.RuntimeException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import kotlin.math.floor
 import kotlin.math.max
 
 
@@ -118,6 +120,8 @@ class CameraFragment : Fragment() {
     private var opticalStabilization: Boolean = false;
     private var noiseReduction: Boolean = false;
     private var torch: Boolean = false;
+    private var gamma: Double = 1.0;
+    private var distortionCorrection: Boolean = true;
 
     private lateinit var websocketClient: WebSocket
 
@@ -170,9 +174,11 @@ class CameraFragment : Fragment() {
         }
     }
 
-    private fun setCameraSettings(captureRequest: CaptureRequest.Builder) {
+    private fun setCameraSettings(captureRequest: CaptureRequest.Builder, preview: Boolean) {
         val isoRange = characteristics.get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE);
         Log.i("CAM", "ISO range: "+isoRange);
+
+//        val tonemaps = characteristics.get(CameraCharacteristics.TONE)
 
         val exposureTimeRange = characteristics.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
         Log.i("CAM", "exposureTimeRange: "+exposureTimeRange);
@@ -186,25 +192,48 @@ class CameraFragment : Fragment() {
 
         Log.i("CAM", "Exposure Time " + exposureTime)
         Log.i("CAM", "ISO " + iso)
+        Log.i("CAM", "GAMMA " + gamma)
+        Log.i("CAM", "distortionCorrection " + distortionCorrection)
 
 //        captureRequest.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_OFF)
 
         captureRequest.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF);
-        captureRequest.set(CaptureRequest.SENSOR_EXPOSURE_TIME, (exposureTime * 1e+9).toLong());
-        captureRequest.set(CaptureRequest.SENSOR_SENSITIVITY, iso);
+
+        if(preview){
+            captureRequest.set(CaptureRequest.SENSOR_EXPOSURE_TIME, (exposureTime * 1e+9).toLong() / 100);
+            captureRequest.set(CaptureRequest.SENSOR_SENSITIVITY, iso * 100);
+        } else {
+            captureRequest.set(CaptureRequest.SENSOR_EXPOSURE_TIME, (exposureTime * 1e+9).toLong());
+            captureRequest.set(CaptureRequest.SENSOR_SENSITIVITY, iso);
+        }
+
+
         captureRequest.set(CaptureRequest.SENSOR_FRAME_DURATION, 10);
-        captureRequest.set(CaptureRequest.DISTORTION_CORRECTION_MODE, CaptureRequest.DISTORTION_CORRECTION_MODE_HIGH_QUALITY);
+//        captureRequest.set(CaptureRequest.DISTORTION_CORRECTION_MODE, CaptureRequest.DISTORTION_CORRECTION_MODE_HIGH_QUALITY);
+        captureRequest.set(CaptureRequest.DISTORTION_CORRECTION_MODE, if(distortionCorrection) CaptureRequest.DISTORTION_CORRECTION_MODE_HIGH_QUALITY else CaptureRequest.DISTORTION_CORRECTION_MODE_OFF);
         captureRequest.set(CaptureRequest.EDGE_MODE, CaptureRequest.EDGE_MODE_OFF);
         captureRequest.set(CaptureRequest.JPEG_QUALITY, 100);
         captureRequest.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, if(opticalStabilization) CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_ON else CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF)
-        captureRequest.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT)
+        captureRequest.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_DAYLIGHT)
         captureRequest.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_OFF)
 
         captureRequest.set(CaptureRequest.NOISE_REDUCTION_MODE, if(noiseReduction) CaptureRequest.NOISE_REDUCTION_MODE_HIGH_QUALITY else CaptureRequest.NOISE_REDUCTION_MODE_OFF)
 
         captureRequest.set(CaptureRequest.FLASH_MODE, if(torch) CaptureRequest.FLASH_MODE_TORCH else CaptureRequest.FLASH_MODE_OFF)
 
-        captureRequest.set(CaptureRequest.STATISTICS_OIS_DATA_MODE, CaptureRequest.STATISTICS_OIS_DATA_MODE_ON)
+        captureRequest.set(CaptureRequest.TONEMAP_MODE, CaptureRequest.TONEMAP_MODE_CONTRAST_CURVE)
+//        captureRequest.set(CaptureRequest.TONEMAP_GAMMA, gamma.toFloat())
+
+//        val curve = FloatArray(4) { i -> floor( i / 2.0).toFloat() }
+
+        val curve = FloatArray(16*2)
+        for(x in 0 until 16){
+            curve.set(x*2, x/16.0f)
+            curve.set(x*2 + 1, Math.pow(x/16.0, gamma).toFloat())
+        }
+        captureRequest.set(CaptureRequest.TONEMAP_CURVE, TonemapCurve(curve,curve,curve))
+
+        captureRequest.set(CaptureRequest.STATISTICS_OIS_DATA_MODE, CaptureRequest.STATISTICS_OIS_DATA_MODE_OFF)
 
 
 
@@ -224,7 +253,7 @@ class CameraFragment : Fragment() {
         captureRequest = camera.createCaptureRequest(
                 CameraDevice.TEMPLATE_PREVIEW).apply { addTarget(viewFinder.holder.surface) }
 
-        setCameraSettings(captureRequest)
+        setCameraSettings(captureRequest, true)
         // This will keep sending the capture request as frequently as possible until the
         // session is torn down or session.stopRepeating() is called
         session.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
@@ -398,6 +427,8 @@ class CameraFragment : Fragment() {
                     } else {
                         if (ar[1] == "exposureTime") {
                             exposureTime = ar[2].toDouble()
+                        } else if (ar[1] == "gamma") {
+                            gamma = ar[2].toDouble()
                         } else if (ar[1] == "iso") {
                             iso = ar[2].toInt()
                         } else if(ar[1] == "opticalStabilization") {
@@ -406,9 +437,11 @@ class CameraFragment : Fragment() {
                             noiseReduction = ar[2].toBoolean()
                         } else if(ar[1] == "torch") {
                             torch  = ar[2].toBoolean()
+                        } else if(ar[1] == "distortionCorrection") {
+                            distortionCorrection  = ar[2].toBoolean()
                         }
 
-                        setCameraSettings(captureRequest)
+                        setCameraSettings(captureRequest, true)
                         session.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
 
                         webSocket.send("setConfigComplete:" + ar[1])
@@ -517,16 +550,26 @@ class CameraFragment : Fragment() {
 
         val captureRequest = session.device.createCaptureRequest(
                 CameraDevice.TEMPLATE_STILL_CAPTURE).apply { addTarget(imageReader.surface) }
-        setCameraSettings(captureRequest)
+        setCameraSettings(captureRequest, false)
 
-        // Display flash animation to indicate that photo was captured
-        viewFinder.postDelayed({
-            viewFinder.foreground = ColorDrawable(Color.WHITE)
-            viewFinder.postDelayed(
-                    { viewFinder.foreground = null }, ANIMATION_FAST_MILLIS)
-        }, ANIMATION_SLOW_MILLIS)
+        Log.i(TAG, "capture()")
 
+
+//        session.captureBurst(listOf(captureRequest.build(), captureRequest.build()), object : CameraCaptureSession.CaptureCallback() {
         session.capture(captureRequest.build(), object : CameraCaptureSession.CaptureCallback() {
+            override fun onCaptureStarted(session: CameraCaptureSession, request: CaptureRequest, timestamp: Long, frameNumber: Long) {
+                super.onCaptureStarted(session, request, timestamp, frameNumber)
+
+                // Display flash animation to indicate that photo was captured
+                viewFinder.postDelayed({
+                    viewFinder.foreground = ColorDrawable(Color.WHITE)
+                    viewFinder.postDelayed(
+                            { viewFinder.foreground = null }, ANIMATION_FAST_MILLIS)
+                }, ANIMATION_SLOW_MILLIS)
+
+                Log.i(TAG, "Capture started")
+            }
+
             override fun onCaptureCompleted(
                     session: CameraCaptureSession,
                     request: CaptureRequest,

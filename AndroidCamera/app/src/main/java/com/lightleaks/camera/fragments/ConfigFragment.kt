@@ -42,7 +42,9 @@ class ConfigFragment : Fragment() {
             }
 
             Navigation.findNavController(requireActivity(), R.id.fragment_container)
+
                     .navigate(ConfigFragmentDirections.actionSelectorToCamera(cameras[0].cameraId, cameras[0].format, view.ip.text.toString()))
+//                    .navigate(ConfigFragmentDirections.actionSelectorToCamera(cameras[0].cameraId, ImageFormat.RAW_SENSOR, view.ip.text.toString()))
         }
 
         view.ip.setText(sharedPref?.getString("ip", "192.168.86.164"))
