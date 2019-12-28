@@ -12,3 +12,9 @@ docker run -p 8888:8888 \
 jupyter/lightleaks-notebook
 ```
 
+Save/load image for local file transfer
+
+```
+docker save -o image.bin jupyter/lightleaks-notebook
+docker load -i image.bin
+```

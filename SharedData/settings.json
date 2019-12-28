@@ -2,11 +2,11 @@
   "projectors": [
     {
       "monitor": 0,
-      "width": 3840,
-			"height": 2160,
+      "width": 7680,
+			"height": 1080,
 			"xcode": 0,
       "ycode": 0,
-      "xwindow": 0,
+      "xwindow": 1920,
       "ywindow": 0,
       "multimonitor": true,
       "fullscreen": false
@@ -21,7 +21,7 @@
     "scaleFactor": 4
   },
   "osc": {
-    "camera": "kyle.local",
+    "camera": "10.0.1.99",
     "projector": "lightleaks.local"
   },
   "camera": {
@@ -31,5 +31,9 @@
     "fastPreview": "false",
     "noiseReduction": "true",
     "torch": "false"
-  }
+  },
+	"syphon": {
+		"serverName": "Composition",
+		"appName": "Arena"
+	}
 }

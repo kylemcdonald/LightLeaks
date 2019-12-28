@@ -18,6 +18,8 @@ in vec2 texCoordVarying;
 in vec4 positionVarying;
 out vec4 outputColor;
 
+int numProjectors = 4;
+
 #define M_PI 3.14159265358979323846
 
 float rand(vec2 co){return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);}
@@ -78,7 +80,7 @@ float perlin(vec2 p, float dim) {
 // x first axis is along the length of the room, with 0 towards the entrance
 // y second axis is along the width of the room, with 0 towards the bar
 // z third axis is floor to ceiling, with 0 on the floor
-const vec3 center = vec3(0.295, 0.49, 0.06); // balls
+const vec3 center = vec3(0.13, 0.5, 0.044); // balls
 const vec3 center_stage = vec3(0.05, 0.50, 0.00); // stage
 // 0.25220504 0.47130203 0.05398171
 
@@ -174,35 +176,55 @@ float radialLine(vec2 position, vec2 centered, float r, float width){
 }
 
 int getProjectorNum(vec2 texCoord){
-    int numProjectors = 4;
     float w = textureSize(confidenceMap).x;
     float p = numProjectors * texCoord.x / w;
     // p = ;
     return int(p);
 }
 
+vec2 getProjectorSize(){
+    int w = int(textureSize(confidenceMap).x / numProjectors);
+    int h = int(textureSize(confidenceMap).y);
+    return vec2(w,h);
+}
+
+vec2 getProjectorOffsetCoordinate(vec2 texCoord){
+    
+    vec2 ret = texCoord;
+    ret.x -= getProjectorSize().x * getProjectorNum(texCoord);
+    return ret;
+}
+
 vec2 adjustOffset(vec2 texCoord){
     int p = getProjectorNum(texCoord);
+    
     if(p == 0){
-        texCoord += vec2(0, 10);
         // texCoord += vec2(0, 5);
     }
-    
-    // if(p == 0){
-    //     // texCoord += vec2(0, 10);
-    //     texCoord += vec2(0, 5);
-    // }
     if(p == 1){
-        texCoord += vec2(3, 1);
+        // texCoord += vec2(3, 1);
     }
     if(p == 2){
-        texCoord += vec2(2, 0);
+        // texCoord += vec2(2, 0);
     }
     if(p == 3){
-        texCoord += vec2(0, -1);
+        // texCoord += vec2(0, -1);
     }
     // position.y += p;
     return texCoord;
+}
+
+vec3 calculateBeamVector(vec2 texCoord){
+    vec3 hit_area_tl = vec3(0.0332,0.4287,0.0888);
+    vec3 hit_area_tr = vec3(0.0332,0.5723,0.0888);
+    vec3 hit_area_bl = vec3(0.332,0.4287,0.0282);
+
+    vec2 texCoordProjectorSpace = getProjectorOffsetCoordinate(texCoord) / getProjectorSize();
+    vec3 hit_point = hit_area_tl;
+    hit_point += (hit_area_tr - hit_area_tl) * texCoordProjectorSpace.x;
+    hit_point += (hit_area_bl - hit_area_tl) * texCoordProjectorSpace.y;
+
+    return texture(xyzMap, texCoord.st).xyz - hit_point;
 }
 
 void main() {
@@ -225,9 +247,9 @@ void main() {
         stage += 1.0 - (1.0 - i) * 10.;
     }
 
-    int numStages = 14;
+    int numStages = 15;
     stage = mod(stage, numStages);
-    // stage = 13; // Overwrite stage
+    stage = 14; // Overwrite stage
     
     /* AUDIO stage num */
     if(audio > 0 && texCoordVarying.s < 1 &&  texCoordVarying.t < 1){
@@ -236,14 +258,16 @@ void main() {
         return;
     }
 
+
     /* Test projector num */
-    // if(getProjectorNum(texCoord) == 0){
-    //     outputColor = vec4(0,0,0,1);
-    //     return;
+    // if(getProjectorNum(texCoord) != 0){
+        // outputColor = vec4(1,1,1,1);
+        // return;
     // }
+    // return
     // if(getProjectorNum(texCoord) != 3){
-    // // if(getProjectorNum(texCoord) != 2 && getProjectorNum(texCoord) != 1){   
-    //     outputColor = vec4(0,0,0,1);
+    // if(getProjectorNum(texCoord) != 2 && getProjectorNum(texCoord) != 1){   
+        // outputColor = vec4(0,0,0,1);
     //     return;
     // }
 
@@ -272,7 +296,7 @@ void main() {
     // }
 
     /* Discard low confidence and masked */
-    if(audio == 0 && (confidence < 0.14 || masked == 0)) {
+    if(audio == 0 && (confidence < 0.1 || masked == 0)) {
         outputColor = vec4(vec3(0.), 1.);
         return;
     }
@@ -282,7 +306,7 @@ void main() {
     // return;
     
     /* Position tester: */
-    // int axis = 1;
+    // int axis = 2;
     // if(position[axis] > center[axis] + sin(elapsedTime) * 0.005){
     //     outputColor = vec4(1.,0.,0.,1.);
     //     return;
@@ -449,11 +473,27 @@ void main() {
         w += c * stageAlpha(s, stage);
     }
     s++;
+     
+    // BEAMS
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
+        vec3 beam = calculateBeamVector(texCoord);
+        float r = length(beam);
+        
+        float phi = atan(beam.x, beam.y); // -PI to PI
+        float theta = acos(beam.z / r);
 
-    
-    // w = hardStripes(elapsedTime * 0.1, position.x, 0.1) ;
+        float c = 1-abs(theta - mouse.y*2*PI + PI);
+        w += c * stageAlpha(s, stage);
+    }
+    s++;
+
+    /* Stripes test */
+    // // w = hardStripes(elapsedTime * 0.1, position.x, 0.1) ;
+    // w = 1;
     // c *= 0.5;
-    // outputColor += vec4(vec3(w) * 0.5 * vec3(0.5, 0.5, 1.0) , 1.);
+    // // outputColor += vec4(vec3(w) * 0.5 * vec3(0.5, 0.5, 1.0) , 1.);
+    
+    // Set color from the stagess
     outputColor = vec4(vec3(w) * 1.0 , 1.);
     
     // avoid a bug that causes some pixels to end up on the far end
@@ -461,8 +501,23 @@ void main() {
         outputColor = vec4(0.);
     }
 
-    // if( getProjectorNum(texCoord) != 2){
+    // if( getProjectorNum(texCoord) != 0){
+        // outputColor *= vec4(0,0,0,1);
+    // }
+
+    /* Test beam direction */
+    // vec3 beam = calculateBeamVector(texCoord) / length(calculateBeamVector(texCoord));
+    // outputColor = vec4(vec3(-beam.z) , 1);
+    
+
+    // if( getProjectorNum(texCoord) == 0){
     //     outputColor *= vec4(1,0,0,1);
+    // } else if( getProjectorNum(texCoord) == 1){
+    //     outputColor *= vec4(0,1,0,1);
+    // } else if( getProjectorNum(texCoord) == 2){
+    //     outputColor *= vec4(0,0,1,1);
+    // } else if( getProjectorNum(texCoord) == 3){
+    //     outputColor *= vec4(1,1,0,1);
     // }
     
     // rgb debug
