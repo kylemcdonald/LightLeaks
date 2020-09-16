@@ -19,9 +19,15 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/
       },
+      {
+        test: /\.(png|svg|jpg|gif|dae)$/,
+        use: [
+          'file-loader',
+        ],
+      },
     ]
   },
   watchOptions: {
     ignored: /node_modules/
-  }
+  },
 }

@@ -1,32 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Three.js template</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Three.js template</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-    }
+      body {
+        overflow: hidden;
+      }
 
-    body {
-      overflow: hidden;
-    }
+      .wrapper {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        position: absolute;;
+        align-items: stretch;
+        flex-direction: row;;
+      }
 
-    #main-canvas {
-      position: absolute;
-      height: 100%;
-      width: 100%;
-    }
-  </style>
-</head>
+      .panel {
+        flex:1;
+      }
 
-<body>
-  <canvas id="main-canvas"></canvas>
-  <script src="dist/bundle.js"></script>
-</body>
+      #model-canvas {
+      }
 
+      #image-canvas {
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <div class="panel">
+        <canvas id="model-canvas"></canvas>
+      </div>
+      <div class="panel">
+        <canvas id="image-canvas"></canvas>
+      </div>
+    </div>
+    <script src="dist/bundle.js"></script>
+  </body>
 </html>
