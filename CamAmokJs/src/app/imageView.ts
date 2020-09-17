@@ -45,7 +45,7 @@ export class ImageView {
   );
 
   // public callibratedCamera =  new Camera(  );
-  callibratedCamera = new Camera();
+  callibratedCamera = new PerspectiveCamera();
   calibratedScene = new Scene();
 
   seletedVertex: Vector3 | null = null;
@@ -124,9 +124,16 @@ export class ImageView {
 
   public setCalibratedMatrix(matrix: Matrix4, cameraMatrix: Matrix3) {
     this.callibratedCamera.matrixAutoUpdate = false;
-    // console.log(this.callibratedCamera.matrixWorld)
-    this.callibratedCamera.matrix.copy(matrix);
+    this.callibratedCamera.matrix.getInverse(matrix);
+    // this.callibratedCamera.matrix.copy(matrix);
     this.callibratedCamera.updateMatrixWorld(true);
+
+
+
+    console.log("ASDASDASDASD")
+    // console.log(matrix.pos)
+
+    
     // console.log("cameraMatrix",cameraMatrix)
     // cameraMatrix.
     // this.callibratedCamera.projectionMatrix.identity();

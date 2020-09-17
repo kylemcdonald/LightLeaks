@@ -46,6 +46,10 @@ export class Model extends Scene {
 
     loader.load(model.default, (collada) => {
       this.add(collada.scene);
+      collada.scene.scale.set(1, 1, 1);//= 10;
+      collada.scene.rotation.set(0,0,0)
+      console.log(collada.scene)
+
       collada.scene.traverse((child) => {
         if (child.type === 'Mesh') {
           const mesh = child as Mesh;
@@ -55,6 +59,18 @@ export class Model extends Scene {
             // const geometry = mesh.geometry.clone();
             // const particles = new Points( geometry, vertexMaterial );
             for(let i=0; i<mesh.geometry.attributes.position.count; i++){
+              // if(i < 100){
+              //   console.log("#####")
+              //   console.log(this.localToWorld(new Vector3(
+              //     mesh.geometry.attributes.position.getX(i),
+              //     mesh.geometry.attributes.position.getY(i),
+              //     mesh.geometry.attributes.position.getZ(i))))
+              //   console.log((new Vector3(
+              //     mesh.geometry.attributes.position.getX(i),
+              //     mesh.geometry.attributes.position.getY(i),
+              //     mesh.geometry.attributes.position.getZ(i))))
+              // }
+
               this.verticesPositions.push(this.localToWorld(new Vector3(
                 mesh.geometry.attributes.position.getX(i),
                 mesh.geometry.attributes.position.getY(i),
@@ -66,6 +82,8 @@ export class Model extends Scene {
           }
           // console.log(
         }
+
+        // console.log(this.verticesPositions)
       });
     });
   }

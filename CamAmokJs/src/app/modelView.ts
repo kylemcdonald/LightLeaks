@@ -57,7 +57,7 @@ export class ModelView {
 
     this.scene.add(new AxesHelper(30))
 
-    this.camera.position.set(2, 2, 2);
+    this.camera.position.set(200, 1200, 1200);
     this.camera.lookAt(new Vector3(0, 0, 0));
 
     this.controls.update();

@@ -3,6 +3,20 @@
 import { RelationDataElement } from "./relationData";
 import { Vector2, Matrix4, Vector3, Quaternion, Matrix3 } from "three";
 
+
+const CV_CALIB_USE_INTRINSIC_GUESS =  1;
+const CV_CALIB_FIX_ASPECT_RATIO =     2;
+const CV_CALIB_FIX_PRINCIPAL_POINT =  4;
+const CV_CALIB_ZERO_TANGENT_DIST =    8;
+const CV_CALIB_FIX_FOCAL_LENGTH = 16;
+const CV_CALIB_FIX_K1 =  32;
+const CV_CALIB_FIX_K2 =  64;
+const CV_CALIB_FIX_K3 =  128;
+const CV_CALIB_FIX_K4 =  2048;
+const CV_CALIB_FIX_K5 =  4096;
+const CV_CALIB_FIX_K6 =  8192;
+const CV_CALIB_RATIONAL_MODEL = 16384;
+
 const cv = require("../opencv4.4.0/opencv.js");
 // const cv = require('../opencv4.2.0/opencv.js');
 
@@ -39,46 +53,24 @@ function makeMatrix(rotation: any, translation: any) {
   const rm = rot3x3.data64F;
   const tm = translation.data64F;
 
-  console.log(tm)
-  
-  const rMatrix = new Matrix4();
-  // rMatrix.set(
-  //   rm[0], rm[3],  rm[6],  0*tm[0],
-  //   rm[1], rm[4],  rm[7],  0*tm[1],
-  //   rm[2], rm[5],  rm[8],  0*tm[2],
-  //   0,
-  //   0,
-  //   0,
-  //   1.0
-  // );
-
-  rMatrix.set(
-    rm[0], rm[1],  rm[2],  0*tm[0],
-    rm[3], rm[4],  rm[5],  0*tm[1],
-    rm[6], rm[7],  rm[8],  0*tm[2],
-    0,
-    0,
-    0,
-    1.0
+  const matrix = new Matrix4();
+  matrix.set(
+    rm[0], rm[1],  rm[2],  tm[0],
+    rm[3], rm[4],  rm[5],  tm[1],
+    rm[6], rm[7],  rm[8],  tm[2],
+    0, 0, 0, 1.0
   );
 
-  const tMatrix = new Matrix4();
-  tMatrix.setPosition(tm[0],tm[1],tm[2])
-  // tMatrix.setPosition(-tm[0],-tm[1],-tm[2])
+  const iMatrix = new Matrix4();
+  iMatrix.elements[10] = -1;
 
-  // const iMatrix = new Matrix4();
-  // iMatrix.identity();
-  // iMatrix.elements[5] = -1;
-  // iMatrix.elements[10] = -1;
-
-  // console.log(iMatrix);
-  
-  // const matrix = rMatrix.multiply(tMatrix);
-  const matrix = tMatrix.multiply(rMatrix);
+  const dMatrix = new Matrix4();
+  dMatrix.makeScale(-1,-1,-1)
+  iMatrix.elements[10] = -1;
 
 
   rot3x3.delete();
-  return matrix;
+  return dMatrix.multiply(matrix).multiply(iMatrix);
 }
 
 export function calibrateCamera(
@@ -108,25 +100,20 @@ export function calibrateCamera(
   objectPointsArr.push_back(modelPoints);
   const imageSizeCv = new cv.Size(imageSize.x, imageSize.y);
 
+  console.log("modelPoints", modelPoints.data32F)
+
   const f = 1.39626 * imageSize.x;
   // const fovx = 107.0/360.0*2.0 * Math.PI;
   // const f = imageSize.width / 2 * Math.atan(fovx/2)
 
   // console.log("f",f)
   const intr = cv.matFromArray(3, 3, cv.CV_64F, [
-    f,
-    0,
-    imageSize.x / 2,
-    0,
-    f,
-    imageSize.y / 2,
-    0,
-    0,
-    1,
+    f, 0, imageSize.x / 2,
+    0, f, imageSize.y / 2,
+    0, 0, 1,
   ]);
 
   const dist = new cv.Mat();
-  // const intr = new cv.Mat();
   const rvecs = new cv.MatVector();
   const tvecs = new cv.MatVector();
   const stdDeviationsIntrinsics = new cv.Mat();
@@ -134,13 +121,24 @@ export function calibrateCamera(
 
   const perViewErrors = new cv.Mat();
   const flag =
-    cv.CALIB_USE_INTRINSIC_GUESS |
-    // cv.CALIB_FIX_PRINCIPAL_POINT |
-    cv.CALIB_FIX_ASPECT_RATIO |
-    cv.CALIB_FIX_K1 |
-    cv.CALIB_FIX_K2 |
-    cv.CALIB_FIX_K3 |
-    cv.CALIB_ZERO_TANGENT_DIST;
+    CV_CALIB_USE_INTRINSIC_GUESS +
+    // CV_CALIB_FIX_PRINCIPAL_POINT |
+    CV_CALIB_FIX_ASPECT_RATIO +
+    CV_CALIB_FIX_K1 +
+    CV_CALIB_FIX_K2 +
+    CV_CALIB_FIX_K3 +
+    CV_CALIB_ZERO_TANGENT_DIST;
+  // const flag = 235;
+
+  // console.log(cv.CALIB_FIX_K3)
+  // console.log("######## INPUT ");
+  // console.log("objectPointsArr", objectPointsArr.get(0).data32F);
+  // console.log("imagePointsArr", imagePointsArr.get(0).data32F);
+  // console.log("imageSizeCv", imageSizeCv);
+  // console.log("intr", intr.data64F);
+  // console.log("dist", dist.data64F);
+  console.log("flag", flag);
+
 
   cv.calibrateCameraExtended(
     objectPointsArr,
@@ -158,6 +156,11 @@ export function calibrateCamera(
 
   const intrData = intr.data64F;
   const distData = dist.data64F;
+
+  console.log("#### OUTPUT")
+  console.log("tvecs",tvecs.get(0).data64F);
+  console.log("rvecs",rvecs.get(0).data64F);
+  console.log("intr",intr.data64F);
 
   const matrix = makeMatrix(rvecs.get(0), tvecs.get(0));
 
@@ -219,6 +222,11 @@ export function calibrationMatrixValues(
 
   const fx = K(0, 0);
   const fy = K(1, 1);
+
+  console.log("focalLength",focalLength)
+  console.log("principalPoint", principalPoint);
+  console.log("fovx", fovx);
+  console.log("fovy", fovy);
 
   return {
     fovx,
