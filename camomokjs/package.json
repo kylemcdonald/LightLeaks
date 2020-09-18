@@ -4,7 +4,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public",
+    "start": "node src/server.js",
     "validate": "svelte-check"
   },
   "devDependencies": {
@@ -23,6 +23,7 @@
     "typescript": "^3.9.3"
   },
   "dependencies": {
+    "express": "^4.17.1",
     "sirv-cli": "^1.0.0",
     "three": "^0.120.1"
   },
@@ -32,6 +33,5 @@
     "os": false,
     "crypto": false,
     "Module": false
-    
   }
 }

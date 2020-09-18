@@ -17,7 +17,7 @@ geometry.setAttribute("position", new Float32BufferAttribute([0, 0, 0], 3));
 export class MarkerMesh extends Mesh {
   private sphereMaterial: PointsMaterial;
 
-  constructor(color=new Color(0xffff00)) {
+  constructor(color=new Color(0xffff00), opacity=1) {
     super();
     this.sphereMaterial = new PointsMaterial({
       color,
@@ -27,6 +27,7 @@ export class MarkerMesh extends Mesh {
       // alphaTest: 0.5,
       transparent: true,
       depthTest: false,
+      opacity
     });
     // this.sphereMaterial.depthTest = false;
     const sphere = new Points(geometry, this.sphereMaterial);

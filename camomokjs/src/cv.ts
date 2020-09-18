@@ -26,9 +26,17 @@ declare const cv: any;
 
 let loaded = false;
 
+window['onOpenCvReady'] = ()=>{
+  loaded=true;
+  console.log("OpenCV Loaded - 2")
+}
+
 cv["onRuntimeInitialized"] = () => {
   loaded = true;
+  console.log("OpenCV Loaded")
 };
+
+console.log(cv)
 
 export async function waitForLoad() {
   if (loaded) {

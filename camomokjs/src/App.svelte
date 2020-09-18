@@ -6,10 +6,19 @@
   import ImageView from "./ImageView.svelte";
   import CalibrationSettings from "../CalibrationSettings.svelte";
   import PointList from "./PointList.svelte";
-import { onMount } from "svelte";
+  import { onMount } from "svelte";
+  import ScanList from "./ScanList.svelte";
 
-  const modelViewModel = new Model("/model.dae", 0.2, new Color("white"));
-  const imageViewModel = new Model("/model.dae", 0.3, new Color("orange"));
+  const modelViewModel = new Model(
+    "/SharedData/model.dae",
+    0.2,
+    new Color("white")
+  );
+  const imageViewModel = new Model(
+    "/SharedData/model.dae",
+    0.3,
+    new Color("orange")
+  );
 
   let calibrationFlags = {
     CV_CALIB_FIX_PRINCIPAL_POINT: true,
@@ -32,86 +41,9 @@ import { onMount } from "svelte";
 
   let objectPoints = [];
   let imagePoints = [];
-	$: imagePoints && objectPoints && calibrationFlags && runCalibration();
-	
-	let highlightedIndex = -1;
+  $: imagePoints && objectPoints && calibrationFlags && runCalibration();
 
-  const js3 = [
-    {
-      imagePoint: { x: 3442.7510330578507, y: 1450.60847107438 },
-      modelPoint: {
-        x: 0.15000000114440917,
-        y: -3.330669099286458e-17,
-        z: 0.15000000114440917,
-      },
-    },
-    {
-      imagePoint: { x: 1856.5289256198348, y: 1613.752066115703 },
-      modelPoint: {
-        x: 8.549999822998046,
-        y: 0.0600000016689303,
-        z: -1.100000008392334,
-      },
-    },
-    {
-      imagePoint: { x: 1856.5289256198348, y: 2142.148760330579 },
-      modelPoint: {
-        x: 8.549999822998046,
-        y: 2.510000086975098,
-        z: -1.1000000083923334,
-      },
-    },
-    {
-      imagePoint: { x: 2393.3236650766407, y: 1776.5139887603552 },
-      modelPoint: {
-        x: 18.319999597167968,
-        y: -1.9984015026011486e-15,
-        z: 9.000000262451172,
-      },
-    },
-    {
-      imagePoint: { x: 414.1487603305786, y: 1028.2314049586778 },
-      modelPoint: {
-        x: -0.15000000114440917,
-        y: 1.9984015026011486e-15,
-        z: -9.000000262451172,
-      },
-    },
-    {
-      imagePoint: { x: 3940.744834710743, y: 958.6952479338842 },
-      modelPoint: {
-        x: -4.55000018005371,
-        y: 1.0158540268744366e-15,
-        z: -4.574999816894531,
-      },
-    },
-    {
-      imagePoint: { x: 64.2644628099174, y: 2177.851239669421 },
-      modelPoint: {
-        x: 8.875000140380859,
-        y: 2.4500000671386735,
-        z: -8.374999652099609,
-      },
-    },
-    {
-      imagePoint: { x: 1254.9979338842975, y: 171.6787190082648 },
-      modelPoint: {
-        x: -4.55000018005371,
-        y: 2.0317080537488733e-15,
-        z: -9.149999633789061,
-      },
-    },
-  ];
-  for (const row of js3) {
-    objectPoints = [
-      ...objectPoints,
-      new Vector3(row.modelPoint.x, row.modelPoint.y, row.modelPoint.z),
-    ];
-    imagePoints = [
-      ...imagePoints,
-      new Vector2(row.imagePoint.x, row.imagePoint.y),
-    ];
-  }
+  let highlightedIndex = -1;
 
   let calibratedModelViewMatrix: Matrix4 = new Matrix4();
   let cameraMatrix: Matrix3 = new Matrix3();
@@ -123,7 +55,60 @@ import { onMount } from "svelte";
   let imageHeight = 0;
 
   // Is the app currently in a state of placing new image point?
-  let placingImagePoint = false;
+  let placingImagePoint: boolean = false;
+
+  let scans: string[];
+  let loadedScan: string;
+  async function loadScan(name: string) {
+    loadedScan = name;
+    await loadCalibration(name);
+  }
+
+  async function saveCalibration() {
+    const data = {
+      objectPoints,
+      imagePoints,
+      calibrationFlags,
+    };
+    console.log(data);
+
+
+		const btn = document.getElementById('savebutton');
+		btn.innerText = 'Saving...';
+
+    await fetch("/saveCalibration", {
+      method: "POST",
+      cache: "no-cache",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        data,
+        scan: loadedScan,
+      }),
+		});
+		
+		setTimeout(()=>{
+			btn.innerText = "Save"
+		}, 1000)
+  }
+
+  async function loadCalibration(name: string) {
+    calibrationErrorValue = -1;
+
+    if (!name) return;
+    try {
+      const data = await fetch(`/SharedData/${name}/camamok.json`).then((res) =>
+        res.json()
+      );
+      objectPoints = data.objectPoints.map((p) => new Vector3(p.x, p.y, p.z));
+      imagePoints = data.imagePoints.map((p) => new Vector2(p.x, p.y));
+      calibrationFlags = data.calibrationFlags;
+    } catch (e) {
+      objectPoints = [];
+      imagePoints = [];
+    }
+  }
 
   function addCalibrationPoint(objectPoint: Vector3, imagePoint: Vector2) {
     objectPoints = [...objectPoints, objectPoint];
@@ -157,21 +142,31 @@ import { onMount } from "svelte";
     // updateCalibrateCameraResult(matrix, cameraMatrix);
 
     // imageView.setCalibratedMatrix(matrix, cameraMatrix);
-	}
-	
-	onMount(()=>{
-		document.addEventListener('keydown', (ev)=>{
-			if(ev.key == "Backspace" || ev.key == "Delete"){
-				if(highlightedIndex != -1){
-					objectPoints.splice(highlightedIndex,1)
-					imagePoints.splice(highlightedIndex,1)
-					objectPoints = [...objectPoints]
-					imagePoints = [...imagePoints]
-					highlightedIndex = -1;
-				}
-			}			
-		})
-	});
+  }
+
+  onMount(async () => {
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key == "Backspace" || ev.key == "Delete") {
+        if (highlightedIndex != -1) {
+          objectPoints.splice(highlightedIndex, 1);
+          imagePoints.splice(highlightedIndex, 1);
+          objectPoints = [...objectPoints];
+          imagePoints = [...imagePoints];
+          highlightedIndex = -1;
+        }
+      }
+
+      if (
+        (window.navigator.platform.match("Mac") ? ev.metaKey : ev.ctrlKey) &&
+        ev.keyCode == 83
+      ) {
+        ev.preventDefault();
+        saveCalibration();
+      }
+    });
+    scans = await fetch("/scans").then((res) => res.json());
+    loadScan(scans[0]);
+  });
 </script>
 
 <style>
@@ -202,8 +197,15 @@ import { onMount } from "svelte";
     width: 100%;
     border-bottom: 1px solid gray;
     height: 50px;
-    box-sizing: content-box;
-  }
+		box-sizing: content-box;
+		display: flex;
+		justify-content: space-between;
+	}
+	
+	#savebutton {
+		margin-right: 20px;
+		margin-top: 9px;
+	}
 
   h1 {
     font-size: 20px;
@@ -214,10 +216,15 @@ import { onMount } from "svelte";
 
 <main>
   <div id="topbar">
-    <h1>Light Leaks | Camamok</h1>
+		<h1>Light Leaks | Camamok</h1>
+		<button id="savebutton" on:click={()=> saveCalibration() }>Save</button>
   </div>
-  <div class="panel-row" style="flex:1">
-		<div class="panel">
+  <div class="panel-row" style="flex:1; ">
+    <div class="panel" style="    overflow: scroll;">
+      <ScanList
+        {scans}
+        {loadedScan}
+        on:loadscan={(ev) => loadScan(ev.detail)} />
       <CalibrationSettings
         bind:calibrationFlags
         errorValue={calibrationErrorValue}
@@ -225,31 +232,35 @@ import { onMount } from "svelte";
         focalLength={calibrationValues.focalLength}
         fov={new Vector2(calibrationValues.fovx, calibrationValues.fovy)}
         principalPoint={calibrationValues.principalPoint}
-				aspectRatio={calibrationValues.aspectRatio} />
-				
-			<PointList bind:objectPoints bind:imagePoints bind:highlightedIndex />
+        aspectRatio={calibrationValues.aspectRatio} />
+				<PointList bind:objectPoints bind:imagePoints bind:highlightedIndex />
 
-		</div>
-		
+    </div>
+
     <div class="panel" style="flex:1">
       <ModelView
         model={modelViewModel}
         {objectPoints}
-				bind:selectedPoint={selectedObjectPoint}
-				bind:highlightedIndex
+        bind:selectedPoint={selectedObjectPoint}
+        bind:highlightedIndex
         {calibratedCamera}
         on:selectpoint={(ev) => (placingImagePoint = true)}
         on:deselectpoint={() => (placingImagePoint = false)} />
     </div>
-    <div class="panel" style="flex:1">
+    <div class="panel" style="flex:1;">
       <ImageView
         model={imageViewModel}
-        src="/image.jpg"
+        imageUrls={loadedScan ? [
+					`/SharedData/${loadedScan}/referenceImage.jpg`,
+					`/SharedData/${loadedScan}/cameraImages/vertical/inverse/6.jpg`,
+					] : undefined}
         {imagePoints}
         {calibratedModelViewMatrix}
         {cameraMatrix}
-				bind:calibratedCamera
-				bind:highlightedIndex
+        bind:calibratedCamera
+        bind:highlightedIndex
+        placeNewMarker={placingImagePoint}
+        showModel={calibrationErrorValue != -1}
         on:imageloaded={(ev) => {
           imageWidth = ev.detail.width;
           imageHeight = ev.detail.height;
@@ -269,8 +280,6 @@ import { onMount } from "svelte";
     </div>
   </div>
   <div class="panel-row">
-
-    <div class="panel">
-    </div>
+    <div class="panel" />
   </div>
 </main>

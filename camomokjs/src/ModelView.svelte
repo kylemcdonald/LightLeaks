@@ -51,18 +51,17 @@
   const scene = new Scene();
   $: scene.add(model);
 
-  const hoveredVertexMarker = new MarkerMesh(new Color("yellow"));
+  const hoveredVertexMarker = new MarkerMesh(new Color("red"), 0.5);
   const selectedVertexMarker = new MarkerMesh(new Color("green"));
   scene.add(hoveredVertexMarker);
   scene.add(selectedVertexMarker);
 
   export let highlightedIndex = -1;
   $: {
-    if (highlightedIndex == -1) {
-      for (let c of objectPointsGroup.children as MarkerMesh[]) {
-        c.color = new Color("red");
-      }
-    } else {
+    for (let c of objectPointsGroup.children as MarkerMesh[]) {
+      c.color = new Color("red");
+    }
+    if (highlightedIndex != -1) {
       (objectPointsGroup.children[
         highlightedIndex
       ] as MarkerMesh).color = new Color("rgb(0,200,60)");

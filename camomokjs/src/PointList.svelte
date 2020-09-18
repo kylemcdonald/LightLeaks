@@ -17,7 +17,7 @@
   #table-wrapper {
     display: block;
     overflow: scroll;
-    
+    width:300px;
   }
 
   table {

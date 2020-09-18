@@ -28,8 +28,11 @@
   export let model: Model;
   $: calibratedScene.add(model);
 
-  export let src: string;
-  $: loadImage(src);
+  export let imageUrls: string[];
+  let selectedImageUrlIndex = 0;
+  $: {
+    if(imageUrls) loadImage(imageUrls[selectedImageUrlIndex]);
+  }
 
   export let imagePoints: Vector2[];
 
@@ -51,7 +54,7 @@
 
   export let pictureOpacity = 1;
   $: if (imagePlane) (imagePlane.material as Material).opacity = pictureOpacity;
-  export let showModel = true;
+  export let showModel:boolean = true;
   $: if (model) model.visible = showModel;
 
   export let highlightedIndex = -1;
@@ -64,6 +67,7 @@
       (imagePointsGroup.children[highlightedIndex] as MarkerMesh).color = new Color("rgb(0,200,60)")
     }    
   }
+  export let placeNewMarker: boolean = false;
 
   const dispatch = createEventDispatcher<{
     imageloaded: Vector2;
@@ -102,6 +106,10 @@
   let mouseDownMovedDist = 0;
 
   let selectedMarkerIndex = -1;
+  const cursorMarker = new MarkerMesh(new Color('red'), 0.5);
+  $: cursorMarker.visible = placeNewMarker;
+  scene.add(cursorMarker);
+
 
   const imagePointsGroup = new Group();
   scene.add(imagePointsGroup);
@@ -246,13 +254,16 @@
   function onMouseMove(event: MouseEvent) {
     mouse.x = (event.offsetX / canvas.offsetWidth) * 2 - 1;
     mouse.y = -(event.offsetY / canvas.offsetHeight) * 2 + 1;
+    const imageCoord = imageCoordinate(mouse.x, mouse.y);
+    cursorMarker.position.x = imageCoord.x;
+    cursorMarker.position.y = imageCoord.y;
 
     if (mouseDown) {
       mouseDownMovedDist +=
         Math.abs(event.movementX) + Math.abs(event.movementY);
 
       if (selectedMarkerIndex != -1) {
-        const imageCoord = imageCoordinate(mouse.x, mouse.y);
+        
         if (imageCoord) {
           dispatch("imagepointmove", {
             index: selectedMarkerIndex,
@@ -337,6 +348,14 @@
       <option value="wireframe">Wireframe</option>
       <option value="shaded">Shaded</option>
       <option value="xyzMap">XYZ Map</option>
+    </select>
+
+    <select bind:value={selectedImageUrlIndex}>
+      {#if imageUrls}
+      {#each imageUrls as url,i}
+      <option value={i}>{url.split('/')[url.split('/').length-1]}</option>
+      {/each}
+      {/if}
     </select>
   </div>
   <canvas id="image-canvas" />
