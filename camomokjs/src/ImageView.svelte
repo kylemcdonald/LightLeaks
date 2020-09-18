@@ -31,7 +31,7 @@
   export let imageUrls: string[];
   let selectedImageUrlIndex = 0;
   $: {
-    if(imageUrls) loadImage(imageUrls[selectedImageUrlIndex]);
+    if (imageUrls) loadImage(imageUrls[selectedImageUrlIndex]);
   }
 
   export let imagePoints: Vector2[];
@@ -54,18 +54,20 @@
 
   export let pictureOpacity = 1;
   $: if (imagePlane) (imagePlane.material as Material).opacity = pictureOpacity;
-  export let showModel:boolean = true;
+  export let showModel: boolean = true;
   $: if (model) model.visible = showModel;
 
   export let highlightedIndex = -1;
   $: {
-    if(highlightedIndex == -1){
-      for(let c of imagePointsGroup.children as MarkerMesh[]){
-        c.color = new Color('red');
+    if (highlightedIndex == -1) {
+      for (let c of imagePointsGroup.children as MarkerMesh[]) {
+        c.color = new Color("red");
       }
     } else {
-      (imagePointsGroup.children[highlightedIndex] as MarkerMesh).color = new Color("rgb(0,200,60)")
-    }    
+      (imagePointsGroup.children[
+        highlightedIndex
+      ] as MarkerMesh).color = new Color("rgb(0,200,60)");
+    }
   }
   export let placeNewMarker: boolean = false;
 
@@ -106,10 +108,9 @@
   let mouseDownMovedDist = 0;
 
   let selectedMarkerIndex = -1;
-  const cursorMarker = new MarkerMesh(new Color('red'), 0.5);
+  const cursorMarker = new MarkerMesh(new Color("red"), 0.5);
   $: cursorMarker.visible = placeNewMarker;
   scene.add(cursorMarker);
-
 
   const imagePointsGroup = new Group();
   scene.add(imagePointsGroup);
@@ -263,7 +264,6 @@
         Math.abs(event.movementX) + Math.abs(event.movementY);
 
       if (selectedMarkerIndex != -1) {
-        
         if (imageCoord) {
           dispatch("imagepointmove", {
             index: selectedMarkerIndex,
@@ -352,9 +352,9 @@
 
     <select bind:value={selectedImageUrlIndex}>
       {#if imageUrls}
-      {#each imageUrls as url,i}
-      <option value={i}>{url.split('/')[url.split('/').length-1]}</option>
-      {/each}
+        {#each imageUrls as url, i}
+          <option value={i}>{url.split('/')[url.split('/').length - 1]}</option>
+        {/each}
       {/if}
     </select>
   </div>

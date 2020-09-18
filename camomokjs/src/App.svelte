@@ -8,6 +8,7 @@
   import PointList from "./PointList.svelte";
   import { onMount } from "svelte";
   import ScanList from "./ScanList.svelte";
+  import {renderSceneToArray} from "./exportRenderer";
 
   const modelViewModel = new Model(
     "/SharedData/model.dae",
@@ -18,6 +19,12 @@
     "/SharedData/model.dae",
     0.3,
     new Color("orange")
+  );
+  const exportModel = new Model(
+    "/SharedData/model.dae",
+    0.3,
+		new Color(),
+		"xyzMap"
   );
 
   let calibrationFlags = {
@@ -70,8 +77,6 @@
       imagePoints,
       calibrationFlags,
     };
-    console.log(data);
-
 
 		const btn = document.getElementById('savebutton');
 		btn.innerText = 'Saving...';
@@ -87,6 +92,8 @@
         scan: loadedScan,
       }),
 		});
+
+		renderSceneToArray(imageWidth, imageHeight, exportModel, calibratedModelViewMatrix, cameraMatrix);
 		
 		setTimeout(()=>{
 			btn.innerText = "Save"
@@ -233,7 +240,7 @@
         fov={new Vector2(calibrationValues.fovx, calibrationValues.fovy)}
         principalPoint={calibrationValues.principalPoint}
         aspectRatio={calibrationValues.aspectRatio} />
-				<PointList bind:objectPoints bind:imagePoints bind:highlightedIndex />
+			<PointList bind:objectPoints bind:imagePoints bind:highlightedIndex />
 
     </div>
 
