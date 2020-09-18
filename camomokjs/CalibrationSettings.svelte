@@ -18,7 +18,7 @@
 
   .cols {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
   }
   .col {
     margin-right: 30px;

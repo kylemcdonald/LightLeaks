@@ -194,7 +194,6 @@ export function calibrateCamera(
   // console.log("intr",intr.data64F);
   // console.log("stdDeviationsIntrinsics",stdDeviationsIntrinsics.data64F)
   // console.log("stdDeviationsIntrinsics", stdDeviationsExtrinsics.data64F)
-  console.log("perViewErrors", perViewErrors.data64F)
   const error = perViewErrors.data64F[0];
 
   const matrix = makeMatrix(rvecs.get(0), tvecs.get(0));

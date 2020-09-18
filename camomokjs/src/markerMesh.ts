@@ -21,7 +21,7 @@ export class MarkerMesh extends Mesh {
     super();
     this.sphereMaterial = new PointsMaterial({
       color,
-      size: 20,
+      size: 25,
       map: sprite,
       sizeAttenuation: false,
       // alphaTest: 0.5,

@@ -54,6 +54,17 @@
   export let showModel = true;
   $: if (model) model.visible = showModel;
 
+  export let highlightedIndex = -1;
+  $: {
+    if(highlightedIndex == -1){
+      for(let c of imagePointsGroup.children as MarkerMesh[]){
+        c.color = new Color('red');
+      }
+    } else {
+      (imagePointsGroup.children[highlightedIndex] as MarkerMesh).color = new Color("rgb(0,200,60)")
+    }    
+  }
+
   const dispatch = createEventDispatcher<{
     imageloaded: Vector2;
     imageclick: Vector2;
@@ -252,6 +263,7 @@
     }
 
     const markerIndex = findHoveredMarkerIndex(mouse.x, mouse.y);
+    highlightedIndex = markerIndex;
     if (markerIndex != -1) {
       canvas.style.cursor = "pointer";
     } else {

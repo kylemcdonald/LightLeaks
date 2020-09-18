@@ -5,6 +5,8 @@
   import ModelView from "./ModelView.svelte";
   import ImageView from "./ImageView.svelte";
   import CalibrationSettings from "../CalibrationSettings.svelte";
+  import PointList from "./PointList.svelte";
+import { onMount } from "svelte";
 
   const modelViewModel = new Model("/model.dae", 0.2, new Color("white"));
   const imageViewModel = new Model("/model.dae", 0.3, new Color("orange"));
@@ -17,20 +19,22 @@
     CV_CALIB_FIX_K3: true,
     CV_CALIB_ZERO_TANGENT_DIST: true,
   };
-	let calibrationErrorValue = -1;
-	let calibrationValues = {
-		fovx:0,
-    fovy:0,
-    aspectRatio:0,
-    focalLength:0,
-    principalPoint:new Vector2(0),
-    fx:0,
-    fy:0,
-	};
+  let calibrationErrorValue = -1;
+  let calibrationValues = {
+    fovx: 0,
+    fovy: 0,
+    aspectRatio: 0,
+    focalLength: 0,
+    principalPoint: new Vector2(0),
+    fx: 0,
+    fy: 0,
+  };
 
   let objectPoints = [];
   let imagePoints = [];
-  $: imagePoints && objectPoints && calibrationFlags && runCalibration();
+	$: imagePoints && objectPoints && calibrationFlags && runCalibration();
+	
+	let highlightedIndex = -1;
 
   const js3 = [
     {
@@ -141,16 +145,33 @@
       calibrationFlags
     );
     cameraMatrix = ret.cameraMatrix;
-		calibratedModelViewMatrix = ret.matrix;
-		
-		calibrationValues = cv.calibrationMatrixValues(cameraMatrix,new Vector2(imageWidth, imageHeight));
+    calibratedModelViewMatrix = ret.matrix;
+
+    calibrationValues = cv.calibrationMatrixValues(
+      cameraMatrix,
+      new Vector2(imageWidth, imageHeight)
+    );
 
     calibrationErrorValue = ret.error;
 
     // updateCalibrateCameraResult(matrix, cameraMatrix);
 
     // imageView.setCalibratedMatrix(matrix, cameraMatrix);
-  }
+	}
+	
+	onMount(()=>{
+		document.addEventListener('keydown', (ev)=>{
+			if(ev.key == "Backspace" || ev.key == "Delete"){
+				if(highlightedIndex != -1){
+					objectPoints.splice(highlightedIndex,1)
+					imagePoints.splice(highlightedIndex,1)
+					objectPoints = [...objectPoints]
+					imagePoints = [...imagePoints]
+					highlightedIndex = -1;
+				}
+			}			
+		})
+	});
 </script>
 
 <style>
@@ -173,8 +194,8 @@
   }
 
   .panel {
-    flex: 1;
-    position:relative;
+    /* flex: 1; */
+    position: relative;
   }
 
   #topbar {
@@ -196,23 +217,39 @@
     <h1>Light Leaks | Camamok</h1>
   </div>
   <div class="panel-row" style="flex:1">
-    <div class="panel">
+		<div class="panel">
+      <CalibrationSettings
+        bind:calibrationFlags
+        errorValue={calibrationErrorValue}
+        imageSize={new Vector2(imageWidth, imageHeight)}
+        focalLength={calibrationValues.focalLength}
+        fov={new Vector2(calibrationValues.fovx, calibrationValues.fovy)}
+        principalPoint={calibrationValues.principalPoint}
+				aspectRatio={calibrationValues.aspectRatio} />
+				
+			<PointList bind:objectPoints bind:imagePoints bind:highlightedIndex />
+
+		</div>
+		
+    <div class="panel" style="flex:1">
       <ModelView
         model={modelViewModel}
         {objectPoints}
-        bind:selectedPoint={selectedObjectPoint}
+				bind:selectedPoint={selectedObjectPoint}
+				bind:highlightedIndex
         {calibratedCamera}
         on:selectpoint={(ev) => (placingImagePoint = true)}
         on:deselectpoint={() => (placingImagePoint = false)} />
     </div>
-    <div class="panel">
+    <div class="panel" style="flex:1">
       <ImageView
         model={imageViewModel}
         src="/image.jpg"
         {imagePoints}
         {calibratedModelViewMatrix}
         {cameraMatrix}
-        bind:calibratedCamera
+				bind:calibratedCamera
+				bind:highlightedIndex
         on:imageloaded={(ev) => {
           imageWidth = ev.detail.width;
           imageHeight = ev.detail.height;
@@ -232,16 +269,8 @@
     </div>
   </div>
   <div class="panel-row">
+
     <div class="panel">
-      <CalibrationSettings
-        bind:calibrationFlags
-				errorValue={calibrationErrorValue}
-				imageSize={new Vector2(imageWidth, imageHeight)}
-				focalLength={calibrationValues.focalLength}
-				fov={new Vector2(calibrationValues.fovx, calibrationValues.fovy) }
-				principalPoint={calibrationValues.principalPoint}
-				aspectRatio={calibrationValues.aspectRatio}
-				 />
     </div>
   </div>
 </main>

@@ -56,6 +56,19 @@
   scene.add(hoveredVertexMarker);
   scene.add(selectedVertexMarker);
 
+  export let highlightedIndex = -1;
+  $: {
+    if (highlightedIndex == -1) {
+      for (let c of objectPointsGroup.children as MarkerMesh[]) {
+        c.color = new Color("red");
+      }
+    } else {
+      (objectPointsGroup.children[
+        highlightedIndex
+      ] as MarkerMesh).color = new Color("rgb(0,200,60)");
+    }
+  }
+
   const objectPointsGroup = new Group();
   scene.add(objectPointsGroup);
   $: {
@@ -120,8 +133,7 @@
 
     renderer.render(scene, camera);
 
-    camera.aspect =
-      canvas?.offsetWidth / canvas?.offsetHeight;
+    camera.aspect = canvas?.offsetWidth / canvas?.offsetHeight;
     camera.updateProjectionMatrix();
 
     controls.update();
@@ -164,13 +176,22 @@
           vertex = object.localToWorld(points[i].clone());
         }
       }
+
+      hoveredVertexMarker.visible = false;
       if (vertex) {
-        hoveredVertexMarker.position.copy(vertex);
-        hoveredVertexMarker.visible = true;
-      } else {
-        hoveredVertexMarker.visible = false;
-      }
-      // }
+        const epsilon = 0.1;
+        highlightedIndex = -1;
+        for (let i = 0; i < objectPoints.length; i++) {
+          if (objectPoints[i].distanceTo(vertex) < epsilon) {
+            highlightedIndex = i;
+            break;
+          }
+        }
+        if (highlightedIndex == -1) {
+          hoveredVertexMarker.position.copy(vertex);
+          hoveredVertexMarker.visible = true;
+        }
+      }       
     }
   }
 
@@ -201,7 +222,7 @@
 </script>
 
 <style>
-   #view {
+  #view {
     position: relative;
     height: 100%;
     width: 100%;
@@ -234,12 +255,11 @@
       <option value="xyzMap">XYZ Map</option>
     </select>
   </div>
-<canvas id="model-canvas" />
+  <canvas id="model-canvas" />
 
-{#if selectedPoint}
-  <div id="infobox">
-    ({selectedPoint.x.toFixed(2)}, {selectedPoint.y.toFixed(2)}, {selectedPoint.z.toFixed(2)})
-  </div>
-{/if}
-
+  {#if selectedPoint}
+    <div id="infobox">
+      ({selectedPoint.x.toFixed(2)}, {selectedPoint.y.toFixed(2)}, {selectedPoint.z.toFixed(2)})
+    </div>
+  {/if}
 </div>
