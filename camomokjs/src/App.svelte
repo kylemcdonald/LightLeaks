@@ -4,12 +4,33 @@
   import * as cv from "./cv";
   import ModelView from "./ModelView.svelte";
   import ImageView from "./ImageView.svelte";
+  import CalibrationSettings from "../CalibrationSettings.svelte";
 
   const modelViewModel = new Model("/model.dae");
   const imageViewModel = new Model("/model.dae");
 
+  let calibrationFlags = {
+    CV_CALIB_FIX_PRINCIPAL_POINT: true,
+    CV_CALIB_FIX_ASPECT_RATIO: true,
+    CV_CALIB_FIX_K1: true,
+    CV_CALIB_FIX_K2: true,
+    CV_CALIB_FIX_K3: true,
+    CV_CALIB_ZERO_TANGENT_DIST: true,
+  };
+	let calibrationErrorValue = -1;
+	let calibrationValues = {
+		fovx:0,
+    fovy:0,
+    aspectRatio:0,
+    focalLength:0,
+    principalPoint:new Vector2(0),
+    fx:0,
+    fy:0,
+	};
+
   let objectPoints = [];
   let imagePoints = [];
+  $: imagePoints && objectPoints && calibrationFlags && runCalibration();
 
   const js3 = [
     {
@@ -103,22 +124,29 @@
   function addCalibrationPoint(objectPoint: Vector3, imagePoint: Vector2) {
     objectPoints = [...objectPoints, objectPoint];
     imagePoints = [...imagePoints, imagePoint];
-
-    runCalibration();
   }
 
   async function runCalibration() {
+    console.log("Run calibration");
     if (imageWidth == 0 || imagePoints.length < 3) return;
+
+    calibrationErrorValue = -1;
 
     await cv.waitForLoad();
 
     const ret = cv.calibrateCamera(
       objectPoints,
       imagePoints,
-      new Vector2(imageWidth, imageHeight)
+      new Vector2(imageWidth, imageHeight),
+      calibrationFlags
     );
     cameraMatrix = ret.cameraMatrix;
-    calibratedModelViewMatrix = ret.matrix;
+		calibratedModelViewMatrix = ret.matrix;
+		
+		calibrationValues = cv.calibrationMatrixValues(cameraMatrix,new Vector2(imageWidth, imageHeight));
+
+    calibrationErrorValue = ret.error;
+
     // updateCalibrateCameraResult(matrix, cameraMatrix);
 
     // imageView.setCalibratedMatrix(matrix, cameraMatrix);
@@ -126,22 +154,49 @@
 </script>
 
 <style>
-  .wrapper {
+  main {
     display: flex;
-    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
     height: 100%;
-    position: absolute;
+    background-color: #202020;
+    color: white;
+  }
+  .panel-row {
+    display: flex;
+    /* width: 100%; */
+    /* height: 100%; */
+    /* position: absolute; */
     align-items: stretch;
     flex-direction: row;
+    overflow: hidden;
   }
 
   .panel {
     flex: 1;
+    /* box-sizing: content-box; */
+    /* border-right: 1px solid black; */
+  }
+
+  #topbar {
+    width: 100%;
+    border-bottom: 1px solid gray;
+    height: 50px;
+    box-sizing: content-box;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 100;
+    margin-left: 10px;
   }
 </style>
 
 <main>
-  <div class="wrapper">
+  <div id="topbar">
+    <h1>Light Leaks | Camamok</h1>
+  </div>
+  <div class="panel-row" style="flex:1">
     <div class="panel">
       <ModelView
         model={modelViewModel}
@@ -173,10 +228,21 @@
         }}
         on:imagepointmove={(ev) => {
           imagePoints[ev.detail.index] = ev.detail.point;
-          runCalibration();
-          //console.log(ev.detail)
         }} />
       <div />
+    </div>
+  </div>
+  <div class="panel-row">
+    <div class="panel">
+      <CalibrationSettings
+        bind:calibrationFlags
+				errorValue={calibrationErrorValue}
+				imageSize={new Vector2(imageWidth, imageHeight)}
+				focalLength={calibrationValues.focalLength}
+				fov={new Vector2(calibrationValues.fovx, calibrationValues.fovy) }
+				principalPoint={calibrationValues.principalPoint}
+				aspectRatio={calibrationValues.aspectRatio}
+				 />
     </div>
   </div>
 </main>

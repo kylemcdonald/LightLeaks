@@ -9,7 +9,8 @@
     Raycaster,
     GridHelper,
     AxesHelper,
-    Group, CameraHelper
+    Group,
+    CameraHelper,
   } from "three";
 
   import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -32,10 +33,9 @@
   export let calibratedCamera: PerspectiveCamera;
   let cameraHelper = undefined;
   $: {
-    if(calibratedCamera && !cameraHelper){
+    if (calibratedCamera && !cameraHelper) {
       cameraHelper = new CameraHelper(calibratedCamera);
-      scene.add(cameraHelper);    
-      console.log("Add camera helper")
+      scene.add(cameraHelper);
     }
   }
 
@@ -109,8 +109,6 @@
     canvas.addEventListener("pointermove", onMouseMove, false);
     canvas.addEventListener("pointerdown", onMouseDown);
     document.addEventListener("pointerup", onMouseUp);
-
-    // canvas.addEventListener("click", onClick);
   });
 
   function renderCanvas() {
@@ -119,10 +117,11 @@
       canvas?.parentElement!.offsetWidth,
       canvas?.parentElement!.offsetHeight
     );
+
     renderer.render(scene, camera);
 
     camera.aspect =
-      canvas?.parentElement!.offsetWidth / canvas?.parentElement!.offsetHeight;
+      canvas?.offsetWidth / canvas?.offsetHeight;
     camera.updateProjectionMatrix();
 
     controls.update();
@@ -130,8 +129,8 @@
 
   function onMouseMove(event: MouseEvent) {
     event.preventDefault();
-    mouse.x = (event.clientX / canvas.offsetWidth) * 2 - 1;
-    mouse.y = -(event.clientY / canvas.offsetHeight) * 2 + 1;
+    mouse.x = (event.offsetX / canvas.offsetWidth) * 2 - 1;
+    mouse.y = -(event.offsetY / canvas.offsetHeight) * 2 + 1;
 
     if (mouseDown) {
       mouseDownMovedDist +=
@@ -181,7 +180,7 @@
   }
 
   function onMouseUp(event: MouseEvent) {
-    if(mouseDown){
+    if (mouseDown) {
       mouseDown = false;
 
       if (mouseDownMovedDist < 5) {
@@ -201,4 +200,20 @@
   }
 </script>
 
+<style>
+  #infobox {
+    position: absolute;
+    bottom: 0;
+    color: white;
+    font-family: monospace;
+    padding: 3px;
+  }
+</style>
+
 <canvas id="model-canvas" />
+
+{#if selectedPoint}
+  <div id="infobox">
+    ({selectedPoint.x.toFixed(2)}, {selectedPoint.y.toFixed(2)}, {selectedPoint.z.toFixed(2)})
+  </div>
+{/if}

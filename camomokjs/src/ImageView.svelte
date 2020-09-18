@@ -48,6 +48,11 @@
     );
   }
 
+  export let showPicture = true;
+  $: if(imagePlane) imagePlane.visible = showPicture;
+  export let showModel = true;
+  $: if(model) model.visible = showModel;
+
   const dispatch = createEventDispatcher<{
     imageloaded: Vector2;
     imageclick: Vector2;
@@ -74,7 +79,7 @@
 
   let scene = new Scene();
   let calibratedScene = new Scene();
-  let imagePlane: Mesh;
+  let imagePlane: Mesh | undefined;
 
   let imageWidth = 0;
   let imageHeight = 0;
@@ -114,7 +119,7 @@
       antialias: true,
       canvas,
     });
-    renderer.setClearColor(new Color("rgb(50,50,50)"));
+    renderer.setClearColor(new Color("rgb(10,10,10)"));
 
     controls = new OrbitControls(imageCamera, renderer.domElement);
     // Enable left mouse button to pan
@@ -276,6 +281,37 @@
 </script>
 
 <style>
+  
+  #view {
+    position: relative;
+    height: 100%;;
+    width: 100%;;
+  }
+  #toolbar {
+    position: absolute;
+    top:0;
+    width:100%;
+    background-color: rgba(0,0,0, 0.7);
+    border-bottom: 1px solid #00000080;
+    padding: 5px;
+  }
+
 </style>
 
-<canvas id="image-canvas" />
+<div id="view">
+  <div id="toolbar">
+  <button 
+    on:click={()=>showPicture = !showPicture}
+    data-toggled={showPicture}
+    >
+    <i class="material-icons">photo</i>
+  </button>
+  <button 
+    on:click={()=>showModel = !showModel}
+    data-toggled={showModel}
+    >
+    <i class="material-icons">layers</i>
+  </button>
+  </div>
+  <canvas id="image-canvas" />
+</div>

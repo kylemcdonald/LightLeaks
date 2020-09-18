@@ -3,20 +3,19 @@
 // import { RelationDataElement } from "./relationData";
 import { Vector2, Matrix4, Vector3, Quaternion, Matrix3 } from "three";
 
-
 // Copied correct constant values from c++.
 // Values in cv.CALIB_* have wrong values
-const CV_CALIB_USE_INTRINSIC_GUESS =  1;
-const CV_CALIB_FIX_ASPECT_RATIO =     2;
-const CV_CALIB_FIX_PRINCIPAL_POINT =  4;
-const CV_CALIB_ZERO_TANGENT_DIST =    8;
+const CV_CALIB_USE_INTRINSIC_GUESS = 1;
+const CV_CALIB_FIX_ASPECT_RATIO = 2;
+const CV_CALIB_FIX_PRINCIPAL_POINT = 4;
+const CV_CALIB_ZERO_TANGENT_DIST = 8;
 const CV_CALIB_FIX_FOCAL_LENGTH = 16;
-const CV_CALIB_FIX_K1 =  32;
-const CV_CALIB_FIX_K2 =  64;
-const CV_CALIB_FIX_K3 =  128;
-const CV_CALIB_FIX_K4 =  2048;
-const CV_CALIB_FIX_K5 =  4096;
-const CV_CALIB_FIX_K6 =  8192;
+const CV_CALIB_FIX_K1 = 32;
+const CV_CALIB_FIX_K2 = 64;
+const CV_CALIB_FIX_K3 = 128;
+const CV_CALIB_FIX_K4 = 2048;
+const CV_CALIB_FIX_K5 = 4096;
+const CV_CALIB_FIX_K6 = 8192;
 const CV_CALIB_RATIONAL_MODEL = 16384;
 
 declare const cv: any;
@@ -60,20 +59,32 @@ function makeMatrix(rotation: any, translation: any) {
 
   let matrix = new Matrix4();
   matrix.set(
-    rm[0], rm[1],  rm[2],  tm[0],
-    rm[3], rm[4],  rm[5],  tm[1],
-    rm[6], rm[7],  rm[8],  tm[2],
-    0, 0, 0, 1.0
+    rm[0],
+    rm[1],
+    rm[2],
+    tm[0],
+    rm[3],
+    rm[4],
+    rm[5],
+    tm[1],
+    rm[6],
+    rm[7],
+    rm[8],
+    tm[2],
+    0,
+    0,
+    0,
+    1.0
   );
 
   // const invertMatrix = new Matrix4();
   // // invertMatrix.makeScale(-1,-1,-1);
   // matrix = invertMatrix.multiply(matrix)
-  
+
   // const invertzAxisMatrix = new Matrix4();
   // invertzAxisMatrix.makeScale(1,1,1);
   // matrix = matrix.multiply(invertzAxisMatrix)
-  
+
   rot3x3.delete();
   return matrix;
 }
@@ -81,7 +92,8 @@ function makeMatrix(rotation: any, translation: any) {
 export function calibrateCamera(
   _modelPoints: Vector3[],
   _imagePoints: Vector2[],
-  imageSize: Vector2
+  imageSize: Vector2,
+  calibrationFlags
 ) {
   // console.log("Calbrate camera");
 
@@ -110,14 +122,20 @@ export function calibrateCamera(
   // console.log("modelPoints", modelPoints.data32F)
 
   // const f = 1.39626 * imageSize.x;
-  const fovx = 107.0/360.0*2.0 * Math.PI;
-  const f = imageSize.width / 2 * Math.atan(fovx/2)
+  const fovx = (107.0 / 360.0) * 2.0 * Math.PI;
+  const f = (imageSize.width / 2) * Math.atan(fovx / 2);
 
   // console.log("f",f)
   const intr = cv.matFromArray(3, 3, cv.CV_64F, [
-    f, 0, imageSize.x / 2,
-    0, f, imageSize.y / 2,
-    0, 0, 1,
+    f,
+    0,
+    imageSize.x / 2,
+    0,
+    f,
+    imageSize.y / 2,
+    0,
+    0,
+    1,
   ]);
 
   const dist = new cv.Mat();
@@ -130,12 +148,18 @@ export function calibrateCamera(
 
   const flag =
     CV_CALIB_USE_INTRINSIC_GUESS +
-    CV_CALIB_FIX_PRINCIPAL_POINT +
-    CV_CALIB_FIX_ASPECT_RATIO +
-    CV_CALIB_FIX_K1 +
-    CV_CALIB_FIX_K2 +
-    CV_CALIB_FIX_K3 +
-    CV_CALIB_ZERO_TANGENT_DIST;
+    (calibrationFlags.CV_CALIB_FIX_PRINCIPAL_POINT
+      ? CV_CALIB_FIX_PRINCIPAL_POINT
+      : 0) +
+    (calibrationFlags.CV_CALIB_FIX_ASPECT_RATIO
+      ? CV_CALIB_FIX_ASPECT_RATIO
+      : 0) +
+    (calibrationFlags.CV_CALIB_FIX_K1 ? CV_CALIB_FIX_K1 : 0) +
+    (calibrationFlags.CV_CALIB_FIX_K2 ? CV_CALIB_FIX_K2 : 0) +
+    (calibrationFlags.CV_CALIB_FIX_K3 ? CV_CALIB_FIX_K3 : 0) +
+    (calibrationFlags.CV_CALIB_ZERO_TANGENT_DIST
+      ? CV_CALIB_ZERO_TANGENT_DIST
+      : 0);
   // const flag = 235;
 
   // console.log(cv.CALIB_FIX_K3)
@@ -146,7 +170,6 @@ export function calibrateCamera(
   // console.log("intr", intr.data64F);
   // console.log("dist", dist.data64F);
   // console.log("flag", flag);
-
 
   cv.calibrateCameraExtended(
     objectPointsArr,
@@ -169,9 +192,10 @@ export function calibrateCamera(
   // console.log("tvecs",tvecs.get(0).data64F);
   // console.log("rvecs",rvecs.get(0).data64F);
   // console.log("intr",intr.data64F);
-  console.log("stdDeviationsIntrinsics",stdDeviationsIntrinsics.data64F)
-  console.log("stdDeviationsIntrinsics", stdDeviationsExtrinsics.data64F)
+  // console.log("stdDeviationsIntrinsics",stdDeviationsIntrinsics.data64F)
+  // console.log("stdDeviationsIntrinsics", stdDeviationsExtrinsics.data64F)
   console.log("perViewErrors", perViewErrors.data64F)
+  const error = perViewErrors.data64F[0];
 
   const matrix = makeMatrix(rvecs.get(0), tvecs.get(0));
   const cameraMatrix = new Matrix3();
@@ -187,11 +211,11 @@ export function calibrateCamera(
 
   // console.log("intrData",intrData);
 
-
   return {
     matrix,
     cameraMatrix,
     distCoeffs: distData,
+    error
   };
 }
 
@@ -204,14 +228,14 @@ export function calibrationMatrixValues(
 ) {
   const k: number[] = [];
   cameraMatrix.toArray(k);
-console.log("Camera Matrix", k)
+  // console.log("Camera Matrix", k)
   const K = (col: number, row: number) => {
     return k[col * 3 + row];
   };
 
   /* Calculate pixel aspect ratio. */
   const aspectRatio = K(1, 1) / K(0, 0);
-  
+
   /* Calculate number of pixel per realworld unit. */
   const mx = 1.0;
   const my = aspectRatio;
@@ -256,7 +280,7 @@ export function makeProjectionMatrix(
   nearDist = 0.1,
   farDist = 10000
 ) {
-  const { principalPoint, fx, fy, fovx, fovy} = calibrationMatrixValues(
+  const { principalPoint, fx, fy, fovx, fovy } = calibrationMatrixValues(
     cameraMatrix,
     imageSize
   );
