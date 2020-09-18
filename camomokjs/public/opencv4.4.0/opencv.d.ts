@@ -2176,4 +2176,6 @@ declare namespace cv {
   export function TermCriteria(...args: any): any;
   export function matFromArray(...args: any): any;
   export function matFromImageData(...args: any): any;
+  export function Rodrigues(...args: any): any;
+  export function calibrateCameraExtended(...args: any): any;
 }

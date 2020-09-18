@@ -16,13 +16,12 @@ import {
 import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader";
 
 // const model = require("../../assets/lan_model.dae");
-const model = require("../../assets/model.dae");
 export class Model extends Scene {
 
   vertices: Points[] = [];
   verticesPositions: Vector3[] =[];
 
-  constructor(opacity:number=0.2, color: Color=new Color("white")) {
+  constructor(path:string, opacity:number=0.2, color: Color=new Color("white")) {
     super();
 
     const material = new MeshBasicMaterial({
@@ -37,18 +36,17 @@ export class Model extends Scene {
     //   opacity: 0.5,
     //   transparent: true,
     // });
-
     // const sprite = new TextureLoader().load( require("../../assets/disc.png").default);
     // const vertexMaterial = new PointsMaterial({color: new Color("rgb(255,255,255)"), size: 10, map:sprite, sizeAttenuation: false, alphaTest: 0.5, transparent: true, depthTest:true});
 
     const loadingManager = new LoadingManager(() => {});
     const loader = new ColladaLoader(loadingManager);
 
-    loader.load(model.default, (collada) => {
+    loader.load(path, (collada) => {
       this.add(collada.scene);
-      collada.scene.scale.set(1, 1, 1);//= 10;
-      collada.scene.rotation.set(0,0,0)
-      console.log(collada.scene)
+      // collada.scene.scale.set(1, 1, 1);//= 10;
+      // collada.scene.rotation.set(0,0,0)
+      // console.log(collada.scene)
 
       collada.scene.traverse((child) => {
         if (child.type === 'Mesh') {
