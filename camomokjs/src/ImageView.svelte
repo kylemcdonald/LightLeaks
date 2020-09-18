@@ -18,6 +18,7 @@
     Group,
     Matrix4,
     Matrix3,
+    Material,
   } from "three";
   import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
   import { makeProjectionMatrix } from "./cv";
@@ -48,10 +49,10 @@
     );
   }
 
-  export let showPicture = true;
-  $: if(imagePlane) imagePlane.visible = showPicture;
+  export let pictureOpacity = 1;
+  $: if (imagePlane) (imagePlane.material as Material).opacity = pictureOpacity;
   export let showModel = true;
-  $: if(model) model.visible = showModel;
+  $: if (model) model.visible = showModel;
 
   const dispatch = createEventDispatcher<{
     imageloaded: Vector2;
@@ -181,12 +182,15 @@
 
       const material = new MeshBasicMaterial({
         map: tex,
+        opacity: 1.0,
+        transparent: true,
       });
 
       imagePlane = new Mesh(
         new PlaneGeometry(imageWidth, imageHeight),
         material
       );
+      imagePlane.renderOrder = -10;
       imagePlane.position.setX(imageWidth / 2);
       imagePlane.position.setY(imageHeight / 2);
       imagePlane.name = "image";
@@ -281,37 +285,47 @@
 </script>
 
 <style>
-  
   #view {
     position: relative;
-    height: 100%;;
-    width: 100%;;
+    height: 100%;
+    width: 100%;
   }
   #toolbar {
     position: absolute;
-    top:0;
-    width:100%;
-    background-color: rgba(0,0,0, 0.7);
-    border-bottom: 1px solid #00000080;
-    padding: 5px;
+    top: 0;
+    width: 100%;
+    /* background-color: rgba(0, 0, 0, 0); */
+    /* border-bottom: 1px solid #00000080; */
+    padding: 5px 5px 0px 5px;
+    display: flex;
+    gap: 10px;
   }
-
 </style>
 
 <div id="view">
   <div id="toolbar">
-  <button 
-    on:click={()=>showPicture = !showPicture}
-    data-toggled={showPicture}
-    >
-    <i class="material-icons">photo</i>
-  </button>
-  <button 
-    on:click={()=>showModel = !showModel}
-    data-toggled={showModel}
-    >
-    <i class="material-icons">layers</i>
-  </button>
+    <button
+      on:click={() => {
+        if (pictureOpacity == 1) {
+          pictureOpacity = 0.5;
+        } else if (pictureOpacity == 0) {
+          pictureOpacity = 1;
+        } else {
+          pictureOpacity = 0;
+        }
+      }}
+      data-toggled={pictureOpacity > 0}>
+      <i class="material-icons">photo</i>
+    </button>
+    <button on:click={() => (showModel = !showModel)} data-toggled={showModel}>
+      <i class="material-icons">layers</i>
+    </button>
+
+    <select bind:value={model.mode}>
+      <option value="wireframe">Wireframe</option>
+      <option value="shaded">Shaded</option>
+      <option value="xyzMap">XYZ Map</option>
+    </select>
   </div>
   <canvas id="image-canvas" />
 </div>

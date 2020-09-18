@@ -201,6 +201,11 @@
 </script>
 
 <style>
+   #view {
+    position: relative;
+    height: 100%;
+    width: 100%;
+  }
   #infobox {
     position: absolute;
     bottom: 0;
@@ -208,8 +213,27 @@
     font-family: monospace;
     padding: 3px;
   }
+
+  #toolbar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    /* background-color: rgba(0, 0, 0, 0); */
+    /* border-bottom: 1px solid #00000080; */
+    padding: 5px 5px 0px 5px;
+    display: flex;
+    gap: 10px;
+  }
 </style>
 
+<div id="view">
+  <div id="toolbar">
+    <select bind:value={model.mode}>
+      <option value="wireframe">Wireframe</option>
+      <option value="shaded">Shaded</option>
+      <option value="xyzMap">XYZ Map</option>
+    </select>
+  </div>
 <canvas id="model-canvas" />
 
 {#if selectedPoint}
@@ -217,3 +241,5 @@
     ({selectedPoint.x.toFixed(2)}, {selectedPoint.y.toFixed(2)}, {selectedPoint.z.toFixed(2)})
   </div>
 {/if}
+
+</div>

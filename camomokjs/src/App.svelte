@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { Matrix3, Matrix4, Vector2, Vector3 } from "three";
+  import { Color, Matrix3, Matrix4, Vector2, Vector3 } from "three";
   import { Model } from "./model";
   import * as cv from "./cv";
   import ModelView from "./ModelView.svelte";
   import ImageView from "./ImageView.svelte";
   import CalibrationSettings from "../CalibrationSettings.svelte";
 
-  const modelViewModel = new Model("/model.dae");
-  const imageViewModel = new Model("/model.dae");
+  const modelViewModel = new Model("/model.dae", 0.2, new Color("white"));
+  const imageViewModel = new Model("/model.dae", 0.3, new Color("orange"));
 
   let calibrationFlags = {
     CV_CALIB_FIX_PRINCIPAL_POINT: true,
@@ -174,8 +174,7 @@
 
   .panel {
     flex: 1;
-    /* box-sizing: content-box; */
-    /* border-right: 1px solid black; */
+    position:relative;
   }
 
   #topbar {
