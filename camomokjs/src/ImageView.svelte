@@ -360,6 +360,7 @@
     </button>
 
     <select bind:value={model.mode}>
+      <option value="xray">XRay</option>
       <option value="wireframe">Wireframe</option>
       <option value="shaded">Shaded</option>
       <option value="xyzMap">XYZ Map</option>

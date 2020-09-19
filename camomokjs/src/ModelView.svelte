@@ -52,7 +52,7 @@
 
   const scene = new Scene();
   $: scene.add(model);
-
+  
   const hoveredVertexMarker = new MarkerMesh(new Color("red"), 0.5);
   const selectedVertexMarker = new MarkerMesh(new Color("green"));
   scene.add(hoveredVertexMarker);
@@ -132,8 +132,8 @@
 
     renderCanvas();
 
-    canvas.addEventListener("pointermove", onMouseMove, false);
-    canvas.addEventListener("pointerdown", onMouseDown);
+    canvas.parentElement.addEventListener("pointermove", onMouseMove, false);
+    canvas.parentElement.addEventListener("pointerdown", onMouseDown);
     document.addEventListener("pointerup", onMouseUp);
   });
 
@@ -165,47 +165,22 @@
     }
 
     // Raycast vertices in the model
-    // if (!selectedPoint) {
-    const raycaster = new Raycaster();
-    raycaster.setFromCamera(mouse, camera);
-
-    const intersects = raycaster.intersectObjects(model.children, true);
-
-    const threshold = 50;
-    if (intersects.length > 0) {
-      let distance;
-      const intersect = intersects[0];
-      const point = intersect.point;
-      const object = intersect.object;
-      let vertex = null;
-      const test = object.worldToLocal(point);
-      const points = model.verticesPositions;
-
-      let curDist = -1;
-      for (let i = 0; i < points.length; i++) {
-        distance = points[i].distanceTo(test);
-        if (distance > threshold) {
-          continue;
-        } else if (curDist === -1 || distance < curDist) {
-          curDist = distance;
-          vertex = object.localToWorld(points[i].clone());
+    const {vertex, index} = model.findClosestVertex(mouse, camera);
+    // model.highlightVertexIndex(index);
+    
+    hoveredVertexMarker.visible = false;
+    if (vertex) {
+      const epsilon = 0.1;
+      highlightedIndex = -1;
+      for (let i = 0; i < objectPoints.length; i++) {
+        if (objectPoints[i].distanceTo(vertex) < epsilon) {
+          highlightedIndex = i;
+          break;
         }
       }
-
-      hoveredVertexMarker.visible = false;
-      if (vertex) {
-        const epsilon = 0.1;
-        highlightedIndex = -1;
-        for (let i = 0; i < objectPoints.length; i++) {
-          if (objectPoints[i].distanceTo(vertex) < epsilon) {
-            highlightedIndex = i;
-            break;
-          }
-        }
-        if (highlightedIndex == -1) {
-          hoveredVertexMarker.position.copy(vertex);
-          hoveredVertexMarker.visible = true;
-        }
+      if (highlightedIndex == -1) {
+        hoveredVertexMarker.position.copy(vertex);
+        hoveredVertexMarker.visible = true;
       }
     }
   }
@@ -265,6 +240,7 @@
 <div id="view">
   <div id="toolbar">
     <select bind:value={model.mode}>
+      <option value="xray">XRay</option>
       <option value="wireframe">Wireframe</option>
       <option value="shaded">Shaded</option>
       <option value="xyzMap">XYZ Map</option>

@@ -31,6 +31,7 @@ export class MarkerMesh extends Mesh {
     });
     // this.sphereMaterial.depthTest = false;
     const sphere = new Points(geometry, this.sphereMaterial);
+    sphere.renderOrder = 1000;
     this.add(sphere);
 
     // this.setSelected(false);

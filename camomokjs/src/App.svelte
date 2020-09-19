@@ -13,8 +13,10 @@
   const modelViewModel = new Model(
     "/SharedData/model.dae",
     0.2,
-    new Color("white")
-  );
+		new Color("white"),
+		"xray"
+	);
+	
   const imageViewModel = new Model(
     "/SharedData/model.dae",
     0.3,
