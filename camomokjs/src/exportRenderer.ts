@@ -33,9 +33,6 @@ export function renderSceneToArray(width, height, model, calibratedModelViewMatr
 
     var read = new Float32Array( width * height * 4 ); 
     renderer.readRenderTargetPixels( rtTexture, 0,0, width, height, read );
-
-    console.log("ASD",read);
-
     
     scene.remove(model);
     

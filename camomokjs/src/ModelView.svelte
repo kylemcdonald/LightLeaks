@@ -12,7 +12,7 @@
     Group,
     CameraHelper,
   } from "three";
-
+  import Stats from 'stats.js'
   import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
   import { FlyControls } from "three/examples/jsm/controls/FlyControls";
   import type { Model } from "./model";
@@ -31,13 +31,15 @@
     }
   }
   export let calibratedCamera: PerspectiveCamera;
-  let cameraHelper = undefined;
+  let cameraHelper: CameraHelper = undefined;
   $: {
     if (calibratedCamera && !cameraHelper) {
       cameraHelper = new CameraHelper(calibratedCamera);
       scene.add(cameraHelper);
     }
   }
+  export let showCamera: boolean = false;
+  $: if (cameraHelper) cameraHelper.visible = showCamera;
 
   let renderer: WebGLRenderer;
   let camera: PerspectiveCamera;
@@ -93,8 +95,20 @@
     deselectpoint: void;
   }>();
 
+  let stats;
+
   onMount(() => {
     canvas = document.getElementById("model-canvas")! as HTMLCanvasElement;
+
+    // stats = new Stats();
+    // stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+    // canvas.parentElement.appendChild( stats.dom );
+    // stats.dom.style.position = 'absolute'
+    // stats.dom.style.bottom = '0'
+    // stats.dom.style.right = '0'
+    // stats.dom.style.top = 'initial'
+    // stats.dom.style.left = 'initial'
+
 
     renderer = new WebGLRenderer({
       antialias: true,
@@ -125,6 +139,7 @@
 
   function renderCanvas() {
     requestAnimationFrame(() => renderCanvas());
+    // stats.begin();
     renderer.setSize(
       canvas?.parentElement!.offsetWidth,
       canvas?.parentElement!.offsetHeight
@@ -136,6 +151,7 @@
     camera.updateProjectionMatrix();
 
     controls.update();
+    // stats.end();
   }
 
   function onMouseMove(event: MouseEvent) {
@@ -190,7 +206,7 @@
           hoveredVertexMarker.position.copy(vertex);
           hoveredVertexMarker.visible = true;
         }
-      }       
+      }
     }
   }
 
@@ -262,3 +278,4 @@
     </div>
   {/if}
 </div>
+  

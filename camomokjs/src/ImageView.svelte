@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
+  import Stats from 'stats.js'
 
   import {
     PerspectiveCamera,
@@ -59,11 +60,10 @@
 
   export let highlightedIndex = -1;
   $: {
-    if (highlightedIndex == -1) {
-      for (let c of imagePointsGroup.children as MarkerMesh[]) {
-        c.color = new Color("red");
-      }
-    } else {
+    for (let c of imagePointsGroup.children as MarkerMesh[]) {
+      c.color = new Color("red");
+    }
+    if (highlightedIndex != -1) {
       (imagePointsGroup.children[
         highlightedIndex
       ] as MarkerMesh).color = new Color("rgb(0,200,60)");
@@ -112,6 +112,8 @@
   $: cursorMarker.visible = placeNewMarker;
   scene.add(cursorMarker);
 
+  let stats;
+
   const imagePointsGroup = new Group();
   scene.add(imagePointsGroup);
   $: {
@@ -136,6 +138,15 @@
   onMount(() => {
     canvas = document.getElementById("image-canvas")! as HTMLCanvasElement;
 
+    // stats = new Stats();
+    // stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+    // canvas.parentElement.appendChild( stats.dom );
+    // stats.dom.style.position = 'absolute'
+    // stats.dom.style.bottom = '0'
+    // stats.dom.style.right = '0'
+    // stats.dom.style.top = 'initial'
+    // stats.dom.style.left = 'initial'
+
     renderer = new WebGLRenderer({
       antialias: true,
       canvas,
@@ -156,6 +167,9 @@
 
   function renderCanvas() {
     requestAnimationFrame(() => renderCanvas());
+
+    // stats.begin();
+
     const w = canvas?.parentElement!.offsetWidth;
     const h = canvas?.parentElement!.offsetHeight;
 
@@ -187,6 +201,7 @@
     renderer.autoClearColor = true;
 
     controls.update();
+    // stats.end();
   }
 
   function loadImage(url) {

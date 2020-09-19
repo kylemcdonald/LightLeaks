@@ -71,15 +71,17 @@
     await loadCalibration(name);
   }
 
-  async function saveCalibration() {
+  async function saveCalibration() {		
+		const btn = document.getElementById('savebutton');
+		btn.innerText = 'Saving	...';
+
     const data = {
-      objectPoints,
+			objectPoints,
       imagePoints,
-      calibrationFlags,
+			calibrationFlags,
+			calibrationErrorValue		
     };
 
-		const btn = document.getElementById('savebutton');
-		btn.innerText = 'Saving...';
 
     await fetch("/saveCalibration", {
       method: "POST",
@@ -98,7 +100,13 @@
 		setTimeout(()=>{
 			btn.innerText = "Save"
 		}, 1000)
-  }
+	}
+	
+	function reset(){
+		objectPoints = [];
+		imagePoints = [];
+		calibrationErrorValue = -1;
+	}
 
   async function loadCalibration(name: string) {
     calibrationErrorValue = -1;
@@ -123,13 +131,12 @@
   }
 
   async function runCalibration() {
-    console.log("Run calibration");
     if (imageWidth == 0 || imagePoints.length < 3) return;
 
     calibrationErrorValue = -1;
 
-    await cv.waitForLoad();
-
+		await cv.waitForLoad();
+		
     const ret = cv.calibrateCamera(
       objectPoints,
       imagePoints,
@@ -224,7 +231,10 @@
 <main>
   <div id="topbar">
 		<h1>Light Leaks | Camamok</h1>
-		<button id="savebutton" on:click={()=> saveCalibration() }>Save</button>
+		<div class="rightbuttons">
+			<button id="resetbutton" on:click={()=> reset() }>Reset</button>
+			<button id="savebutton" on:click={()=> saveCalibration() }>Save</button>
+		</div>
   </div>
   <div class="panel-row" style="flex:1; ">
     <div class="panel" style="    overflow: scroll;">
@@ -250,7 +260,8 @@
         {objectPoints}
         bind:selectedPoint={selectedObjectPoint}
         bind:highlightedIndex
-        {calibratedCamera}
+				{calibratedCamera}
+				showCamera={calibrationErrorValue != -1}
         on:selectpoint={(ev) => (placingImagePoint = true)}
         on:deselectpoint={() => (placingImagePoint = false)} />
     </div>

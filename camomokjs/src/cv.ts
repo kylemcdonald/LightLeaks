@@ -20,34 +20,29 @@ const CV_CALIB_RATIONAL_MODEL = 16384;
 
 declare const cv: any;
 
-// import cv from "./opencv4.4.0/opencv";
-// import "./opencv4.4.0/opencv";
-// const cv = require('../opencv4.2.0/opencv.js');
-
 let loaded = false;
+let loadedPromises = [];
 
-window['onOpenCvReady'] = ()=>{
-  loaded=true;
-  console.log("OpenCV Loaded - 2")
-}
+if(cv.Mat){
+  console.log("OpenCV Loaded prior to bundle")
+  loaded = true;
+} 
 
 cv["onRuntimeInitialized"] = () => {
-  loaded = true;
   console.log("OpenCV Loaded")
+  loaded = true;
+  loadedPromises.forEach(p =>{
+    p();
+  })
 };
-
-console.log(cv)
 
 export async function waitForLoad() {
   if (loaded) {
     return Promise.resolve();
   }
 
-  return new Promise((resolve, reject) => {
-    cv["onRuntimeInitialized"] = () => {
-      loaded = true;
-      resolve();
-    };
+  return new Promise((res)=>{
+    loadedPromises.push(res)
   });
 }
 

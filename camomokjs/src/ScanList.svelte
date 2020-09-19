@@ -6,8 +6,24 @@ import { createEventDispatcher, onMount } from "svelte";
   export let scans:string[];
   export let loadedScan: string;
 
+  let scanStatus = {};
+
+  $: loadStatus(scans);
+
   onMount(async ()=>{
   })
+
+  async function loadStatus(scans){
+    if(!scans) return;
+    for(const scan of scans){
+      try {
+        const scanJson = await fetch(`/SharedData/${scan}/camamok.json`).then(res=>res.json())
+        scanStatus[scan] = true;
+      } catch(e){
+        scanStatus[scan] = false;
+      }
+    }
+  }
 
   const dispatch = createEventDispatcher<{
     loadscan: string;
@@ -71,7 +87,7 @@ import { createEventDispatcher, onMount } from "svelte";
       {#if scans}          
         {#each scans as scan}
           <tr on:click={()=>dispatch('loadscan',scan)} class:loaded={loadedScan==scan}>
-            <td>{scan}</td>
+            <td>{scan} {scanStatus[scan] == true ? '✔':''}</td>
           </tr>
         {/each}
       {/if}
