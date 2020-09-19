@@ -12,7 +12,7 @@
     Group,
     CameraHelper,
   } from "three";
-  import Stats from 'stats.js'
+  import Stats from "stats.js";
   import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
   import { FlyControls } from "three/examples/jsm/controls/FlyControls";
   import type { Model } from "./model";
@@ -52,7 +52,7 @@
 
   const scene = new Scene();
   $: scene.add(model);
-  
+
   const hoveredVertexMarker = new MarkerMesh(new Color("red"), 0.5);
   const selectedVertexMarker = new MarkerMesh(new Color("green"));
   scene.add(hoveredVertexMarker);
@@ -67,6 +67,15 @@
       (objectPointsGroup.children[
         highlightedIndex
       ] as MarkerMesh).color = new Color("rgb(0,200,60)");
+    }
+  }
+  export let highlightedVertex: Vector3 | undefined;
+  $: {
+    if (highlightedVertex) {
+      hoveredVertexMarker.position.copy(highlightedVertex);
+      hoveredVertexMarker.visible = true;
+    } else {
+      hoveredVertexMarker.visible = false;
     }
   }
 
@@ -108,7 +117,6 @@
     // stats.dom.style.right = '0'
     // stats.dom.style.top = 'initial'
     // stats.dom.style.left = 'initial'
-
 
     renderer = new WebGLRenderer({
       antialias: true,
@@ -165,10 +173,10 @@
     }
 
     // Raycast vertices in the model
-    const {vertex, index} = model.findClosestVertex(mouse, camera);
+    const { vertex, index, dist } = model.findClosestVertex(mouse, camera);
     // model.highlightVertexIndex(index);
-    
-    hoveredVertexMarker.visible = false;
+
+    highlightedVertex = undefined;
     if (vertex) {
       const epsilon = 0.1;
       highlightedIndex = -1;
@@ -178,9 +186,13 @@
           break;
         }
       }
-      if (highlightedIndex == -1) {
-        hoveredVertexMarker.position.copy(vertex);
-        hoveredVertexMarker.visible = true;
+
+      if (highlightedIndex == -1 && dist < 0.1 ) {
+        highlightedVertex = vertex.clone();
+        canvas.style.cursor = "pointer";
+      } else {
+        canvas.style.cursor = "initial";
+
       }
     }
   }
@@ -195,7 +207,7 @@
       mouseDown = false;
 
       if (mouseDownMovedDist < 5) {
-        const hoveredPoint = hoveredVertexMarker.position.clone();
+        const hoveredPoint = highlightedVertex.clone();
         if (
           selectedPoint?.distanceTo(hoveredPoint) < 0.01 ||
           !hoveredVertexMarker.visible
@@ -254,4 +266,3 @@
     </div>
   {/if}
 </div>
-  

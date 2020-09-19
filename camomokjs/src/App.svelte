@@ -53,6 +53,7 @@
   $: imagePoints && objectPoints && calibrationFlags && runCalibration();
 
   let highlightedIndex = -1;
+  let highlightedVertex = undefined;
 
   let calibratedModelViewMatrix: Matrix4 = new Matrix4();
   let cameraMatrix: Matrix3 = new Matrix3();
@@ -261,7 +262,8 @@
         model={modelViewModel}
         {objectPoints}
         bind:selectedPoint={selectedObjectPoint}
-        bind:highlightedIndex
+				bind:highlightedIndex
+				bind:highlightedVertex
 				{calibratedCamera}
 				showCamera={calibrationErrorValue != -1}
         on:selectpoint={(ev) => (placingImagePoint = true)}
@@ -275,10 +277,12 @@
 					`/SharedData/${loadedScan}/cameraImages/vertical/inverse/6.jpg`,
 					] : undefined}
         {imagePoints}
+        {objectPoints}
         {calibratedModelViewMatrix}
         {cameraMatrix}
         bind:calibratedCamera
-        bind:highlightedIndex
+				bind:highlightedIndex
+				bind:highlightedVertex
         placeNewMarker={placingImagePoint}
         showModel={calibrationErrorValue != -1}
         on:imageloaded={(ev) => {
@@ -291,7 +295,12 @@
             addCalibrationPoint(selectedObjectPoint, ev.detail);
             placingImagePoint = false;
             selectedObjectPoint = undefined;
-          }
+          } else if(highlightedVertex){
+						addCalibrationPoint(highlightedVertex, ev.detail);
+						placingImagePoint = false;
+						selectedObjectPoint = undefined;
+						highlightedVertex = undefined;
+					}
         }}
         on:imagepointmove={(ev) => {
           imagePoints[ev.detail.index] = ev.detail.point;

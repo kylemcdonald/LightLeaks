@@ -22,7 +22,7 @@
     Material,
   } from "three";
   import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-  import { makeProjectionMatrix } from "./cv";
+  import { calibrateCamera, makeProjectionMatrix } from "./cv";
   import { MarkerMesh } from "./markerMesh";
   import type { Model } from "./model";
 
@@ -36,6 +36,7 @@
   }
 
   export let imagePoints: Vector2[];
+  export let objectPoints: Vector3[];
 
   export let calibratedModelViewMatrix: Matrix4;
   export let cameraMatrix: Matrix3;
@@ -69,6 +70,18 @@
       ] as MarkerMesh).color = new Color("rgb(0,200,60)");
     }
   }
+  export let highlightedVertex: undefined | Vector3;
+  $: {
+    if (highlightedVertex) {
+      hoveredVertexMarker.position.copy(highlightedVertex);
+      hoveredVertexMarker.visible = true;
+    } else {
+      hoveredVertexMarker.visible = false;
+    }
+  }
+
+
+
   export let placeNewMarker: boolean = false;
 
   const dispatch = createEventDispatcher<{
@@ -109,8 +122,10 @@
 
   let selectedMarkerIndex = -1;
   const cursorMarker = new MarkerMesh(new Color("red"), 0.5);
+  const hoveredVertexMarker = new MarkerMesh(new Color("red"), 0.5);
   $: cursorMarker.visible = placeNewMarker;
   scene.add(cursorMarker);
+  calibratedScene.add(hoveredVertexMarker);
 
   let stats;
 
@@ -125,6 +140,7 @@
 
     while (imagePointsGroup.children.length < imagePoints.length) {
       const m = new MarkerMesh();
+      m.renderOrder = 2000;
       m.color = new Color("red");
       imagePointsGroup.add(m);
     }
@@ -134,6 +150,28 @@
       imagePointsGroup.children[i].position.y = imagePoints[i].y;
     }
   }
+
+  const objectPointsGroup = new Group();
+  calibratedScene.add(objectPointsGroup);
+  $: {
+    while (objectPointsGroup.children.length > objectPoints.length) {
+      objectPointsGroup.remove(
+        objectPointsGroup.children[objectPointsGroup.children.length - 1]
+      );
+    }
+
+    while (objectPointsGroup.children.length < objectPoints.length) {
+      const m = new MarkerMesh();
+      m.renderOrder = 1000;
+      m.color = new Color("rgb(100,50,50)");
+      objectPointsGroup.add(m);
+    }
+
+    for (let i = 0; i < objectPoints.length; i++) {
+      objectPointsGroup.children[i].position.copy(objectPoints[i]);
+    }
+  }
+
 
   onMount(() => {
     canvas = document.getElementById("image-canvas")! as HTMLCanvasElement;
@@ -158,8 +196,8 @@
     controls.mouseButtons.LEFT = MOUSE.RIGHT;
     controls.enableRotate = false;
 
-    canvas.addEventListener("pointermove", onMouseMove, false);
-    canvas.addEventListener("pointerdown", onMouseDown);
+    canvas.parentElement.addEventListener("pointermove", onMouseMove, false);
+    canvas.parentElement.addEventListener("pointerdown", onMouseDown);
     document.addEventListener("pointerup", onMouseUp);
 
     renderCanvas();
@@ -185,6 +223,20 @@
     renderer.autoClearColor = false;
 
     // Project the corners of the image (0,imageSize) to screen space (-1,1)
+    const {viewportX, viewportY, viewportWidth, viewportHeight} = viewport();
+
+    renderer.setViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+    renderer.render(calibratedScene, calibratedCamera);
+    renderer.autoClearColor = true;
+
+    controls.update();
+    // stats.end();
+  }
+
+  function viewport(){
+    const w = canvas?.parentElement!.offsetWidth;
+    const h = canvas?.parentElement!.offsetHeight;
+
     const p1 = new Vector3(0, 0, 0);
     p1.project(imageCamera);
     const p2 = new Vector3(imageWidth, imageHeight, 0);
@@ -192,16 +244,12 @@
 
     // Calculate the threejs viewport for the calibrated camera
     const viewportX = w / 2 + (p1.x * w) / 2;
-    const viewporty = h / 2 + (p1.y * h) / 2;
+    const viewportY = h / 2 + (p1.y * h) / 2;
     const viewportWidth = ((p2.x - p1.x) * w) / 2;
     const viewportHeight = ((p2.y - p1.y) * h) / 2;
-
-    renderer.setViewport(viewportX, viewporty, viewportWidth, viewportHeight);
-    renderer.render(calibratedScene, calibratedCamera);
-    renderer.autoClearColor = true;
-
-    controls.update();
-    // stats.end();
+    return {
+      viewportX, viewportY, viewportWidth, viewportHeight
+    }
   }
 
   function loadImage(url) {
@@ -290,10 +338,40 @@
 
     const markerIndex = findHoveredMarkerIndex(mouse.x, mouse.y);
     highlightedIndex = markerIndex;
+    highlightedVertex = undefined;
     if (markerIndex != -1) {
       canvas.style.cursor = "pointer";
     } else {
-      canvas.style.cursor = "initial";
+      if(showModel){
+        
+        const {viewportX, viewportY, viewportWidth, viewportHeight} = viewport();
+        const mousePosInViewport = new Vector2(event.offsetX, event.offsetY);
+        mousePosInViewport.y = canvas.offsetHeight - mousePosInViewport.y;
+        
+        mousePosInViewport.x -= viewportX;
+        mousePosInViewport.y -= viewportY;
+
+        mousePosInViewport.x /= viewportWidth;
+        mousePosInViewport.y /= viewportHeight;
+
+        mousePosInViewport.x = (mousePosInViewport.x * 2) - 1;
+        mousePosInViewport.y = (mousePosInViewport.y * 2) - 1;
+
+        const {dist, vertex} = model.findClosestVertex(mousePosInViewport, calibratedCamera);
+        if(dist < 0.1){
+          highlightedVertex = vertex.clone();
+          canvas.style.cursor = "pointer";
+
+        } else {
+          canvas.style.cursor = "initial";
+
+        }
+
+      } else {
+        canvas.style.cursor = "initial";
+
+      }
+
     }
   }
 
@@ -302,7 +380,7 @@
     mouseDownMovedDist = 0;
 
     selectedMarkerIndex = findHoveredMarkerIndex(mouse.x, mouse.y);
-    if (selectedMarkerIndex != -1) {
+    if (selectedMarkerIndex != -1 ) {
       controls.enablePan = false;
     }
   }
@@ -311,12 +389,13 @@
     if (mouseDown) {
       mouseDown = false;
       controls.enablePan = true;
+      // controls.mouseButtons.LEFT = MOUSE.RIGHT;
 
       if (mouseDownMovedDist < 5) {
         const imageCoord = imageCoordinate(mouse.x, mouse.y);
-        if (imageCoord) {
+        if (imageCoord || highlightedVertex) {
           dispatch("imageclick", imageCoord);
-        }
+        } 
       }
     }
   }
