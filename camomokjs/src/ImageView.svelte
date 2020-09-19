@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
-  import Stats from 'stats.js'
+  import Stats from "stats.js";
 
   import {
     PerspectiveCamera,
@@ -80,8 +80,6 @@
     }
   }
 
-
-
   export let placeNewMarker: boolean = false;
 
   const dispatch = createEventDispatcher<{
@@ -122,7 +120,9 @@
 
   let selectedMarkerIndex = -1;
   const cursorMarker = new MarkerMesh(new Color("red"), 0.5);
+  cursorMarker.renderOrder = 3000;
   const hoveredVertexMarker = new MarkerMesh(new Color("red"), 0.5);
+  hoveredVertexMarker.renderOrder = 3000;
   $: cursorMarker.visible = placeNewMarker;
   scene.add(cursorMarker);
   calibratedScene.add(hoveredVertexMarker);
@@ -171,7 +171,6 @@
       objectPointsGroup.children[i].position.copy(objectPoints[i]);
     }
   }
-
 
   onMount(() => {
     canvas = document.getElementById("image-canvas")! as HTMLCanvasElement;
@@ -223,7 +222,7 @@
     renderer.autoClearColor = false;
 
     // Project the corners of the image (0,imageSize) to screen space (-1,1)
-    const {viewportX, viewportY, viewportWidth, viewportHeight} = viewport();
+    const { viewportX, viewportY, viewportWidth, viewportHeight } = viewport();
 
     renderer.setViewport(viewportX, viewportY, viewportWidth, viewportHeight);
     renderer.render(calibratedScene, calibratedCamera);
@@ -233,7 +232,7 @@
     // stats.end();
   }
 
-  function viewport(){
+  function viewport() {
     const w = canvas?.parentElement!.offsetWidth;
     const h = canvas?.parentElement!.offsetHeight;
 
@@ -248,8 +247,11 @@
     const viewportWidth = ((p2.x - p1.x) * w) / 2;
     const viewportHeight = ((p2.y - p1.y) * h) / 2;
     return {
-      viewportX, viewportY, viewportWidth, viewportHeight
-    }
+      viewportX,
+      viewportY,
+      viewportWidth,
+      viewportHeight,
+    };
   }
 
   function loadImage(url) {
@@ -342,46 +344,59 @@
     if (markerIndex != -1) {
       canvas.style.cursor = "pointer";
     } else {
-      if(showModel){
-        
-        const {viewportX, viewportY, viewportWidth, viewportHeight} = viewport();
+      if (showModel) {
+        const {
+          viewportX,
+          viewportY,
+          viewportWidth,
+          viewportHeight,
+        } = viewport();
         const mousePosInViewport = new Vector2(event.offsetX, event.offsetY);
         mousePosInViewport.y = canvas.offsetHeight - mousePosInViewport.y;
-        
+
         mousePosInViewport.x -= viewportX;
         mousePosInViewport.y -= viewportY;
 
         mousePosInViewport.x /= viewportWidth;
         mousePosInViewport.y /= viewportHeight;
 
-        mousePosInViewport.x = (mousePosInViewport.x * 2) - 1;
-        mousePosInViewport.y = (mousePosInViewport.y * 2) - 1;
+        mousePosInViewport.x = mousePosInViewport.x * 2 - 1;
+        mousePosInViewport.y = mousePosInViewport.y * 2 - 1;
 
-        const {dist, vertex} = model.findClosestVertex(mousePosInViewport, calibratedCamera);
-        if(dist < 0.1){
-          highlightedVertex = vertex.clone();
-          canvas.style.cursor = "pointer";
-
+        if (
+          mousePosInViewport.x > -1 &&
+          mousePosInViewport.x < 1 &&
+          mousePosInViewport.y > -1 &&
+          mousePosInViewport.y < 1
+        ) {
+          const { dist, vertex } = model.findClosestVertex(
+            mousePosInViewport,
+            calibratedCamera
+          );
+          if (dist < 0.1) {
+            highlightedVertex = vertex.clone();
+            canvas.style.cursor = "pointer";
+          } else {
+            canvas.style.cursor = "initial";
+          }
         } else {
           canvas.style.cursor = "initial";
-
         }
-
       } else {
         canvas.style.cursor = "initial";
-
       }
-
     }
   }
 
   function onMouseDown(event: MouseEvent) {
-    mouseDown = true;
-    mouseDownMovedDist = 0;
+    if (event.button == 0) {
+      mouseDown = true;
+      mouseDownMovedDist = 0;
 
-    selectedMarkerIndex = findHoveredMarkerIndex(mouse.x, mouse.y);
-    if (selectedMarkerIndex != -1 ) {
-      controls.enablePan = false;
+      selectedMarkerIndex = findHoveredMarkerIndex(mouse.x, mouse.y);
+      if (selectedMarkerIndex != -1) {
+        controls.enablePan = false;
+      }
     }
   }
 
@@ -395,7 +410,7 @@
         const imageCoord = imageCoordinate(mouse.x, mouse.y);
         if (imageCoord || highlightedVertex) {
           dispatch("imageclick", imageCoord);
-        } 
+        }
       }
     }
   }

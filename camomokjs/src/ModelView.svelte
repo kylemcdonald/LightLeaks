@@ -187,7 +187,7 @@
         }
       }
 
-      if (highlightedIndex == -1 && dist < 0.1 ) {
+      if (highlightedIndex == -1 && dist < 0.1 && vertex) {
         highlightedVertex = vertex.clone();
         canvas.style.cursor = "pointer";
       } else {
@@ -198,8 +198,10 @@
   }
 
   function onMouseDown(event: MouseEvent) {
-    mouseDown = true;
-    mouseDownMovedDist = 0;
+    if(event.button == 0){
+      mouseDown = true;
+      mouseDownMovedDist = 0;
+    }
   }
 
   function onMouseUp(event: MouseEvent) {
