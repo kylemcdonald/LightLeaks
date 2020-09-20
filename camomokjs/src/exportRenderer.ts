@@ -1,7 +1,7 @@
-import { PerspectiveCamera, WebGLRenderer, LinearFilter, NearestFilter, RGBAFormat, FloatType, WebGLRenderTarget, Scene, Vector2 } from "three";
+import { PerspectiveCamera, WebGLRenderer, LinearFilter, NearestFilter, RGBAFormat, FloatType, WebGLRenderTarget, Scene, Vector2, Matrix4 } from "three";
 import { makeProjectionMatrix } from "./cv";
 
-export function renderSceneToArray(width, height, model, calibratedModelViewMatrix, cameraMatrix) {
+export function renderSceneToArray(width, height, model, calibratedModelViewMatrix, cameraMatrix, imageSize) {
     const scene = new Scene();
     scene.add(model);
 
@@ -9,10 +9,16 @@ export function renderSceneToArray(width, height, model, calibratedModelViewMatr
     camera.matrixAutoUpdate = false;
     camera.matrix.getInverse(calibratedModelViewMatrix);
     camera.updateMatrixWorld(true);
-    const projMatrix = makeProjectionMatrix(
+    let projMatrix = makeProjectionMatrix(
       cameraMatrix,
-      new Vector2(width, height)
+      imageSize
     );
+
+    // Flip Y
+    const m = new Matrix4;
+    m.makeScale(1,-1,1);
+    projMatrix = projMatrix.multiply(m);
+
     camera.projectionMatrix.copy(projMatrix);
     camera.projectionMatrixInverse.getInverse(
       camera.projectionMatrix
@@ -27,13 +33,18 @@ export function renderSceneToArray(width, height, model, calibratedModelViewMatr
 
     const renderer = new WebGLRenderer();
 
+  
+
     renderer.setRenderTarget( rtTexture );
     renderer.setSize( width, height );
+    renderer.setViewport(0,0, width, height);
     renderer.render(scene, camera);
 
-    var read = new Float32Array( width * height * 4 ); 
+    const read = new Float32Array( width * height * 4 ); 
     renderer.readRenderTargetPixels( rtTexture, 0,0, width, height, read );
-    
+    console.log(read)
     scene.remove(model);
+
+    return read;
     
   }

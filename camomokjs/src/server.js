@@ -1,18 +1,21 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const bodyParser = require('body-parser');
+const multer  = require('multer');
+const os = require('os');
 
 const app = express();
 
 const shareDataPath = path.join(__dirname, '../../SharedData/')
 app.use(express.static(path.join(__dirname, '../public')  , {
-  etag: false
+  // etag: false
 }));
 app.use('/SharedData',express.static(shareDataPath, {
-  etag: false
+  // etag: false
 }));
-app.use(express.json())
-app.disable('etag');
+app.use(bodyParser({limit: '100mb'}));
+
 
 
 async function getScans(){
@@ -40,6 +43,18 @@ app.post('/saveCalibration', async (req,res)=>{
   }
   res.send();
 })
+
+
+var upload = multer({ dest: os.tmpdir() });
+var type = upload.single('image');
+
+app.post('/saveXYZMap/:scan',type, async (req,res)=>{
+  fs.copyFileSync(req.file.path, path.join(shareDataPath, req.params.scan, 'camamokXyzMap.raw'))
+  fs.unlinkSync(req.file.path);
+
+  res.send();
+})
+
 
 app.listen(8080, () => {
   console.log('Camamok started and available at http://localhost:8080');

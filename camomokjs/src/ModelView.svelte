@@ -208,7 +208,7 @@
     if (mouseDown) {
       mouseDown = false;
 
-      if (mouseDownMovedDist < 5) {
+      if (mouseDownMovedDist < 5 && highlightedVertex) {
         const hoveredPoint = highlightedVertex.clone();
         if (
           selectedPoint?.distanceTo(hoveredPoint) < 0.01 ||

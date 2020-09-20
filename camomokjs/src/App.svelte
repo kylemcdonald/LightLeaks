@@ -8,15 +8,15 @@
   import PointList from "./PointList.svelte";
   import { onMount } from "svelte";
   import ScanList from "./ScanList.svelte";
-  import {renderSceneToArray} from "./exportRenderer";
+  import { renderSceneToArray } from "./exportRenderer";
 
   const modelViewModel = new Model(
     "/SharedData/model.dae",
     0.2,
-		new Color("white"),
-		"xray"
-	);
-	
+    new Color("white"),
+    "xray"
+  );
+
   const imageViewModel = new Model(
     "/SharedData/model.dae",
     0.3,
@@ -25,8 +25,8 @@
   const exportModel = new Model(
     "/SharedData/model.dae",
     0.3,
-		new Color(),
-		"xyzMap"
+    new Color(),
+    "xyzMap"
   );
 
   let calibrationFlags = {
@@ -74,17 +74,20 @@
     await loadCalibration(name);
   }
 
-  async function saveCalibration() {		
-		const btn = document.getElementById('savebutton');
-		btn.innerText = 'Saving	...';
+  async function saveCalibration() {
+    const btn = document.getElementById("savebutton");
+    btn.innerText = "Saving	...";
 
+		const xyzMapWidth = imageWidth / 4;
+		const xyzMapHeight = imageHeight / 4;
     const data = {
-			objectPoints,
+      objectPoints,
       imagePoints,
-			calibrationFlags,
-			calibrationErrorValue		
+      calibrationFlags,
+			calibrationErrorValue,
+			xyzMapWidth,
+			xyzMapHeight
     };
-
 
     await fetch("/saveCalibration", {
       method: "POST",
@@ -96,20 +99,32 @@
         data,
         scan: loadedScan,
       }),
-		});
+    });
 
-		renderSceneToArray(imageWidth, imageHeight, exportModel, calibratedModelViewMatrix, cameraMatrix);
+    const arraybuffer = renderSceneToArray(
+      xyzMapWidth,
+      xyzMapHeight,
+      exportModel,
+      calibratedModelViewMatrix,
+			cameraMatrix,
+			new Vector2(imageWidth, imageHeight)
+    );
+    const formData = new FormData();
+    formData.append("image", new Blob([arraybuffer]));
+    await fetch("/saveXYZMap/" + loadedScan, {
+      method: "POST",
+      body: formData,
+		});
 		
-		setTimeout(()=>{
-			btn.innerText = "Save"
-		}, 1000)
-	}
-	
-	function reset(){
-		objectPoints = [];
-		imagePoints = [];
-		calibrationErrorValue = -1;
-	}
+		console.log("Saved")
+		btn.innerText = "Save";
+  }
+
+  function reset() {
+    objectPoints = [];
+    imagePoints = [];
+    calibrationErrorValue = -1;
+  }
 
   async function loadCalibration(name: string) {
     calibrationErrorValue = -1;
@@ -138,8 +153,8 @@
 
     calibrationErrorValue = -1;
 
-		await cv.waitForLoad();
-		
+    await cv.waitForLoad();
+
     const ret = cv.calibrateCamera(
       objectPoints,
       imagePoints,
@@ -214,15 +229,15 @@
     width: 100%;
     border-bottom: 1px solid gray;
     height: 50px;
-		box-sizing: content-box;
-		display: flex;
-		justify-content: space-between;
-	}
-	
-	#savebutton {
-		margin-right: 20px;
-		margin-top: 9px;
-	}
+    box-sizing: content-box;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #savebutton {
+    margin-right: 20px;
+    margin-top: 9px;
+  }
 
   h1 {
     font-size: 20px;
@@ -233,11 +248,11 @@
 
 <main>
   <div id="topbar">
-		<h1>Light Leaks | Camamok</h1>
-		<div class="rightbuttons">
-			<button id="resetbutton" on:click={()=> reset() }>Reset</button>
-			<button id="savebutton" on:click={()=> saveCalibration() }>Save</button>
-		</div>
+    <h1>Light Leaks | Camamok</h1>
+    <div class="rightbuttons">
+      <button id="resetbutton" on:click={() => reset()}>Reset</button>
+      <button id="savebutton" on:click={() => saveCalibration()}>Save</button>
+    </div>
   </div>
   <div class="panel-row" style="flex:1; ">
     <div class="panel" style="    overflow: scroll;">
@@ -253,8 +268,7 @@
         fov={new Vector2(calibrationValues.fovx, calibrationValues.fovy)}
         principalPoint={calibrationValues.principalPoint}
         aspectRatio={calibrationValues.aspectRatio} />
-			<PointList bind:objectPoints bind:imagePoints bind:highlightedIndex />
-
+      <PointList bind:objectPoints bind:imagePoints bind:highlightedIndex />
     </div>
 
     <div class="panel" style="flex:1">
@@ -262,27 +276,24 @@
         model={modelViewModel}
         {objectPoints}
         bind:selectedPoint={selectedObjectPoint}
-				bind:highlightedIndex
-				bind:highlightedVertex
-				{calibratedCamera}
-				showCamera={calibrationErrorValue != -1}
+        bind:highlightedIndex
+        bind:highlightedVertex
+        {calibratedCamera}
+        showCamera={calibrationErrorValue != -1}
         on:selectpoint={(ev) => (placingImagePoint = true)}
         on:deselectpoint={() => (placingImagePoint = false)} />
     </div>
     <div class="panel" style="flex:1;">
       <ImageView
         model={imageViewModel}
-        imageUrls={loadedScan ? [
-					`/SharedData/${loadedScan}/referenceImage.jpg`,
-					`/SharedData/${loadedScan}/cameraImages/vertical/inverse/6.jpg`,
-					] : undefined}
+        imageUrls={loadedScan ? [`/SharedData/${loadedScan}/referenceImage.jpg`, `/SharedData/${loadedScan}/cameraImages/vertical/inverse/6.jpg`] : undefined}
         {imagePoints}
         {objectPoints}
         {calibratedModelViewMatrix}
         {cameraMatrix}
         bind:calibratedCamera
-				bind:highlightedIndex
-				bind:highlightedVertex
+        bind:highlightedIndex
+        bind:highlightedVertex
         placeNewMarker={placingImagePoint}
         showModel={calibrationErrorValue != -1}
         on:imageloaded={(ev) => {
@@ -295,12 +306,12 @@
             addCalibrationPoint(selectedObjectPoint, ev.detail);
             placingImagePoint = false;
             selectedObjectPoint = undefined;
-          } else if(highlightedVertex){
-						addCalibrationPoint(highlightedVertex, ev.detail);
-						placingImagePoint = false;
-						selectedObjectPoint = undefined;
-						highlightedVertex = undefined;
-					}
+          } else if (highlightedVertex) {
+            addCalibrationPoint(highlightedVertex, ev.detail);
+            placingImagePoint = false;
+            selectedObjectPoint = undefined;
+            highlightedVertex = undefined;
+          }
         }}
         on:imagepointmove={(ev) => {
           imagePoints[ev.detail.index] = ev.detail.point;

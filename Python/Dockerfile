@@ -1,10 +1,9 @@
 # Start from a core stack version
-FROM jupyter/minimal-notebook
+FROM jupyter/minimal-notebook:612aa5710bf9
 USER root
 
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && apt-get install -y libsm6 libxext6 libturbojpeg  libxrender-dev libjpeg-dev libjpeg8-dev
-
+RUN apt-get update && apt-get install -y libsm6 libxext6 libturbojpeg  libxrender-dev libjpeg-dev libjpeg8-dev libgl1-mesa-glx
 
 USER $NB_UID
 
