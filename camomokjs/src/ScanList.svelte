@@ -8,12 +8,12 @@ import { createEventDispatcher, onMount } from "svelte";
 
   let scanStatus = {};
 
-  $: loadStatus(scans);
+  $: scans && loadStatus();
 
   onMount(async ()=>{
   })
 
-  async function loadStatus(scans){
+  export async function loadStatus(){
     if(!scans) return;
     for(const scan of scans){
       try {

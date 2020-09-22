@@ -64,6 +64,7 @@
   let imageWidth = 0;
   let imageHeight = 0;
 
+	let scanListComponent: ScanList;
   // Is the app currently in a state of placing new image point?
   let placingImagePoint: boolean = false;
 
@@ -118,6 +119,8 @@
 		
 		console.log("Saved")
 		btn.innerText = "Save";
+
+		scanListComponent.loadStatus();
   }
 
   function reset() {
@@ -256,7 +259,8 @@
   </div>
   <div class="panel-row" style="flex:1; ">
     <div class="panel" style="    overflow: scroll;">
-      <ScanList
+			<ScanList
+				bind:this={scanListComponent}
         {scans}
         {loadedScan}
         on:loadscan={(ev) => loadScan(ev.detail)} />
