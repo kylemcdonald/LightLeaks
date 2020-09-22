@@ -71,14 +71,15 @@ def get_projector_size(data_dir):
     return proj_width, proj_height
 
 
-def gausian_blur(img, distance):
+def gaussian_blur(img, distance):
+    # Gaussian blur is the slowest part of the app
     return cv2.GaussianBlur(img, (distance, distance), 0)
 
 def image_load_job(blur_distance, fn):
     # faster to do conversion to gray here (in parallel) rather than later
     data = imread(fn).mean(axis=2)
 
-    lowpass = gausian_blur(data, blur_distance)
+    lowpass = gaussian_blur(data, blur_distance)
     gauss_highpass = data - lowpass
     gauss_highpass = gauss_highpass / 2
     gauss_highpass = gauss_highpass + 128
@@ -201,8 +202,6 @@ def pack_image(diff_code_horizontal, diff_code_vertical):
     # packed_vertical[cam_mask_image == 0] = 0
     # packed_horizontal[cam_mask_image == 0] = 0
 
-    # packed = np.dstack((packed_vertical, packed_horizontal, np.zeros_like(packed_horizontal)))
-    # packed = np.dstack((packed_vertical, packed_horizontal))
     return packed_horizontal, packed_vertical
 
 
@@ -235,9 +234,7 @@ def build_pro_map(packed_vertical, packed_horizontal, confidence, w, h):
 def store_results(out_path, pro_map, pro_confidence, confidence, reference_image, min_image, packed):
     if not os.path.exists(out_path):
         os.makedirs(out_path)
-
-    # print('storing in '+out_path)
-    #   print(pro_confidence.dtype)
+    
     # Store results
     imwrite(os.path.join(out_path,'proMap.png'), pro_map)
     imwrite(os.path.join(out_path, 'proConfidence.exr'), pro_confidence)
@@ -245,7 +242,4 @@ def store_results(out_path, pro_map, pro_confidence, confidence, reference_image
     imwrite(os.path.join(out_path, 'referenceImage.jpg'), reference_image)
 
     imwrite(os.path.join(out_path, 'minImage.png'), min_image)
-
-    #   im = np.dstack((packed) np.zeros_like(packed_horizontal)))
-    #   imwrite('camBinary.exr') im)
     np.save(os.path.join(out_path, 'camBinary.npy'), packed)

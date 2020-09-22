@@ -75,3 +75,5 @@ proguard-project.txt
 node_modules/
 /web/dist
 /Python/env
+!/Python/bin
+__pycache__/
