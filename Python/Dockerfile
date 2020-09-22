@@ -14,6 +14,7 @@ RUN pip install --requirement /tmp/requirements.txt && \
     fix-permissions /home/$NB_USER
 
 RUN git clone https://github.com/kylemcdonald/python-utils utils
+ENV PYTHONPATH="${PYTHONPATH}:/home/jovyan/"
 
 USER $NB_UID
 # CMD ["start-notebook.sh --NotebookApp.token="]

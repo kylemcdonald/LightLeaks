@@ -74,3 +74,4 @@ proguard-project.txt
 
 node_modules/
 /web/dist
+/Python/env
