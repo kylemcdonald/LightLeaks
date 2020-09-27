@@ -89,7 +89,7 @@ def buildXyzMap(data_dir, prefix):
         255 / (cam_index_map.max()+1)
     cam_index_map_colored = cv2.applyColorMap(
         cam_index_map_colored.astype(np.uint8), cv2.COLORMAP_JET)
-    imshow(cam_index_map_colored, fmt='jpg')
+    # imshow(cam_index_map_colored, fmt='jpg')
 
     # Store result
     debug_out_path = os.path.join(data_dir, 'BuildXYZ')
@@ -152,8 +152,8 @@ def overflow_fix(cam_binary_map, proj_size):
 
 def pack_maps(confidence, cam_binary_map, cam_xyz_map, cam_index, proj_size):
     """ Pack camera confidence, cam binary projector map and camera xyz map """
-    # prepare confidenceFlat
-    confidenceFlat = confidence.reshape(-1, 1)
+    # prepare confidence_flat
+    confidence_flat = confidence.reshape(-1, 1)
 
     # prepare cam_binary_mapFlat
     cam_binary_map_flat = cam_binary_map.reshape((-1, 2))
@@ -170,10 +170,10 @@ def pack_maps(confidence, cam_binary_map, cam_xyz_map, cam_index, proj_size):
     cam_index_flat = np.full((cam_xyz_map_flat.shape[0], 1), cam_index)
 
     # Cam Pixel Index
-    camPixelIndex = np.arange(cam_xyz_map_flat.shape[0])[:, np.newaxis]
+    cam_pixel_index = np.arange(cam_xyz_map_flat.shape[0])[:, np.newaxis]
 
     # stack and return everything in shape: (rows x cols), 7
-    return np.hstack((confidenceFlat, cam_binary_map_flat, cam_xyz_map_flat, cam_index_flat, camPixelIndex))
+    return np.hstack((confidence_flat, cam_binary_map_flat, cam_xyz_map_flat, cam_index_flat, cam_pixel_index))
 
 
 def dedupe(packed):
@@ -192,16 +192,21 @@ def unpack_maps(packed, proj_size):
     proj_height = proj_size[1]
     projector_xyz = np.zeros((proj_height, proj_width, 3))
     projector_confidence = np.zeros((proj_height, proj_width, 1))
-    camIndex = np.full((proj_height, proj_width, 1), -1)
-    camPixelIndex = np.zeros((proj_height, proj_width, 1))
+    cam_index = np.full((proj_height, proj_width, 1), -1)
+    cam_pixel_index = np.zeros((proj_height, proj_width, 1))
 
     # assign xyzMap values use proMapFlat indices
+    # packed[:,0] contains confidence value
+    # packed[:,1] contains binary code (projector pixel coordinate)
+    # packed[:,2:5] contains xyz coordinate
+    # packed[:,5] contains camera index (debug)
+    # packed[:,6] contains camera pixel index (debug)
     proMapFlat = packed[:, 1].astype(np.int32)
-    projector_xyz.reshape(-1, 3)[proMapFlat] = packed[:, 2:5]
     projector_confidence.reshape(-1)[proMapFlat] = packed[:, 0]
+    projector_xyz.reshape(-1, 3)[proMapFlat] = packed[:, 2:5]
 
     # DEBUG STUFF
-    camIndex.reshape(-1)[proMapFlat] = packed[:, 5]
-    camPixelIndex.reshape(-1)[proMapFlat] = packed[:, 6].astype(np.uint64)
+    cam_index.reshape(-1)[proMapFlat] = packed[:, 5]
+    cam_pixel_index.reshape(-1)[proMapFlat] = packed[:, 6].astype(np.uint64)
 
-    return projector_xyz, projector_confidence, camIndex, camPixelIndex
+    return projector_xyz, projector_confidence, cam_index, cam_pixel_index
