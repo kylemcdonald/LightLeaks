@@ -134,7 +134,7 @@
 
     if (!name) return;
     try {
-      const data = await fetch(`/SharedData/${name}/camamok.json`).then((res) =>
+      const data = await fetch(`/SharedData/${name}/camamok/camamok.json`).then((res) =>
         res.json()
       );
       objectPoints = data.objectPoints.map((p) => new Vector3(p.x, p.y, p.z));
@@ -290,7 +290,7 @@
     <div class="panel" style="flex:1;">
       <ImageView
         model={imageViewModel}
-        imageUrls={loadedScan ? [`/SharedData/${loadedScan}/referenceImage.jpg`, `/SharedData/${loadedScan}/cameraImages/vertical/inverse/6.jpg`] : undefined}
+        imageUrls={loadedScan ? [`/SharedData/${loadedScan}/processedScan/referenceImage.jpg`, `/SharedData/${loadedScan}/cameraImages/vertical/inverse/6.jpg`] : undefined}
         {imagePoints}
         {objectPoints}
         {calibratedModelViewMatrix}

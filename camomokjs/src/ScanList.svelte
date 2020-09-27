@@ -17,7 +17,7 @@ import { createEventDispatcher, onMount } from "svelte";
     if(!scans) return;
     for(const scan of scans){
       try {
-        const scanJson = await fetch(`/SharedData/${scan}/camamok.json`).then(res=>res.json())
+        const scanJson = await fetch(`/SharedData/${scan}/camamok/camamok.json`).then(res=>res.json())
         scanStatus[scan] = true;
       } catch(e){
         scanStatus[scan] = false;

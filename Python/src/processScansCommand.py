@@ -33,7 +33,7 @@ def processScans(data_dir, prefix, dest_folder, force_reprocess, blur_distance):
 
     if len(scan_folders) == 0:
         click.secho(
-            f"No scans found in {data_dir} with prefix {prefix}", err=True, fg="red")
+            f"No scans found needing processing in {data_dir} with prefix {prefix}", err=True, fg="red")
         return
 
     for scan in tqdm(scan_folders, desc='Processing scans'):
@@ -57,10 +57,6 @@ def processScans(data_dir, prefix, dest_folder, force_reprocess, blur_distance):
         tqdm.write(scan+": Storing scan results")
         store_results(os.path.join(data_dir, scan, dest_folder), pro_map, pro_confidence,
                       confidence, reference_image, min_image, np.dstack((packed_v, packed_h)))
-
-    # print(scan_folders)
-
-    # load_scan("scan-0028")
 
 
 def get_projector_size(data_dir):
@@ -230,6 +226,11 @@ def build_pro_map(packed_vertical, packed_horizontal, confidence, w, h):
                 pro_confidence[idx[0], idx[1]] = pconf
     return (add_channel(pro_map), pro_confidence)
 
+def imwrite(filename, img):
+    if img is not None:
+        if len(img.shape) > 2:
+            img = img[...,::-1]
+    return cv2.imwrite(filename, img)
 
 def store_results(out_path, pro_map, pro_confidence, confidence, reference_image, min_image, packed):
     if not os.path.exists(out_path):
@@ -239,7 +240,8 @@ def store_results(out_path, pro_map, pro_confidence, confidence, reference_image
     imwrite(os.path.join(out_path,'proMap.png'), pro_map)
     imwrite(os.path.join(out_path, 'proConfidence.exr'), pro_confidence)
     imwrite(os.path.join(out_path, 'camConfidence.exr'), confidence)
-    imwrite(os.path.join(out_path, 'referenceImage.jpg'), reference_image)
+    # imwrite(os.path.join(out_path, 'referenceImage.jpg'), reference_image)
+    cv2.imwrite(os.path.join(out_path, 'referenceImage.jpg'), reference_image, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
 
     imwrite(os.path.join(out_path, 'minImage.png'), min_image)
     np.save(os.path.join(out_path, 'camBinary.npy'), packed)

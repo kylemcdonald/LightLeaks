@@ -39,7 +39,11 @@ app.get('/scans', async (req, res)=>{
 
 app.post('/saveCalibration', async (req,res)=>{
   if(req.body.scan) {
-    fs.writeFileSync(path.join(shareDataPath, req.body.scan, 'camamok.json'), JSON.stringify(req.body.data, null, 1))
+    const dir = path.join(shareDataPath, req.body.scan, 'camamok');
+    if (!fs.existsSync(dir)){
+      fs.mkdirSync(dir);
+    }
+    fs.writeFileSync(path.join(dir, 'camamok.json'), JSON.stringify(req.body.data, null, 1))
   }
   res.send();
 })
@@ -49,7 +53,11 @@ var upload = multer({ dest: os.tmpdir() });
 var type = upload.single('image');
 
 app.post('/saveXYZMap/:scan',type, async (req,res)=>{
-  fs.copyFileSync(req.file.path, path.join(shareDataPath, req.params.scan, 'camamokXyzMap.raw'))
+  const dir = path.join(shareDataPath, req.params.scan, 'camamok');
+  if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+  }
+  fs.copyFileSync(req.file.path, path.join(dir, 'xyzMap.raw'))
   fs.unlinkSync(req.file.path);
 
   res.send();
