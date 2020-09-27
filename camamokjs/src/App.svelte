@@ -4,7 +4,7 @@
   import * as cv from "./cv";
   import ModelView from "./ModelView.svelte";
   import ImageView from "./ImageView.svelte";
-  import CalibrationSettings from "../CalibrationSettings.svelte";
+  import CalibrationSettings from "./CalibrationSettings.svelte";
   import PointList from "./PointList.svelte";
   import { onMount } from "svelte";
   import ScanList from "./ScanList.svelte";

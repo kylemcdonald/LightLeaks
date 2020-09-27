@@ -1,6 +1,7 @@
 **
 !/python/requirements.txt
-!/camamokjs/package.json
+!/camamokjs/**
+/camamokjs/node_modules/**
 # .ipynb_checkpoints
 # *.ipynb
 # # .vscode/

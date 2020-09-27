@@ -60,7 +60,10 @@ Installation at Lights All Night festival, using 4 x 30K projectors
 
 ### LLUM (ES, 2019)
 Outdoor installation in couryard of [Can Framis Museum](https://goo.gl/maps/dArwnudpRqq)
+![LLUM, Photo by Jonas Jongejan](photos/LLUM.jpg)
 
+### Lights all Night (US, 2019)
+![Lights All Night, Photo by Jonas Jongejan](photos/lan2.jpg)
 
 ## Technical notes
 The repo is meant to be used with openFrameworks 0.10.0 (a0bd41a75).
@@ -73,8 +76,7 @@ The repo is meant to be used with openFrameworks 0.10.0 (a0bd41a75).
 * https://github.com/HalfdanJ/ofxGrabCam
 
 ## Python implementation
-At TodaysArt we ported the ProCamScan and BuildXYZ from openFrameworks to python. The notebook can be found here: 
-https://colab.research.google.com/drive/1ILHpHZh_wtbxHYK6HjzBxqqp-wCsJk6M
+At TodaysArt we ported the ProCamScan and BuildXYZ from openFrameworks to python.
 
 ### Calibration Process
 

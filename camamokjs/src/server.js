@@ -7,7 +7,7 @@ const os = require('os');
 
 const app = express();
 
-const shareDataPath = path.join(__dirname, '../../SharedData/')
+const shareDataPath = process.env.SHARED_DATA || path.join(__dirname, '../../SharedData/')
 app.use(express.static(path.join(__dirname, '../public')  , {
   // etag: false
 }));

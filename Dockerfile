@@ -22,6 +22,8 @@ ENV PYTHONPATH="${PYTHONPATH}:/home/jovyan/"
 RUN mkdir /home/jovyan/camamokjs 
 COPY camamokjs/package.json /home/jovyan/camamokjs/package.json
 
+RUN cd camamokjs; npm install
+
 USER $NB_UID
 # CMD ["start-notebook.sh --NotebookApp.token="]
 RUN echo "c.NotebookApp.token = u''" >> ~/.jupyter/jupyter_notebook_config.py
