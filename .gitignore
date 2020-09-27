@@ -74,6 +74,9 @@ proguard-project.txt
 
 node_modules/
 /web/dist
-/Python/env
-!/Python/bin
+/python/env
+!/bin
 __pycache__/
+.ipynb_checkpoints
+
+!camamokjs/**

@@ -1,5 +1,0 @@
-#!/bin/bash
-docker run -it \
--v "$PWD/":/home/jovyan/Lightleaks  \
--v "$PWD/../SharedData/":/SharedData  \
-jupyter/lightleaks-notebook python Lightleaks/src/lightleaks.py $@

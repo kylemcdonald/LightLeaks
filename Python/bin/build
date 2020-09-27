@@ -1,5 +1,0 @@
-#!/bin/bash
-
-echo "Building docker image"
-
-docker build --rm -t jupyter/lightleaks-notebook .

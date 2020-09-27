@@ -1,0 +1,10 @@
+**
+!/python/requirements.txt
+!/camamokjs/package.json
+# .ipynb_checkpoints
+# *.ipynb
+# # .vscode/
+# */__pycache__
+# # SharedData/
+# # SharedCode/
+# # archive/
