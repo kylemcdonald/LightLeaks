@@ -18,8 +18,8 @@ import { createEventDispatcher, onMount } from "svelte";
     if(!scans) return;
     for(const scan of scans){
       try {
-        const scanJson = await fetch(`/SharedData/${scan}${fileToCheckStatusOf}`).then(res=>res.json())
-        scanStatus[scan] = true;
+        const status = await fetch(`/status/SharedData/${scan}${fileToCheckStatusOf}`).then(res=>res.json())
+        scanStatus[scan] = status.exists;
       } catch(e){
         scanStatus[scan] = false;
       }

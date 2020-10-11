@@ -36,6 +36,14 @@ async function getScans() {
   });
 }
 
+app.get("/status/SharedData/:path*", async (req, res) => {
+  res.send({
+    exists: fs.existsSync(
+      path.join(shareDataPath, req.path.replace("/status/SharedData", ""))
+    ),
+  });
+});
+
 app.get("/scans", async (req, res) => {
   const scans = await getScans();
   res.send(scans);
@@ -76,15 +84,14 @@ app.post(
     { name: "json", maxCount: 1 },
   ]),
   async (req, res) => {
-    
     const dir = path.join(shareDataPath, req.params.scan, "camamok");
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
     }
-    fs.copyFileSync(req.files['image'][0].path, path.join(dir, "mask.jpg"));
-    fs.unlinkSync(req.files['image'][0].path);
-    
-    fs.writeFileSync(path.join(dir, "mask.json"), req.body.json)
+    fs.copyFileSync(req.files["image"][0].path, path.join(dir, "mask.jpg"));
+    fs.unlinkSync(req.files["image"][0].path);
+
+    fs.writeFileSync(path.join(dir, "mask.json"), req.body.json);
 
     res.send();
   }
@@ -97,13 +104,12 @@ app.post(
     { name: "json", maxCount: 1 },
   ]),
   async (req, res) => {
-    
     const dir = path.join(shareDataPath);
 
-    fs.copyFileSync(req.files['image'][0].path, path.join(dir, "mask-0.png"));
-    fs.unlinkSync(req.files['image'][0].path);
-    
-    fs.writeFileSync(path.join(dir, "mask.json"), req.body.json)
+    fs.copyFileSync(req.files["image"][0].path, path.join(dir, "mask-0.png"));
+    fs.unlinkSync(req.files["image"][0].path);
+
+    fs.writeFileSync(path.join(dir, "mask.json"), req.body.json);
 
     res.send();
   }

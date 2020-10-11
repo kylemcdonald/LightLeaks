@@ -43,7 +43,7 @@
   <div class="panel" style="    overflow: scroll;  flex-shrink: 0;">
     <ScanList
       bind:this={scanListComponent}
-      fileToCheckStatusOf="/camamok/mask.json"
+      fileToCheckStatusOf="/processedScan/proConfidence.jpg"
       {scans}
       {loadedScan}
       on:loadscan={(ev) => loadScan(ev.detail)} />
