@@ -27,8 +27,8 @@
       // forceCanvas: true,
       transparent: true,
       // autoResize: true,
-      
     });
+
     appOffscreen = new PIXI.Application({
       width: 600,
       height: 600,
@@ -81,14 +81,24 @@
     window.addEventListener("wheel", onwheel, { passive: false });
     window.addEventListener("contextmenu", oncontextmenu, false);
     document.addEventListener("keydown", onkeydown);
+    app.view.addEventListener("mousemove", onmousemove);
   });
 
   onDestroy(() => {
     window.removeEventListener("contextmenu", oncontextmenu);
     window.removeEventListener("wheel", onwheel);
     document.removeEventListener("keydown", onkeydown);
+    app.view.removeEventListener("mousemove", onmousemove);
   });
 
+  let onmousemove = (evt) => {
+    const worldPoint = viewport.toWorld(evt.offsetX, evt.offsetY);
+    if (curPolygon) {
+      curPolygon.points[curPolygon.points.length - 2] = worldPoint.x;
+      curPolygon.points[curPolygon.points.length - 1] = worldPoint.y;
+      updateGraphics();
+    }
+  };
   let oncontextmenu = (evt) => evt.preventDefault();
 
   let onwheel = (evt) => evt.preventDefault();
@@ -127,14 +137,18 @@
     }
   };
 
-  export function reset(){
+  export function reset() {
     polygons = [];
     updateGraphics();
   }
 
   export async function save() {
-    
-    const texture = appOffscreen.renderer.generateTexture(polygonGraphicsOffscreen, PIXI.SCALE_MODES.LINEAR, 1, new PIXI.Rectangle(0,0, width,height))
+    const texture = appOffscreen.renderer.generateTexture(
+      polygonGraphicsOffscreen,
+      PIXI.SCALE_MODES.LINEAR,
+      1,
+      new PIXI.Rectangle(0, 0, width, height)
+    );
     // console.log(texture)
     const extract = new PIXI.Extract(appOffscreen.renderer);
     const img = extract.base64(texture, "image/jpeg");
@@ -226,9 +240,9 @@
       polygons.push(polygon);
       // polygonsContainer.addChild(polygon);
       curPolygon = polygon;
-    }
-
-    if (curPolygon.points.length > 0) {
+      curPolygon.points.push(data.world.x);
+      curPolygon.points.push(data.world.y);
+    } else if (curPolygon.points.length > 0) {
       const dx = Math.abs(curPolygon.points[0] - data.world.x);
       const dy = Math.abs(curPolygon.points[1] - data.world.y);
       let dist = Math.sqrt(dx * dx + dy * dy);
@@ -263,7 +277,7 @@
     lineGraphics.clear();
 
     polygonGraphics.beginFill(0xaa0000);
-    polygonGraphics.alpha = 0.8
+    polygonGraphics.alpha = 0.8;
     polygonGraphicsOffscreen.beginFill(0x000000);
     for (const p of polygons) {
       polygonGraphics.drawPolygon(p);
