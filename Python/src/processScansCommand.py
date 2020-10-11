@@ -102,7 +102,7 @@ def load_scan(scan_name, data_dir, blur_distance):
     # print(glob.glob1(os.path.join(
     # data_dir, scan_name, 'cameraImages/vertical/normal'), "*.jpg"))
     try:
-        cam_mask_image = imread(os.path.join(data_dir, scan_name, "mask.png"))
+        cam_mask_image = imread(os.path.join(data_dir, scan_name, "camamok/mask.jpg"))
         cam_mask_image = cv2.cvtColor(cam_mask_image, cv2.COLOR_BGR2GRAY)
     except:
         cam_mask_image = None
@@ -241,6 +241,8 @@ def store_results(out_path, pro_map, pro_confidence, confidence, reference_image
     imwrite(os.path.join(out_path, 'proConfidence.exr'), pro_confidence)
     imwrite(os.path.join(out_path, 'camConfidence.exr'), confidence)
     # imwrite(os.path.join(out_path, 'referenceImage.jpg'), reference_image)
+    
+    cv2.imwrite(os.path.join(out_path, 'proConfidence.jpg'), pro_confidence * 255 / np.max(pro_confidence), [int(cv2.IMWRITE_JPEG_QUALITY), 80])
     cv2.imwrite(os.path.join(out_path, 'referenceImage.jpg'), reference_image, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
 
     imwrite(os.path.join(out_path, 'minImage.png'), min_image)
