@@ -6,15 +6,15 @@
     Vector3,
     WebGLRenderer,
     Vector2,
-    Raycaster,
-    GridHelper,
+    // Raycaster,
+    // GridHelper,
     AxesHelper,
     Group,
     CameraHelper,
   } from "three";
-  import Stats from "stats.js";
+  // import Stats from "stats.js";
   import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-  import { FlyControls } from "three/examples/jsm/controls/FlyControls";
+  // import { FlyControls } from "three/examples/jsm/controls/FlyControls";
   import type { Model } from "./model";
   import { createEventDispatcher, onMount } from "svelte";
   import { MarkerMesh } from "./markerMesh";

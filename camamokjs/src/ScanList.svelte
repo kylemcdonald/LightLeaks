@@ -5,6 +5,7 @@ import { createEventDispatcher, onMount } from "svelte";
 
   export let scans:string[];
   export let loadedScan: string;
+  export let fileToCheckStatusOf: string = '/camamok/camamok.json'
 
   let scanStatus = {};
 
@@ -17,7 +18,7 @@ import { createEventDispatcher, onMount } from "svelte";
     if(!scans) return;
     for(const scan of scans){
       try {
-        const scanJson = await fetch(`/SharedData/${scan}/camamok/camamok.json`).then(res=>res.json())
+        const scanJson = await fetch(`/SharedData/${scan}${fileToCheckStatusOf}`).then(res=>res.json())
         scanStatus[scan] = true;
       } catch(e){
         scanStatus[scan] = false;
@@ -79,6 +80,10 @@ import { createEventDispatcher, onMount } from "svelte";
   .loaded {
     background-color: cadetblue;
   }
+
+  a {
+    cursor: pointer;
+  }
 </style>
 
 <div id="view">
@@ -92,5 +97,6 @@ import { createEventDispatcher, onMount } from "svelte";
         {/each}
       {/if}
     </table>
+    <a on:click={()=>loadStatus()}>refresh list</a>
   </div>
 </div>
