@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import * as PIXI from "pixi.js";
   import { Viewport } from "pixi-viewport";
-  import { onDestroy, text } from "svelte/internal";
+  import { onDestroy } from "svelte/internal";
 
   export let src: string = "";
   export let saveEndpoint: string;
@@ -17,6 +17,7 @@
   let viewport: Viewport;
   let width;
   let height;
+  let errorMsg = "";
 
   onMount(() => {
     var elem = document.getElementById("canvas-container");
@@ -149,7 +150,6 @@
       1,
       new PIXI.Rectangle(0, 0, width, height)
     );
-    // console.log(texture)
     const extract = new PIXI.Extract(appOffscreen.renderer);
     const img = extract.base64(texture, "image/jpeg");
 
@@ -185,6 +185,11 @@
         const texture = loader.resources[src].texture;
         width = texture.width;
         height = texture.height;
+        errorMsg = ``
+        if(texture.width == 1){
+          errorMsg = `Could not load image at ${src}`
+        }
+        
 
         const img = PIXI.Sprite.from(texture);
         container.addChild(img);
@@ -317,10 +322,17 @@
     left: 0;
     top: 0;
   }
+  #error {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    color: white;
+  }
 </style>
 
 <div id="container">
   <!-- <img  id="image" {src}> -->
   <div id="canvas-container"></div>
   <!-- <canvas></canvas> -->
+  <div id="error">{errorMsg}</div>
 </div>
