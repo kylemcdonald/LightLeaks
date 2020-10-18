@@ -4,7 +4,7 @@
   import { Viewport } from "pixi-viewport";
   import { onDestroy } from "svelte/internal";
 
-  export let src: string = "";
+  export let src: string | string[] = "";
   export let saveEndpoint: string;
   export let jsonPath: string;
 
@@ -190,33 +190,39 @@
   $: {
     if (container) {
       container.removeChildren();
+      let srcsToLoad = src;
+      if(!Array.isArray(srcsToLoad)) {
+        srcsToLoad = [srcsToLoad];
+      }
 
-      let loader = new PIXI.Loader();
-      loader.add(src);
+      for(const srcToLoad of srcsToLoad ){
+        console.log(srcToLoad)
+        let loader = new PIXI.Loader();
+        loader.add(srcToLoad);
 
-      loader.onComplete.add(() => {
-        const texture = loader.resources[src].texture;
-        width = texture.width;
-        height = texture.height;
-        errorMsg = ``
-        if(texture.width == 1){
-          errorMsg = `Could not load image at ${src}`
-        }
-        
+        loader.onComplete.add(() => {
+          const texture = loader.resources[srcToLoad].texture;
+          width = texture.width;
+          height = texture.height;
+          errorMsg = ``
+          if(texture.width == 1){
+            errorMsg = `Could not load image at ${src}`
+          }
+          
 
-        const img = PIXI.Sprite.from(texture);
-        container.addChild(img);
+          const img = PIXI.Sprite.from(texture);
+          img.blendMode = PIXI.BLEND_MODES.SCREEN;
 
-        const parent = document.getElementById("container");
-        const scale = height / parent.clientHeight;
-        viewport.setZoom(1 / scale);
+          container.addChild(img);
 
-        // appOffscreen.stage.width = width
-        // appOffscreen.stage.height = height
+          const parent = document.getElementById("container");
+          const scale = height / parent.clientHeight;
+          viewport.setZoom(1 / scale);
 
-        updateGraphics();
-      });
-      loader.load();
+          updateGraphics();
+        });
+        loader.load();
+      }
     }
   }
 

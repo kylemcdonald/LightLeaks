@@ -1,26 +1,27 @@
 <script lang="ts">
-import { createEventDispatcher, onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
 
   import type { Vector2, Vector3 } from "three";
 
-  export let scans:string[];
+  export let scans: string[];
   export let loadedScan: string;
-  export let fileToCheckStatusOf: string = '/camamok/camamok.json'
+  export let fileToCheckStatusOf: string = "/camamok/camamok.json";
 
   let scanStatus = {};
 
   $: scans && loadStatus();
 
-  onMount(async ()=>{
-  })
+  onMount(async () => {});
 
-  export async function loadStatus(){
-    if(!scans) return;
-    for(const scan of scans){
+  export async function loadStatus() {
+    if (!scans) return;
+    for (const scan of scans) {
       try {
-        const status = await fetch(`/status/SharedData/${scan}${fileToCheckStatusOf}`).then(res=>res.json())
+        const status = await fetch(
+          `/status/SharedData/${scan}${fileToCheckStatusOf}`
+        ).then((res) => res.json());
         scanStatus[scan] = status.exists;
-      } catch(e){
+      } catch (e) {
         scanStatus[scan] = false;
       }
     }
@@ -29,7 +30,6 @@ import { createEventDispatcher, onMount } from "svelte";
   const dispatch = createEventDispatcher<{
     loadscan: string;
   }>();
-  
 </script>
 
 <style>
@@ -41,7 +41,6 @@ import { createEventDispatcher, onMount } from "svelte";
   #table-wrapper {
     display: block;
     overflow: scroll;
-    
   }
 
   table {
@@ -73,7 +72,7 @@ import { createEventDispatcher, onMount } from "svelte";
     color: red;
   }
 
-  td:hover{
+  td:hover {
     background-color: #666;
     cursor: pointer;
   }
@@ -89,14 +88,16 @@ import { createEventDispatcher, onMount } from "svelte";
 <div id="view">
   <div id="table-wrapper">
     <table>
-      {#if scans}          
+      {#if scans}
         {#each scans as scan}
-          <tr on:click={()=>dispatch('loadscan',scan)} class:loaded={loadedScan==scan}>
-            <td>{scan} {scanStatus[scan] == true ? '✔':''}</td>
+          <tr
+            on:click={() => dispatch('loadscan', scan)}
+            class:loaded={loadedScan == scan}>
+            <td>{scan} {scanStatus[scan] == true ? '✔' : ''}</td>
           </tr>
         {/each}
       {/if}
     </table>
-    <a on:click={()=>loadStatus()}>refresh list</a>
+    <a on:click={() => loadStatus()}>refresh list</a>
   </div>
 </div>
