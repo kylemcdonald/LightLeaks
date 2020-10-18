@@ -99,9 +99,8 @@
     if (curPolygon) {
       curPolygon.points[curPolygon.points.length - 2] = worldPoint.x;
       curPolygon.points[curPolygon.points.length - 1] = worldPoint.y;
-    } 
+    }
     updateGraphics();
-
   };
   let oncontextmenu = (evt) => evt.preventDefault();
 
@@ -125,12 +124,15 @@
     }
 
     if (!curPolygon && (ev.key == "Backspace" || ev.key == "Delete")) {
-      for(const p of polygons){
-        if(curMouseWorldPos && p.contains(curMouseWorldPos.x, curMouseWorldPos.y)){
+      for (const p of polygons) {
+        if (
+          curMouseWorldPos &&
+          p.contains(curMouseWorldPos.x, curMouseWorldPos.y)
+        ) {
           polygons.splice(polygons.indexOf(p), 1);
           updateGraphics();
         }
-      } 
+      }
     }
 
     if (ev.key == "Backspace" || ev.key == "Delete" || ev.key == "Escape") {
@@ -138,7 +140,7 @@
         polygons.pop();
         curPolygon = undefined;
         updateGraphics();
-      } 
+      }
     }
 
     if (
@@ -151,7 +153,7 @@
   };
 
   export function reset() {
-    console.log("Reset")
+    console.log("Reset");
     polygons = [];
     updateGraphics();
   }
@@ -191,12 +193,12 @@
     if (container) {
       container.removeChildren();
       let srcsToLoad = src;
-      if(!Array.isArray(srcsToLoad)) {
+      if (!Array.isArray(srcsToLoad)) {
         srcsToLoad = [srcsToLoad];
       }
 
-      for(const srcToLoad of srcsToLoad ){
-        console.log(srcToLoad)
+      for (const srcToLoad of srcsToLoad) {
+        console.log(srcToLoad);
         let loader = new PIXI.Loader();
         loader.add(srcToLoad);
 
@@ -204,11 +206,10 @@
           const texture = loader.resources[srcToLoad].texture;
           width = texture.width;
           height = texture.height;
-          errorMsg = ``
-          if(texture.width == 1){
-            errorMsg = `Could not load image at ${src}`
+          errorMsg = ``;
+          if (texture.width == 1) {
+            errorMsg = `Could not load image at ${src}`;
           }
-          
 
           const img = PIXI.Sprite.from(texture);
           img.blendMode = PIXI.BLEND_MODES.SCREEN;
@@ -216,8 +217,9 @@
           container.addChild(img);
 
           const parent = document.getElementById("container");
-          const scale = height / parent.clientHeight;
-          viewport.setZoom(1 / scale);
+          const scaleW = width / parent.clientWidth;
+          const scaleH = height / parent.clientHeight;
+          viewport.setZoom(1 / Math.max(scaleW, scaleH));
 
           updateGraphics();
         });
@@ -243,7 +245,7 @@
         updateGraphics();
       })
       .catch((e) => {
-        console.error(e)
+        console.error(e);
         reset();
       });
   }
@@ -311,11 +313,13 @@
     polygonGraphicsOffscreen.endFill();
     polygonGraphics.endFill();
 
-    
     for (const p of polygons) {
       let hovering = false;
-      if(curMouseWorldPos && p.contains(curMouseWorldPos.x, curMouseWorldPos.y)){
-        hovering = true; 
+      if (
+        curMouseWorldPos &&
+        p.contains(curMouseWorldPos.x, curMouseWorldPos.y)
+      ) {
+        hovering = true;
       }
       if (p == curPolygon || hovering) {
         lineGraphics.lineStyle(4, 0xff0000);
@@ -348,11 +352,31 @@
     left: 40px;
     color: white;
   }
+
+  #instructions {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 12px;
+  }
+
+  #instructions span {
+    display: block;
+  }
 </style>
 
 <div id="container">
-  <!-- <img  id="image" {src}> -->
   <div id="canvas-container" />
-  <!-- <canvas></canvas> -->
   <div id="error">{errorMsg}</div>
+  <div id="instructions">
+    {#if curPolygon}
+      <span>Mouse click to draw polygon</span>
+      <span>Double click to finish drawing</span>
+      <span>Delete / Esc to cancel polygon</span>
+    {:else}<span>Mouse click to add point</span>{/if}
+    <span>Cmd-z to undo</span>
+    {#if polygons.some((p) => curMouseWorldPos && p.contains(curMouseWorldPos.x, curMouseWorldPos.y))}
+      <span>Delete to delete polygon</span>
+    {/if}
+  </div>
 </div>
