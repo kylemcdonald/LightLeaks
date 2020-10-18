@@ -18,6 +18,7 @@
   let width;
   let height;
   let errorMsg = "";
+  let curMouseWorldPos: PIXI.Point;
 
   onMount(() => {
     var elem = document.getElementById("canvas-container");
@@ -94,11 +95,13 @@
 
   let onmousemove = (evt) => {
     const worldPoint = viewport.toWorld(evt.offsetX, evt.offsetY);
+    curMouseWorldPos = worldPoint;
     if (curPolygon) {
       curPolygon.points[curPolygon.points.length - 2] = worldPoint.x;
       curPolygon.points[curPolygon.points.length - 1] = worldPoint.y;
-      updateGraphics();
-    }
+    } 
+    updateGraphics();
+
   };
   let oncontextmenu = (evt) => evt.preventDefault();
 
@@ -121,12 +124,21 @@
       updateGraphics();
     }
 
-    if (ev.key == "Backspace" || ev.key == "Delete") {
+    if (!curPolygon && (ev.key == "Backspace" || ev.key == "Delete")) {
+      for(const p of polygons){
+        if(curMouseWorldPos && p.contains(curMouseWorldPos.x, curMouseWorldPos.y)){
+          polygons.splice(polygons.indexOf(p), 1);
+          updateGraphics();
+        }
+      } 
+    }
+
+    if (ev.key == "Backspace" || ev.key == "Delete" || ev.key == "Escape") {
       if (curPolygon) {
         polygons.pop();
         curPolygon = undefined;
         updateGraphics();
-      }
+      } 
     }
 
     if (
@@ -139,6 +151,7 @@
   };
 
   export function reset() {
+    console.log("Reset")
     polygons = [];
     updateGraphics();
   }
@@ -223,7 +236,8 @@
         }
         updateGraphics();
       })
-      .catch(() => {
+      .catch((e) => {
+        console.error(e)
         reset();
       });
   }
@@ -291,13 +305,13 @@
     polygonGraphicsOffscreen.endFill();
     polygonGraphics.endFill();
 
-    if (curPolygon) {
-      // lineGraphics.beginFill(0xff0000);
-      // lineGraphics.drawCircle(curPolygon.points[0], curPolygon.points[1], 10);
-      // lineGraphics.endFill();
-    }
+    
     for (const p of polygons) {
-      if (p == curPolygon) {
+      let hovering = false;
+      if(curMouseWorldPos && p.contains(curMouseWorldPos.x, curMouseWorldPos.y)){
+        hovering = true; 
+      }
+      if (p == curPolygon || hovering) {
         lineGraphics.lineStyle(4, 0xff0000);
       } else {
         lineGraphics.lineStyle(0, 0x333333);
@@ -332,7 +346,7 @@
 
 <div id="container">
   <!-- <img  id="image" {src}> -->
-  <div id="canvas-container"></div>
+  <div id="canvas-container" />
   <!-- <canvas></canvas> -->
   <div id="error">{errorMsg}</div>
 </div>
