@@ -38,7 +38,9 @@ def processScans(data_dir, prefix, dest_folder, force_reprocess, blur_distance):
 
     for scan in tqdm(scan_folders, desc='Processing scans'):
         # Load all the scan images into memory
-        tqdm.write(scan+f": Loading scan using {cpu_count()} threads's")
+        tqdm.write(scan+f": Loading scan using {cpu_count()} threads")
+        if cpu_count() == 1:
+            tqdm.write(Fore.YELLOW + "Warning: Only using 1 cpu! This will take a long time. If using docker, make sure that all CPU's are enabled in settings")
 
         normal_h, inverse_h, normal_v, inverse_v, reference_image, cam_mask_image, min_image = load_scan(
             scan, data_dir, blur_distance)
