@@ -1,6 +1,9 @@
 #!/bin/bash
 
 echo "Starting camamok on http://localhost:8080"
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
+cd $parent_path/../
 
 docker run -p 8080:8080 \
 -v "$PWD/camamokjs/src/":/home/jovyan/camamokjs/src/  \
