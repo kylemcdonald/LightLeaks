@@ -322,7 +322,7 @@
         hovering = true;
       }
       if (p == curPolygon || hovering) {
-        lineGraphics.lineStyle(4, 0xff0000);
+        lineGraphics.lineStyle(1, 0xff0000);
       } else {
         lineGraphics.lineStyle(0, 0x333333);
       }
