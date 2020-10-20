@@ -15,7 +15,7 @@
 #include "ofxOsc.h"
 #endif
 
-//#define USE_SYPHON
+#define USE_SYPHON
 #ifdef USE_SYPHON
 #include "ofxSyphon.h"
 #endif

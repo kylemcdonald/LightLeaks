@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo "Starting camamok on http://localhost:8080"
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
+cd $parent_path/../
+
+docker run -p 8080:8080 \
+-v "$PWD/camamokjs/src/":/home/jovyan/camamokjs/src/  \
+-v "$PWD/camamokjs/rollup.config.js":/home/jovyan/camamokjs/rollup.config.js  \
+-v "$PWD/camamokjs/tsconfig.json":/home/jovyan/camamokjs/tsconfig.json  \
+-v "$PWD/camamokjs/public/":/home/jovyan/camamokjs/public  \
+-v "$PWD/SharedData/":/SharedData  \
+--env SHARED_DATA="/SharedData" \
+jupyter/lightleaks-notebook /bin/sh -c "cd camamokjs; npm run dev"

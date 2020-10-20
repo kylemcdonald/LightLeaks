@@ -2,7 +2,11 @@
   "projectors": [
     {
       "monitor": 0,
+<<<<<<< HEAD
       "width": 5760,
+=======
+      "width": 7680,
+>>>>>>> 91ac1205d5920aea6f3b34d5bf32252bb4b91b88
 			"height": 1080,
 			"xcode": 0,
       "ycode": 0,
@@ -21,7 +25,7 @@
     "scaleFactor": 4
   },
   "osc": {
-    "camera": "kyle.local",
+    "camera": "10.0.1.99",
     "projector": "lightleaks.local"
   },
   "camera": {

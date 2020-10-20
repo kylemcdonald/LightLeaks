@@ -1,0 +1,11 @@
+**
+!/python/requirements.txt
+!/camamokjs/**
+/camamokjs/node_modules/**
+# .ipynb_checkpoints
+# *.ipynb
+# # .vscode/
+# */__pycache__
+# # SharedData/
+# # SharedCode/
+# # archive/
