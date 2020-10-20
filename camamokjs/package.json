@@ -24,13 +24,20 @@
     "typescript": "^3.9.3"
   },
   "dependencies": {
+    "@types/moment": "^2.13.0",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
+    "express-http-proxy": "^1.6.2",
+    "moment": "^2.29.1",
     "multer": "^1.4.2",
+    "node-fetch": "^2.6.1",
     "pixi-viewport": "^4.15.0",
     "pixi.js": "^5.3.3",
+    "request": "^2.88.2",
+    "shelljs": "^0.8.4",
     "sirv-cli": "^1.0.0",
     "stats.js": "^0.17.0",
+    "svelte-local-storage-store": "^0.1.4",
     "three": "^0.120.1"
   },
   "browser": {

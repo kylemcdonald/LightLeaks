@@ -4,11 +4,30 @@ const fs = require("fs");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const os = require("os");
+const fetch = require("node-fetch");
+const request = require('request');
+const shell = require('shelljs');
 
 const app = express();
 
 const shareDataPath =
   process.env.SHARED_DATA || path.join(__dirname, "../../SharedData/");
+
+
+var download = function(uri, filename, callback){
+  request.head(uri, function(err, res, body){
+    if(!err){
+      console.log('content-type:', res.headers['content-type']);
+      console.log('content-length:', res.headers['content-length']);
+
+      request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+    } else {
+      console.error(err);
+      callback()
+    }
+  });
+};
+
 app.use(
   express.static(path.join(__dirname, "../public"), {
     // etag: false
@@ -114,6 +133,42 @@ app.post(
     res.send();
   }
 );
+
+app.get("/downloadImageFromUrl", async (req, res) => {
+  const dir =  path.join(shareDataPath, path.dirname(req.query.filename));
+  shell.mkdir('-p', dir);
+
+  download(req.query.url, path.join(shareDataPath, req.query.filename), ()=>{
+    res.send({});
+  });
+});
+
+
+app.get("/proxy", async (req, res, next) => {
+  fetch(req.query.url)
+    .then((blob) => blob.text())
+    .then((json) => res.send(json))
+    .catch(next);
+});
+
+app.post("/proxy/", async (req, res, next) => {
+  try {
+    console.log(req.body);
+    fetch(req.query.url, {
+      method: "post",
+      body: JSON.stringify(req.body),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+      .then((blob) => blob.json())
+      .then((json) => res.send(json))
+      .catch(next);
+    // console.log(apiResponse)
+  } catch (e) {
+    console.warn(e);
+  }
+});
 
 app.listen(8080, () => {
   console.log("Camamok started and available at http://localhost:8080");
