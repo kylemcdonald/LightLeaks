@@ -17,6 +17,8 @@ RUN pip install --requirement /tmp/requirements.txt && \
     fix-permissions /home/$NB_USER
 
 RUN git clone https://github.com/kylemcdonald/python-utils utils
+RUN cd utils; git checkout e1e84ba; cd ..
+
 ENV PYTHONPATH="${PYTHONPATH}:/home/jovyan/"
 
 RUN mkdir /home/jovyan/camamokjs 
