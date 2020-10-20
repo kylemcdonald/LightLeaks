@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+cd ..
+
 REMOTE_DIR="admin@lightleaks.local:~/lightleaks"
 
 function usage() {
@@ -35,6 +37,8 @@ app)
         *)
             invalid
         ;;
+    esac
+    ;;
 mask)
     case "$2" in
         push)
@@ -46,6 +50,8 @@ mask)
         *)
             invalid
         ;;
+    esac
+    ;;
 data)
     case "$2" in
         push)
