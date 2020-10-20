@@ -1,33 +1,41 @@
 <script lang="ts">
   import CameraMaskApp from "./CameraMaskApp.svelte";
-import MappingApp from "./MappingApp.svelte";
-import ProjectorMaskApp from "./ProjectorMaskApp.svelte";
+  import CameraTriggerApp from "./CameraTriggerApp.svelte";
+  import MappingApp from "./MappingApp.svelte";
+  import ProjectorMaskApp from "./ProjectorMaskApp.svelte";
+
+  import { get } from "svelte/store";
+  import { writable } from "svelte-local-storage-store";
 
   let mappingApp;
   let cameraMaskApp;
   let projectoMaskApp;
+  let cameraTriggerApp;
 
-  let mode : 'mapping' | 'cammask' | 'projmask' = 'cammask';
+  export const preferences = writable("preferences", {
+    mode: "camtrigger",
+  });
 
-  function reset(){
-    if(mode == 'mapping'){
+  function reset() {
+    const mode = get(preferences).mode;
+    if (mode == "mapping") {
       mappingApp.reset();
-    } else if (mode == 'cammask'){
+    } else if (mode == "cammask") {
       cameraMaskApp.reset();
-    } else if (mode == 'projmask'){
+    } else if (mode == "projmask") {
       projectoMaskApp.reset();
     }
-
   }
-   function save(){
-    if(mode == 'mapping'){
+  function save() {
+    const mode = get(preferences).mode;
+    if (mode == "mapping") {
       mappingApp.saveCalibration();
-    } else if (mode == 'cammask'){
+    } else if (mode == "cammask") {
       cameraMaskApp.save();
-    } else if (mode == 'projmask'){
+    } else if (mode == "projmask") {
       projectoMaskApp.save();
     }
-   }
+  }
 </script>
 
 <style>
@@ -49,7 +57,7 @@ import ProjectorMaskApp from "./ProjectorMaskApp.svelte";
     background-color: #202020;
     color: white;
   }
-   
+
   #savebutton {
     margin-right: 20px;
     margin-top: 9px;
@@ -65,16 +73,15 @@ import ProjectorMaskApp from "./ProjectorMaskApp.svelte";
     display: flex;
     /* flex-basis: 100%; */
     width: 100%;
-    
   }
 
-  .topbar-tabs  p   {
+  .topbar-tabs p {
     padding: 6px;
-    margin:0;
+    margin: 0;
     cursor: pointer;
   }
 
-  .topbar-tabs  p.active {
+  .topbar-tabs p.active {
     background-color: cadetblue;
   }
 </style>
@@ -87,17 +94,30 @@ import ProjectorMaskApp from "./ProjectorMaskApp.svelte";
       <button id="savebutton" on:click={() => save()}>Save</button>
     </div>
     <div class="topbar-tabs">
-      <p class:active={mode == 'cammask'} on:click={()=>mode = 'cammask'}>Camera Mask</p>
-      <p class:active={mode == 'projmask'} on:click={()=>mode = 'projmask'}>Projector Mask</p>
-      <p class:active={mode == 'mapping'} on:click={()=>mode = 'mapping'}>Camera Mapping</p>
+      <p
+        class:active={$preferences.mode == 'camtrigger'}
+        on:click={() => ($preferences.mode = 'camtrigger')}>
+        Camera Shooting
+      </p>
+      <p class:active={$preferences.mode == 'cammask'} on:click={() => ($preferences.mode = 'cammask')}>
+        Camera Mask
+      </p>
+      <p class:active={$preferences.mode == 'projmask'} on:click={() => ($preferences.mode = 'projmask')}>
+        Projector Mask
+      </p>
+      <p class:active={$preferences.mode == 'mapping'} on:click={() => ($preferences.mode = 'mapping')}>
+        Camera Mapping
+      </p>
     </div>
   </div>
 
-  {#if mode == 'mapping'}
-    <MappingApp bind:this={mappingApp}/>
-  {:else if mode == 'cammask'}
-    <CameraMaskApp bind:this={cameraMaskApp}></CameraMaskApp>
-  {:else if mode == 'projmask'}
-    <ProjectorMaskApp bind:this={projectoMaskApp}></ProjectorMaskApp>
+  {#if $preferences.mode == 'mapping'}
+    <MappingApp bind:this={mappingApp} />
+  {:else if $preferences.mode == 'cammask'}
+    <CameraMaskApp bind:this={cameraMaskApp} />
+  {:else if $preferences.mode == 'projmask'}
+    <ProjectorMaskApp bind:this={projectoMaskApp} />
+  {:else if $preferences.mode == 'camtrigger'}
+    <CameraTriggerApp bind:this={cameraTriggerApp} />
   {/if}
 </main>
