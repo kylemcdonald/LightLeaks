@@ -32,7 +32,7 @@ float getElapsedTimef() {
     return ofGetElapsedTimef() - elapsed_time_start;
 }
 
-void renderScene(ofAutoShader& shader, ofFloatImage& xyz, ofFloatImage& confidence, ofFloatImage& mask, float fadeStatus, bool audio=false
+void renderScene(ofAutoShader& shader, ofFloatImage& xyz, ofFloatImage& confidence, ofFloatImage& mask, float fadeStatus, int debugMode, bool audio=false
 #ifdef USE_SYPHON
                  ,ofxSyphonClient *syphonClient=nullptr
 #endif
@@ -56,6 +56,7 @@ void renderScene(ofAutoShader& shader, ofFloatImage& xyz, ofFloatImage& confiden
         shader.setUniform2f("mouse", ofVec2f(mx,my));
         shader.setUniform1i("audio", audio ? 1 : 0);
         shader.setUniform1f("fadeStatus", fadeStatus);
+        shader.setUniform1i("debugMode", debugMode);
         if(audio) {
             // audio mode uses the xyz size
             xyz.draw(0, 0);
@@ -94,6 +95,7 @@ public:
     ofAutoImage<float> xyzMap, confidenceMap, mask;
     
     float fadeStatus = 1;
+    int debugMode = -1;
     
     ofxWebServer webserver;
     
@@ -123,6 +125,16 @@ public:
             fadeStatus = 0;
             httpResponse("Stopped");
         }
+        
+        // handle debug modes
+        debugMode = -1;
+        if (ofIsStringInString(url, "/debug") == 1) {
+            auto const parts = ofSplitString(url, "/");
+            debugMode = ofToInt(parts[parts.size() - 1]);
+        }
+        
+        // set confidence threshold
+        
         
     }
     
@@ -154,6 +166,7 @@ public:
         
         webserver.start("httpdocs", 8000);
         webserver.addHandler(this, "actions/*");
+        webserver.addHandler(this, "debug/*");
         
 #ifdef USE_AUDIO
         oscSender.setup("localhost", 7777);
@@ -224,7 +237,7 @@ public:
 #ifdef USE_AUDIO
         //Speaker sampling code
         speakerFbo.begin();
-        renderScene(getShader(), speakerXyzMap, speakerConfidenceMap, mask, fadeStatus, true);
+        renderScene(getShader(), speakerXyzMap, speakerConfidenceMap, mask, fadeStatus, -1, true);
         speakerFbo.end();
         
         // Read back the fbo, and average it on the CPU
@@ -274,7 +287,7 @@ public:
         ofSetColor(255);
         ofHideCursor();
         
-        renderScene(getShader(), xyzMap, confidenceMap, mask, fadeStatus, false
+        renderScene(getShader(), xyzMap, confidenceMap, mask, fadeStatus, debugMode, false
 #ifdef USE_SYPHON
                     , &syphonClient
 #endif

@@ -1,56 +1,72 @@
 <html>
-	<meta name="viewport" content ="width=device-width,initial-scale=1,user-scalable=yes" />
-	<head>
-		<title>Light Leaks</title>
-		<style>
-			body {
-				background-color: black;
-				color: white;
-				font-family: sans-serif;
-				display: fixed;
-			}
-			button {
-				font-size: 32px;
-				background-color: black;
-				color: white;				
-			}
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
 
-			.box.flex {
-				display: flex;
-				justify-content: center;
-				align-items: center;
-			}
+<head>
+	<title>Light Leaks</title>
+	<style>
+		body {
+			background-color: black;
+			color: white;
+			font-family: sans-serif;
+			display: fixed;
+		}
 
-			.box {
-				height: 100%;
-				width: 100%;
-			}
-		</style>
-		<script>
-			let hostname = "localhost";
-			let timer;
+		button {
+			font-size: 32px;
+			background-color: black;
+			color: white;
+		}
 
-			fetch("/actions/cameraHostname").then((resp)=> resp.text())
-			.then((_hostname)=>{
-				hostname = _hostname;
-				console.log("Camera hostname",hostname);
-				
-			})
+		.box.flex {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
 
-			function start(){
-				fetch('/actions/start')
-				
-			}
-			function stop(){
-				fetch('/actions/stop')
-			}
-		</script>
-	</head>
-	
-	<body>
-		<div class="box flex">
-			<p><button onclick="start()">Start</button></p>
-			<p><button onclick="stop()">Stop</button></p>
+		.box {
+			height: 100%;
+			width: 100%;
+		}
+
+		a {
+			color: white;
+		}
+	</style>
+	<script>
+		function display(elt, status) {
+			document.getElementById(elt).style.display = status ? 'block' : 'none';
+		}
+		function reveal_debug() {
+			display('debug', true);
+			display('debug-link', false);
+		}
+	</script>
+</head>
+
+<body>
+	<div class="box flex">
+		<div>
+			<p>
+				<button onclick="fetch('/actions/start')">Start</button>
+				<button onclick="fetch('/actions/stop')">Stop</button>
+			</p>
+			<a href="javascript:reveal_debug()" id="debug-link">Debug</a>
+			<span id="debug" style="display:none">
+				<h3>White</h3>
+				<p>
+					<button onclick="fetch('/debug/0')">Solid</button>
+					<button onclick="fetch('/debug/1')">Masked</button>
+					<button onclick="fetch('/debug/2')">Confidence</button>
+				</p>
+				<h3>Wobble</h3>
+				<p>
+					<button onclick="fetch('/debug/3')">x</button>
+					<button onclick="fetch('/debug/4')">y</button>
+					<button onclick="fetch('/debug/5')">z</button>
+				</p>
+			</span>
 		</div>
-	</body>
+	</div>
+</body>
+
 </html>

@@ -13,12 +13,13 @@ uniform int frameNumber;
 uniform vec2 mouse;
 uniform vec2 syphonSize;
 uniform int audio;
+uniform int debugMode;
 
 in vec2 texCoordVarying;
 in vec4 positionVarying;
 out vec4 outputColor;
 
-int numProjectors = 4;
+int numProjectors = 3;
 
 #define M_PI 3.14159265358979323846
 
@@ -273,8 +274,10 @@ void main() {
 
 
     /* test white */
-    // outputColor = vec4(1);
-    // return;
+    if (debugMode == 0) {
+        outputColor = vec4(0,0,1,1);
+        return;
+    }
 
     /* test strobe */
     // float q = .01;
@@ -285,15 +288,19 @@ void main() {
     // }
     // return;
     
-    /* test confidence */
-    // outputColor = vec4(vec3(confidence), 1);
-    // return;
-    
     /* test mask */
-    // if(mod(elapsedTime / 2., 1) > 0.5  ){    //     
-    //     outputColor = vec4(vec3(masked), 1);
-    //     return;
-    // }
+    if (debugMode == 1) {
+        if(mod(elapsedTime / 2., 1) > 0.5){  
+            outputColor = vec4(vec3(masked), 1);
+            return;
+        }
+    }
+
+    /* test confidence */
+    if (debugMode == 2) {
+        outputColor = vec4(vec3(confidence), 1);
+        return;
+    }
 
     /* Discard low confidence and masked */
     if(audio == 0 && (confidence < 0.1 || masked == 0)) {
