@@ -29,7 +29,7 @@ help)
 app)
     case "$2" in
         push)
-            rsync -avz  4-LightLeaks $REMOTE_DIR/4-LightLeaks
+            rsync -avz  4-LightLeaks/ $REMOTE_DIR/4-LightLeaks
         ;;
         pull)
             rsync -avz  $REMOTE_DIR/4-LightLeaks 4-LightLeaks
