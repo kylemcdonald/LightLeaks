@@ -77,13 +77,16 @@ def image_load_job(blur_distance, fn):
     # faster to do conversion to gray here (in parallel) rather than later
     data = imread(fn).mean(axis=2)
 
-    lowpass = gaussian_blur(data, blur_distance)
-    gauss_highpass = data - lowpass
-    gauss_highpass = gauss_highpass / 2
-    gauss_highpass = gauss_highpass + 128
-    gauss_highpass = np.clip(gauss_highpass, 0, 255)
-    gauss_highpass = np.abs(gauss_highpass)
-    return gauss_highpass.astype(np.uint8)
+    if blur_distance > 0:
+        lowpass = gaussian_blur(data, blur_distance)
+        gauss_highpass = data - lowpass
+        gauss_highpass = gauss_highpass / 2
+        gauss_highpass = gauss_highpass + 128
+        gauss_highpass = np.clip(gauss_highpass, 0, 255)
+        gauss_highpass = np.abs(gauss_highpass)
+        return gauss_highpass.astype(np.uint8)
+    else:
+        return data.astype(np.uint8)
 
 
 def load_scan(scan_name, data_dir, blur_distance):
