@@ -46,16 +46,21 @@ def buildXyzMap(data_dir, prefix):
 
         # Load binary file from camamok
         cam_xyz_map = np.fromfile(os.path.join(
-            data_dir, folder, 'camamok', 'xyzMap.raw'), dtype='float32', sep="")
+            data_dir, folder, 'camamok', 'xyzMap.raw'), np.float32)
 
         # Determine scale factor of binary file (probably 4 if code hasnt changed in camamok)
         scale_factor = math.floor(
             1/math.sqrt((len(cam_xyz_map) / 4) / (cam_width * cam_height)))
+        tqdm.write(folder + f": upscaling xyz map by {scale_factor}")
 
         # Reshape camamok xyz map
         cam_xyz_map = cam_xyz_map.reshape(
-            [int(cam_width / scale_factor), int(cam_height / scale_factor), 4])[:, :, 0:3]
+            int(cam_height / scale_factor), int(cam_width / scale_factor), 4)[:, :, 0:3]
         cam_xyz_map = upsample(cam_xyz_map, scale=scale_factor)
+        
+        tqdm.write(folder + f": xyz map size {cam_xyz_map.shape}")
+
+        
 
         # tqdm.write(f'{folder}: cam xyz minimum: {np.min(cam_xyz_map)}, max: {np.max(cam_xyz_map)}')
 

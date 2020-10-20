@@ -67,7 +67,7 @@ export class Model extends Scene {
       sizeAttenuation: false,
     });
 
-    const loadingManager = new LoadingManager(() => {});
+    const loadingManager = new LoadingManager(() => { });
     const loader = new ColladaLoader(loadingManager);
 
     loader.load(path, (collada) => {
@@ -160,14 +160,14 @@ export class Model extends Scene {
     this._mode = mode;
     let material;
     if (mode == "wireframe") {
-      material = 
+      material =
         new MeshBasicMaterial({
           wireframe: true,
           color: this.color,
           opacity: this.opacity,
           transparent: true,
         });
-    }  else if (mode == "xray") {
+    } else if (mode == "xray") {
       material = [
         new MeshBasicMaterial({
           wireframe: true,
@@ -180,8 +180,8 @@ export class Model extends Scene {
           color: new Color('rgb(0,0,0)'),
           opacity: 0.3,
           transparent: true,
-          depthWrite:false,
-          side:DoubleSide
+          depthWrite: false,
+          side: DoubleSide
         }),
       ];
     } else if (mode == "shaded") {
@@ -212,7 +212,7 @@ export class Model extends Scene {
     }
 
     this.traverse((child) => {
-      if (child.type === "Mesh") {
+      if (child.type === "Mesh" || child.type === "LineSegments") {
         const mesh = child as Mesh;
         mesh.material = material;
         // mesh.material = material.clone();
