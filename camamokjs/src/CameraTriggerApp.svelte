@@ -122,6 +122,8 @@
       // List photo for download
     }
     // await Promise.all(promises);
+    await setPattern(0);
+    await ccapi.shootingLiveView("medium", "on");
     
     // Download photos
     let downloaded = 1;
@@ -138,11 +140,9 @@
     runInfo = `Finished ${scanName}`;
     console.timeEnd("Scan")
 
-    await setPattern(0);
     var msg = new SpeechSynthesisUtterance('Scan complete');
     window.speechSynthesis.speak(msg);
-    await ccapi.shootingLiveView("medium", "on");
-
+    
     // setTimeout(()=> runInfo = '', 3000);
   }
 

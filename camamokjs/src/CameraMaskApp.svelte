@@ -54,7 +54,7 @@
       bind:this={maskDrawingView}
       jsonPath={`/SharedData/${loadedScan}/camamok/mask.json`}
       saveEndpoint={`/saveMask/${loadedScan}`}
-      src={`/SharedData/${loadedScan}/cameraImages/vertical/inverse/6.jpg`} />
+      src={`/SharedData/${loadedScan}/cameraImages/vertical/inverse/10.jpg`} />
     {/if}
   </div>
 </div>
