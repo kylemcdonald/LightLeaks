@@ -25,7 +25,7 @@
 
   export const preferences = writable("camtriggerpreferences_v3", {
     cameraUrl: "http://192.168.1.2:8080",
-    proCamScanUrl: "http://lightleaks.local:8000",
+    proCamScanUrl: "http://host.docker.internal:8000",
   });
 
   function sleep(ms) {
