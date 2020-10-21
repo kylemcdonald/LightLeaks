@@ -22,7 +22,13 @@
   },
   "osc": {
     "camera": "kyle.local",
-    "projector": "lightleaks.local"
+    "projector": "lightleaks.local",
+    "speakers": [
+      [0.00,0.13,0],
+      [0.87,0.13,0],
+      [0.87,0.13,1],
+      [0.00,0.13,1]
+    ]
   },
   "camera": {
     "iso": "5000",
