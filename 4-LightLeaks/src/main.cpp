@@ -90,6 +90,7 @@ public:
     int id;
     shared_ptr<ServerApp> server;
     ofVec2f windowSize, windowPosition;
+    vector<ofVec3f> speakerPositions;
     
     ofAutoShader shader, defaultShader;
     ofAutoImage<float> xyzMap, confidenceMap, mask;
@@ -138,11 +139,12 @@ public:
         
     }
     
-    void config(int id, shared_ptr<ServerApp> server, ofVec2f windowSize, ofVec2f windowPosition, string serverName, string appName) {
+    void config(int id, shared_ptr<ServerApp> server, ofVec2f windowSize, ofVec2f windowPosition, string serverName, string appName, vector<ofVec3f> speakerPositions) {
         this->id = id;
         this->server = server;
         this->windowSize = windowSize;
         this->windowPosition = windowPosition;
+        this->speakerPositions = speakerPositions;
         
         ofSetVerticalSync(true);
         ofSetFrameRate(60); // due to https://github.com/openframeworks/openFrameworks/issues/6146
@@ -190,10 +192,9 @@ public:
         // maybe need to swap dimensions here?
         // possibly change scale too
         float eps = 0.001; // needed to avoid "== 0" check in shader
-        speakers[0] = ofVec3f(0,0,0)+eps; // front left
-        speakers[1] = ofVec3f(0,1,0)+eps; // front right
-        speakers[2] = ofVec3f(1,1,0)+eps; // rear right
-        speakers[3] = ofVec3f(1,0,0)+eps; // rear left
+        for (int i = 0; i < 4; i++) {
+            speakers[i] = speakerPositions[i] + eps;
+        }
         
         float speakerAreaSize = 0.02;
         speakerXyzMap.allocate(n_samples, n_speakers, OF_IMAGE_COLOR_ALPHA);
@@ -276,7 +277,7 @@ public:
             ofxOscMessage msg;
             msg.setAddress("/audio/lighthouse_angle");
             // line it up here because max won't save the preset
-            msg.addFloatArg(1-fmodf(lighthouseAngle-0.33, 1));
+            msg.addFloatArg(fmodf(lighthouseAngle, 1));
             oscSender.sendMessage(msg);
         }
         
@@ -355,7 +356,11 @@ int main() {
         ofVec2f windowPosition(curConfig["xwindow"], curConfig["ywindow"]);
         string serverName = config["syphon"]["serverName"];
         string appName = config["syphon"]["appName"];
-        appClient->config(i, appServer, windowSize, windowPosition, serverName, appName);
+        vector<ofVec3f> speakerPositions;
+        for (auto xyz : config["osc"]["speakers"]) {
+            speakerPositions.push_back(ofVec3f(xyz[0], xyz[1], xyz[2]));
+        }
+        appClient->config(i, appServer, windowSize, windowPosition, serverName, appName, speakerPositions);
         ofRunApp(winClient, appClient);
     }
     
