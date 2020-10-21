@@ -31,8 +31,8 @@ int numStages = 17;
 
 // #define TEST_POSITION 2
 // #define TEST_POSITION_ALT 1
-#define OVERWRITE_STAGE 16
-
+#define OVERWRITE_STAGE 1
+#define MOUSE_BEAM
 
 #define M_PI 3.14159265358979323846
 
@@ -88,7 +88,7 @@ float stageAlpha(float stageNum, float stage){
 //Lighthouse beam
 float lighthouse(float elapsedTime,vec3 position,vec3 centered){
     // vec2 rotated = rotate(centered.xy, beamAngle);
-    vec2 rotated = rotate(centered.xy, elapsedTime);
+    vec2 rotated = rotate(centered.xz, elapsedTime);
     float positionAngle = atan(rotated.y, rotated.x);
     // float positionAngle = elapsedTime;
     
@@ -142,7 +142,7 @@ float unstableFloor(float time, vec2 position, float size){
     //         // unstable floor
     float t = sin(time)*.15;
     vec2 rot = vec2(sin(t), cos(t));
-    return sin(size * dot(rot, position + vec2(sin(time) / 10.0))) > 0.8 ? 1.0 : 0.0;
+    return smoothstep(0.8, 0.9, sin(size * dot(rot, position + vec2(sin(time) / 10.0))));
 }
 
 float radialLine(vec2 position, vec2 centered, float r, float width){
@@ -393,6 +393,20 @@ void main() {
         return;
     }
     #endif
+
+    #ifdef MOUSE_BEAM
+    vec3 beam = centered.xzy;
+    float r = length(beam);
+    float phi = atan(beam.x, beam.y); // -PI to PI
+    float theta = acos(beam.z / r);
+
+    // float cccc = 2.4-abs(phi - mouse.y*2*PI + PI);
+    float cccc = 0.4-abs(phi - mouse.y*2*PI + PI);
+    // return c * stageAlpha(s, stage);
+    outputColor = vec4(vec3(smoothstep(0.0,0.01,cccc)), 1.0);
+    // outputColor = vec4(1);
+    return;
+    #endif
     
     /*  Syphon render
         max side of syphon texture = max side of room */
@@ -438,18 +452,41 @@ void main() {
     s++; //3 
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += circles(sin(0.9 * elapsedTime) * 1.8, centered, 160.)
+        w += smoothstep(0.0, 0.6, circles(sin(0.9 * elapsedTime) * 1.8, centered, 160.))
         * stageAlpha(s, stage);
     }
     
     s++; //4
 
-   
+
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += unstableFloor(elapsedTime, centered_stage.zy, 150.)
-        // w += unstableFloor(1, centered.yx, 150.)
+       
+        centered.xz = rotate(centered.xz,  - PI / 2);
+        float x = centered.x;
+        float y = centered.z;
+        float z = centered.y;
+       
+        float r = sqrt(x*x+y*y+z*z);
+        float theta = atan(y,x);
+        float phi = atan(sqrt(x*x+y*y),z);
+
+        // vec2 st = position.zx/10 ;
+        vec2 st = vec2(phi, theta + elapsedTime/ 8) /10;
+ 
+        float d = dot(st-.5,st-.5);
+        vec3 c = voronoi( 25.*st, pow(d,.4) );
+
+        
+        // borders
+        float color = smoothstep( 0.11, 0.18, c.x );
+        // feature points
+        float dd = length( c.yz );
+        
+        
+        w += color
         * stageAlpha(s, stage);;
     }
+
     
     s++; //5
    
@@ -476,13 +513,25 @@ void main() {
     s++; //7
 
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-       float c = 0;
-        for(int i=0; i<8;i++){
-            float n = perlin(vec2(elapsedTime/2500., elapsedTime/2200.1), 109, i);
-            c += radialLine(position.xz, centered.xz, n * PI * 10, 2.8);
-        }
-        w += c * stageAlpha(s, stage);
+        centered.xy = rotate(centered.xy, elapsedTime * 0.1);
+        centered.xz = rotate(centered.xz, elapsedTime * 0.1);
+        w += (
+            hardStripes(elapsedTime * 0.01, 
+                sin(centered.y * 10 + elapsedTime) * 0.05  
+                + sin(centered.x * 23 + elapsedTime) * 0.02
+                + sin(centered.z * 23 + elapsedTime) * 0.001 
+                + centered.z 
+                + centered.x * 0.1
+                , 0.2, 
+                (sin(centered.z * 10.0 + elapsedTime + centered.y) + 1.0)*0.15)
+            // + hardStripes(elapsedTime * 0.01, sin(centered.x * 10 + elapsedTime) * 0.05 + centered.x + centered.y * 0.1, 0.2, 0.3)
+            // + hardStripes(elapsedTime * 0.01, centered.y, 0.1, 0.07)
+            // + hardStripes(elapsedTime * 0.01, centered.x, 0.1, 0.07)
+            // + hardStripes(elapsedTime * 0.15, centered.z - centered.y, 0.2, 0.01)
+        )
+        * stageAlpha(s, stage);  
     }
+    
     
     s++; //8
     
@@ -567,63 +616,23 @@ void main() {
     }
     
     s++; //15
+    
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        centered.xy = rotate(centered.xy, elapsedTime * 0.1);
-        centered.xz = rotate(centered.xz, elapsedTime * 0.1);
-        w += (
-            hardStripes(elapsedTime * 0.01, 
-                sin(centered.y * 10 + elapsedTime) * 0.05  
-                + sin(centered.x * 23 + elapsedTime) * 0.02
-                + sin(centered.z * 23 + elapsedTime) * 0.001 
-                + centered.z 
-                + centered.x * 0.1
-                , 0.2, 
-                (sin(centered.z * 10.0 + elapsedTime + centered.y) + 1.0)*0.15)
-            // + hardStripes(elapsedTime * 0.01, sin(centered.x * 10 + elapsedTime) * 0.05 + centered.x + centered.y * 0.1, 0.2, 0.3)
-            // + hardStripes(elapsedTime * 0.01, centered.y, 0.1, 0.07)
-            // + hardStripes(elapsedTime * 0.01, centered.x, 0.1, 0.07)
-            // + hardStripes(elapsedTime * 0.15, centered.z - centered.y, 0.2, 0.01)
-        )
-        * stageAlpha(s, stage);
-        
+       float c = 0;
+        for(int i=0; i<8;i++){
+            float n = perlin(vec2(elapsedTime/2500., elapsedTime/2200.1), 109, i);
+            c += radialLine(position.xz, centered.xz, n * PI * 10, 2.8);
+        }
+        w += c * stageAlpha(s, stage);
     }
     
     s++; //16
-    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        // vec3 index = round(position/0.04);
-        // w += (
-        //     (
-        //         mod(position.x * 5,1) < 0.5 && mod(position.y * 5,1) < 0.5
-        //     ) ? 1.0 : 0.0
-        // )
-        // * stageAlpha(s, stage);;
-        centered.xz = rotate(centered.xz,  - PI / 2);
-        // centered.xz = rotate(centered.xz,  elapsedTime / 8.0);
-        float x = centered.x;
-        float y = centered.z;
-        float z = centered.y;
        
-        float r = sqrt(x*x+y*y+z*z);
-        float theta = atan(y,x);
-        float phi = atan(sqrt(x*x+y*y),z);
-
-        // vec2 st = position.zx/10 ;
-        vec2 st = vec2(phi, theta + elapsedTime/ 8) /10;
- 
-        float d = dot(st-.5,st-.5);
-        vec3 c = voronoi( 25.*st, pow(d,.4) );
-
-        
-        // borders
-        float color = smoothstep( 0.11, 0.18, c.x );
-        // feature points
-        float dd = length( c.yz );
-        
-        
-        w += color
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+        w += unstableFloor(elapsedTime, centered_stage.zy, 150.)
+        // w += unstableFloor(1, centered.yx, 150.)
         * stageAlpha(s, stage);;
     }
-
 
 
     // // Mouse Beams
