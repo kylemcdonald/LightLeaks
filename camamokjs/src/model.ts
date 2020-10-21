@@ -200,6 +200,7 @@ export class Model extends Scene {
         Math.abs(this.bbox.max.y),
         Math.abs(this.bbox.max.z)
       );
+      console.log(this.bbox, range)
       material = new ShaderMaterial({
         uniforms: {
           range: { value: range },

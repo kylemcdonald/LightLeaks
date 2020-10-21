@@ -21,17 +21,17 @@ out vec4 outputColor;
 
 // SETTINGS
 int numProjectors = 3;
-float threshold = 0.11;
+float threshold = 0.10;
 // x first axis is along the length of the room, with 0 towards the entrance
 // y second axis is along the width of the room, with 0 towards the bar
 // z third axis is floor to ceiling, with 0 on the floor
-const vec3 center = vec3(0.4375, 0.2, 0.495); // balls
+const vec3 center = vec3(0.4390, 0.2, 0.507); // balls
 const vec3 center_alt = vec3(0.05, 0.40, 0.10); // stage
 int numStages = 17;
 
 // #define TEST_POSITION 2
 // #define TEST_POSITION_ALT 1
-// #define OVERWRITE_STAGE 0
+// #define OVERWRITE_STAGE 17
 // #define MOUSE_BEAM
 
 #define M_PI 3.14159265358979323846
@@ -342,23 +342,23 @@ void main() {
     
     /* test mask */
     if (debugMode == 1) {
-        if(mod(elapsedTime / 2., 1) > 0.5){  
-            outputColor = vec4(vec3(masked), 1);
-            return;
-        } else {
-            if (confidence < threshold) {
-                outputColor = vec4(vec3(0.), 1.);
-                return;
-            } else {
-                outputColor = vec4(1);
-                return;
-            }
-        }
+        // if(mod(elapsedTime / 2., 1) > 0.5){  
+        outputColor = vec4(vec3(masked), 1);
+        return;
+        // } else {
+        //     if (confidence < threshold) {
+        //         outputColor = vec4(vec3(0.), 1.);
+        //         return;
+        //     } else {
+        //         outputColor = vec4(1);
+        //         return;
+        //     }
+        // }
     }
 
     /* test confidence */
     if (debugMode == 2) {
-        outputColor = vec4(vec3(confidence), 1);
+        outputColor = vec4(vec3(confidence > threshold ? 1.0 : 0.0),1.0);
         return;
     }
 
@@ -368,21 +368,8 @@ void main() {
         return;
     }
 
-    /* Test masked white */
-    // outputColor = vec4(1);
-    // return;
-    
+    /* Position debug mode */
     /* Position tester: */
-    #ifdef TEST_POSITION
-    int axis = TEST_POSITION;
-    if(position[axis] > center[axis] + sin(elapsedTime) * 0.005){
-        outputColor = vec4(1.,0.,0.,1.);
-        return;
-    } else {
-        outputColor = vec4(0.,1.,0.,1.);
-        return;
-    }
-    #endif
     #ifdef TEST_POSITION_ALT
     int axis = TEST_POSITION_ALT;
     if(position[axis] > center_alt[axis] + sin(elapsedTime) * 0.005){
@@ -393,6 +380,59 @@ void main() {
         return;
     }
     #endif
+
+    int _debugMode = debugMode;
+    #ifdef TEST_POSITION
+    _debugMode = TEST_POSITION + 3;
+    #endif
+    if(_debugMode >= 3 && _debugMode <=5){
+        int axis = _debugMode - 3;
+        float dist = abs(position[axis] - center[axis]);
+        if(dist < 0.003) {
+            outputColor = vec4(0.,0.,1.,1.);
+            return;
+        }
+
+        if(position[axis] > center[axis]){
+            outputColor = vec4(1.,0.,0.,1.);
+            return;
+        } else {
+            outputColor = vec4(0.,1.,0.,1.);
+            return;
+        }
+    }
+
+    if (debugMode == 6) {
+        float c = hardStripes(0.0, position.y , 0.07, 0.1);
+        outputColor = vec4(vec3(c), 1.0);
+        return;
+    }
+    if (debugMode == 7) {
+        float c = hardStripes(0.0, position.z , 0.07, 0.1);
+        outputColor = vec4(vec3(c), 1.0);
+        return;
+    }
+    if (debugMode == 8) {
+        float c = smoothstep(-0.001, 0.001, centered.x);
+        outputColor = vec4(vec3(c), 1.0);
+        return;
+    }
+    if (debugMode == 9) {
+        float c = smoothstep(-0.001, 0.001, centered.y);
+        outputColor = vec4(vec3(c), 1.0);
+        return;
+    }
+    if (debugMode == 10) {
+        float c = smoothstep(-0.001, 0.001, centered.z);
+        outputColor = vec4(vec3(c), 1.0);
+        return;
+    }
+
+    /* Test masked white */
+    // outputColor = vec4(1);
+    // return;
+    
+    
 
     #ifdef MOUSE_BEAM
     vec3 beam = centered.xzy;
@@ -608,8 +648,8 @@ void main() {
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         centered.xz = rotate(centered.xz, elapsedTime * 0.1);
         w += (
-            hardStripes(elapsedTime * 0.15, centered.z + centered.y, 0.2, 0.01)
-            + hardStripes(elapsedTime * 0.15, centered.z - centered.y, 0.2, 0.01)
+            hardStripes(elapsedTime * 0.15, centered.z + centered.y, 0.2, audio == 0 ? 0.01 : 0.09)
+            + hardStripes(elapsedTime * 0.15, centered.z - centered.y, 0.2, audio == 0 ? 0.01 : 0.09)
         )
         * stageAlpha(s, stage);;
         
@@ -633,6 +673,20 @@ void main() {
         // w += unstableFloor(1, centered.yx, 150.)
         * stageAlpha(s, stage);;
     }
+    
+    // s++; //17
+       
+    // if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+    //     // float r = perlin(position.xz + vec2(elapsedTime * 0.0), 50, 0);
+    //     float ry = abs(0.5-mod(position.y + elapsedTime * 0.3 + perlin(position.xz, 10, 0) , 1.0));
+
+        
+    //     float c =step(ry,0.03);// step( ry, 0.1);
+
+    //     w += c
+    //     // w += unstableFloor(1, centered.yx, 150.)
+    //     * stageAlpha(s, stage);;
+    // }
 
 
     // // Mouse Beams

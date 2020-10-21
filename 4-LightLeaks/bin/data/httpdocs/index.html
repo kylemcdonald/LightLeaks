@@ -15,6 +15,9 @@
 			font-size: 32px;
 			background-color: black;
 			color: white;
+			border: 1px solid white;
+			border-radius: 5px;;
+			padding: 5px;
 		}
 
 		.box.flex {
@@ -40,29 +43,46 @@
 			display('debug', true);
 			display('debug-link', false);
 		}
+
+		window.addEventListener('load', (event) => {
+			// display('debug', false);
+
+		})
 	</script>
 </head>
 
 <body>
 	<div class="box flex">
 		<div>
+			<div>
+				<h1>Light Leaks Controls</h1>
+			</div>
+			
 			<p>
-				<button onclick="fetch('/actions/start')">Start</button>
-				<button onclick="fetch('/actions/stop')">Stop</button>
+				<button onclick="fetch('/actions/start')">Restart loop</button>
+				<!-- <button onclick="fetch('/actions/stop')">Stop</button> -->
 			</p>
 			<a href="javascript:reveal_debug()" id="debug-link">Debug</a>
-			<span id="debug" style="display:none">
+			<span id="debug" >
 				<h3>White</h3>
 				<p>
-					<button onclick="fetch('/debug/0')">Solid</button>
+					<button onclick="fetch('/debug/0')">All White</button>
 					<button onclick="fetch('/debug/1')">Masked</button>
-					<button onclick="fetch('/debug/2')">Confidence</button>
+					<button onclick="fetch('/debug/2')">Mapped</button>
 				</p>
-				<h3>Wobble</h3>
+				<h3>Test Position</h3>
 				<p>
 					<button onclick="fetch('/debug/3')">x</button>
 					<button onclick="fetch('/debug/4')">y</button>
 					<button onclick="fetch('/debug/5')">z</button>
+				</p>
+				<h3>Test Patterns</h3>
+				<p>
+					<button onclick="fetch('/debug/6')">Horizontal Lines</button>
+					<button onclick="fetch('/debug/7')">Vertical Lines</button><br>
+					<button onclick="fetch('/debug/8')">Half X</button>
+					<button onclick="fetch('/debug/9')">Half Y</button>
+					<button onclick="fetch('/debug/10')">Half Z</button>
 				</p>
 			</span>
 		</div>
