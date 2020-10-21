@@ -8,6 +8,7 @@
 
   onMount(async () => {
     scans = await fetch("/scans").then((res) => res.json());
+    scans = scans.filter( s => !s.startsWith('_'))
 
     const promises = scans.map( scan => {
       return fetch(
