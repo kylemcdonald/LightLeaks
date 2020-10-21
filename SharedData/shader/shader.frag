@@ -25,14 +25,14 @@ float threshold = 0.11;
 // x first axis is along the length of the room, with 0 towards the entrance
 // y second axis is along the width of the room, with 0 towards the bar
 // z third axis is floor to ceiling, with 0 on the floor
-const vec3 center = vec3(0.4375, 0.2, -0.495); // balls
-const vec3 center_alt = vec3(0.05, 0.40, -0.10); // stage
+const vec3 center = vec3(0.4375, 0.2, 0.495); // balls
+const vec3 center_alt = vec3(0.05, 0.40, 0.10); // stage
 int numStages = 17;
 
 // #define TEST_POSITION 2
 // #define TEST_POSITION_ALT 1
-#define OVERWRITE_STAGE 1
-#define MOUSE_BEAM
+// #define OVERWRITE_STAGE 0
+// #define MOUSE_BEAM
 
 #define M_PI 3.14159265358979323846
 
