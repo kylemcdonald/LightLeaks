@@ -19,7 +19,20 @@ in vec2 texCoordVarying;
 in vec4 positionVarying;
 out vec4 outputColor;
 
+// SETTINGS
 int numProjectors = 3;
+float threshold = 0.11;
+// x first axis is along the length of the room, with 0 towards the entrance
+// y second axis is along the width of the room, with 0 towards the bar
+// z third axis is floor to ceiling, with 0 on the floor
+const vec3 center = vec3(0.4375, 0.2, -0.495); // balls
+const vec3 center_alt = vec3(0.05, 0.40, -0.10); // stage
+int numStages = 17;
+
+// #define TEST_POSITION 2
+// #define TEST_POSITION_ALT 1
+#define OVERWRITE_STAGE 16
+
 
 #define M_PI 3.14159265358979323846
 
@@ -50,40 +63,8 @@ float perlin(vec2 p, float dim, float time) {
 
 // p must be normalized!
 float perlin(vec2 p, float dim) {
-	
-	/*vec2 pos = floor(p * dim);
-	vec2 posx = pos + vec2(1.0, 0.0);
-	vec2 posy = pos + vec2(0.0, 1.0);
-	vec2 posxy = pos + vec2(1.0);
-	
-	// For exclusively black/white noise
-	/*float c = step(rand(pos, dim), 0.5);
-	float cx = step(rand(posx, dim), 0.5);
-	float cy = step(rand(posy, dim), 0.5);
-	float cxy = step(rand(posxy, dim), 0.5);*/
-	
-	/*float c = rand(pos, dim);
-	float cx = rand(posx, dim);
-	float cy = rand(posy, dim);
-	float cxy = rand(posxy, dim);
-	
-	vec2 d = fract(p * dim);
-	d = -0.5 * cos(d * M_PI) + 0.5;
-	
-	float ccx = mix(c, cx, d.x);
-	float cycxy = mix(cy, cxy, d.x);
-	float center = mix(ccx, cycxy, d.y);
-	
-	return center * 2.0 - 1.0;*/
 	return perlin(p, dim, 0.0);
 }
-
-// x first axis is along the length of the room, with 0 towards the entrance
-// y second axis is along the width of the room, with 0 towards the bar
-// z third axis is floor to ceiling, with 0 on the floor
-const vec3 center = vec3(0.13, 0.5, 0.044); // balls
-const vec3 center_stage = vec3(0.05, 0.50, 0.00); // stage
-// 0.25220504 0.47130203 0.05398171
 
 vec2 rotate(vec2 position, float amount) {
     mat2 rotation = mat2(vec2( cos(amount),  sin(amount)),
@@ -99,13 +80,9 @@ float sinp(float x) {
     return 1 + sin(x) * .5;
 }
 
-
 float stageAlpha(float stageNum, float stage){
     float d = distance(stage, stageNum);
-    if(d < 1.){
-        return 1.-d;
-    }
-    return 0;
+    return (d < 1.) ? 1. - d : 0;
 }
 
 //Lighthouse beam
@@ -126,14 +103,14 @@ float stripes(float time, float position, float size){
     return b;
 }
 
-float hardStripes(float time, float position, float size){
+float hardStripes(float time, float position, float size, float width){
     // float b = abs(position * size - time);
     // if(b < 0) b = 0.;
     // return b;
     
     float dist = mod(time - position, size) ;
     
-    if(dist < 0.5 * size){
+    if(dist < width * size){
         return 1.0;
     }
     return 0.0;
@@ -163,9 +140,9 @@ float circles(float time, vec3 centered, float size){
 
 float unstableFloor(float time, vec2 position, float size){
     //         // unstable floor
-    float t = sin(time)*.35;
+    float t = sin(time)*.15;
     vec2 rot = vec2(sin(t), cos(t));
-    return sin(size * dot(rot, position + vec2(time/ 3000.0))) > 0.8 ? 1.0 : 0.0;
+    return sin(size * dot(rot, position + vec2(sin(time) / 10.0))) > 0.8 ? 1.0 : 0.0;
 }
 
 float radialLine(vec2 position, vec2 centered, float r, float width){
@@ -200,7 +177,7 @@ vec2 adjustOffset(vec2 texCoord){
     int p = getProjectorNum(texCoord);
     
     if(p == 0){
-        // texCoord += vec2(0, 5);
+        // texCoord += vec2(100, 10);
     }
     if(p == 1){
         // texCoord += vec2(3, 1);
@@ -228,13 +205,87 @@ vec3 calculateBeamVector(vec2 texCoord){
     return texture(xyzMap, texCoord.st).xyz - hit_point;
 }
 
+
+
+vec2 random2( vec2 p ) {
+    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
+}
+
+vec3 voronoi( in vec2 x, float rnd ) {
+    vec2 n = floor(x);
+    vec2 f = fract(x);
+
+    // first pass: regular voronoi
+    vec2 mg, mr;
+    float md = 8.0;
+    for (int j=-1; j<=1; j++ ) {
+        for (int i=-1; i<=1; i++ ) {
+            vec2 g = vec2(float(i),float(j));
+            vec2 o = random2( n + g )*rnd;
+            // #ifdef ANIMATE
+            o = 0.5 + 0.5*sin( elapsedTime + 6.2831*o );
+            // #endif
+            vec2 r = g + o - f;
+            float d = dot(r,r);
+
+            if( d<md ) {
+                md = d;
+                mr = r;
+                mg = g;
+            }
+        }
+    }
+
+    // second pass: distance to borders
+    md = 8.0;
+    for (int j=-2; j<=2; j++ ) {
+        for (int i=-2; i<=2; i++ ) {
+            vec2 g = mg + vec2(float(i),float(j));
+            vec2 o = random2(n + g)*rnd;
+            // #ifdef ANIMATE
+            o = 0.5 + 0.5*sin( elapsedTime + 6.2831*o );
+            // #endif
+            vec2 r = g + o - f;
+
+            if( dot(mr-r,mr-r)>0.00001 )
+            md = min( md, dot( 0.5*(mr+r), normalize(r-mr) ) );
+        }
+    }
+    return vec3( md, mr );
+}
+
+// vec2 movingTiles(vec2 _st, float _zoom, float _speed){
+//     _st *= _zoom;
+//     float time = elapsedTime*_speed;
+//     if( fract(time)>0.5 ){
+//         if (fract( _st.y * 0.5) > 0.5){
+//             _st.x += fract(time)*2.0;
+//         } else {
+//             _st.x -= fract(time)*2.0;
+//         }
+//     } else {
+//         if (fract( _st.x * 0.5) > 0.5){
+//             _st.y += fract(time)*2.0;
+//         } else {
+//             _st.y -= fract(time)*2.0;
+//         }
+//     }
+//     return fract(_st);
+// }
+
+// float circle(vec2 _st, float _radius){
+//     vec2 pos = vec2(0.5)-_st;
+//     return smoothstep(1.0-_radius,1.0-_radius+_radius*0.2,1.-dot(pos,pos)*3.14);
+// }
+
+
 void main() {
     vec2 texCoord = adjustOffset(texCoordVarying.st);
 
     vec3 position = texture(xyzMap, texCoord.st).xyz;    
 
     vec3 centered = position - center;
-    vec3 centered_stage = position -  center_stage;
+    vec3 centered_stage = position -  center_alt;
     float confidence = texture(confidenceMap, texCoord.st).r;
     float masked = texture(mask, texCoord.st).r;
 
@@ -248,9 +299,10 @@ void main() {
         stage += 1.0 - (1.0 - i) * 10.;
     }
 
-    int numStages = 15;
+    #ifdef OVERWRITE_STAGE
+        stage = OVERWRITE_STAGE; // Overwrite stage
+    #endif
     stage = mod(stage, numStages);
-    stage = 14; // Overwrite stage
     
     /* AUDIO stage num */
     if(audio > 0 && texCoordVarying.s < 1 &&  texCoordVarying.t < 1){
@@ -275,7 +327,7 @@ void main() {
 
     /* test white */
     if (debugMode == 0) {
-        outputColor = vec4(0,0,1,1);
+        outputColor = vec4(1);
         return;
     }
 
@@ -293,6 +345,14 @@ void main() {
         if(mod(elapsedTime / 2., 1) > 0.5){  
             outputColor = vec4(vec3(masked), 1);
             return;
+        } else {
+            if (confidence < threshold) {
+                outputColor = vec4(vec3(0.), 1.);
+                return;
+            } else {
+                outputColor = vec4(1);
+                return;
+            }
         }
     }
 
@@ -303,7 +363,7 @@ void main() {
     }
 
     /* Discard low confidence and masked */
-    if(audio == 0 && (confidence < 0.1 || masked == 0)) {
+    if(audio == 0 && (confidence < threshold || masked == 0)) {
         outputColor = vec4(vec3(0.), 1.);
         return;
     }
@@ -313,14 +373,26 @@ void main() {
     // return;
     
     /* Position tester: */
-    // int axis = 2;
-    // if(position[axis] > center[axis] + sin(elapsedTime) * 0.005){
-    //     outputColor = vec4(1.,0.,0.,1.);
-    //     return;
-    // } else {
-    //     outputColor = vec4(0.,1.,0.,1.);
-    //     return;
-    // }
+    #ifdef TEST_POSITION
+    int axis = TEST_POSITION;
+    if(position[axis] > center[axis] + sin(elapsedTime) * 0.005){
+        outputColor = vec4(1.,0.,0.,1.);
+        return;
+    } else {
+        outputColor = vec4(0.,1.,0.,1.);
+        return;
+    }
+    #endif
+    #ifdef TEST_POSITION_ALT
+    int axis = TEST_POSITION_ALT;
+    if(position[axis] > center_alt[axis] + sin(elapsedTime) * 0.005){
+        outputColor = vec4(1.,0.,0.,1.);
+        return;
+    } else {
+        outputColor = vec4(0.,1.,0.,1.);
+        return;
+    }
+    #endif
     
     /*  Syphon render
         max side of syphon texture = max side of room */
@@ -341,49 +413,52 @@ void main() {
     
     
   
-    int s = 0;
+    int s = 0; //0
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += (lighthouse(elapsedTime, position, centered)  > 0.5 ? 1. : 0.)
         * stageAlpha(s, stage);
     }
     
-    s++;
+    s++; //1
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += stripes(elapsedTime + sin(elapsedTime)
-                     * 0.4, position.z + position.x * 0.1, 8)
+                     * 0.4, -position.z + position.y * 0.1, 3)
         * stageAlpha(s, stage);
     }
     
-    s++;
+    s++; //2
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += glitter(elapsedTime, centered)
         * stageAlpha(s, stage);
     }
     
-    s++;
+    s++; //3 
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += circles(sin(0.9 * elapsedTime) * 1.8, centered, 160.)
         * stageAlpha(s, stage);
     }
     
-    s++;
+    s++; //4
 
    
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += unstableFloor(elapsedTime, centered.yx , 150.)
+        w += unstableFloor(elapsedTime, centered_stage.zy, 150.)
         // w += unstableFloor(1, centered.yx, 150.)
         * stageAlpha(s, stage);;
     }
     
-    s++;
+    s++; //5
    
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += hardStripes(elapsedTime * 0.15, position.z + position.x * 0.8, 0.1)
+        w += (
+            hardStripes(elapsedTime * 0.15, position.z + position.x * 0.8, 0.2, 0.25)
+            // + hardStripes(elapsedTime * 0.15, position.z - position.x * 0.8, 0.2, 0.015)
+        )
         // w += hardStripes(elapsedTime * 0.10, position.z + position.y * 0.8, 0.1)
         // w += hardStripes(0 * 0.10, position.z + position.x * 0.8, 0.1)
         * stageAlpha(s, stage);;
@@ -391,14 +466,14 @@ void main() {
         // c.b = hardStripes(elapsedTime * 0.2, position.z + position.y * 0.5, 0.3);
     }
     
-    s++;
+    s++; //6
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += circles(sin(0.8 * elapsedTime) * 1.8, centered_stage , 160.)
         * stageAlpha(s, stage);
     }
     
-    s++;
+    s++; //7
 
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
        float c = 0;
@@ -409,16 +484,16 @@ void main() {
         w += c * stageAlpha(s, stage);
     }
     
-    s++;
+    s++; //8
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         float ss = sin(elapsedTime/1.0)/2.0;
         float cc = cos(elapsedTime/1.3)/2.0;
-        w += hardStripes(elapsedTime * 0.07, position.z + position.x * (ss/ 5.0) + position.y * (cc/ 5.0), 0.15)
+        w += hardStripes(elapsedTime * 0.07, position.z + position.x * (ss/ 5.0) + position.y * (cc/ 5.0), 0.15, 0.5)
         * stageAlpha(s, stage);;
     }
     
-    s++;
+    s++; //9
 
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         vec3 p = position - (vec3(cos(elapsedTime*0.5) * 0.10,
@@ -426,10 +501,9 @@ void main() {
                                 sin(elapsedTime*0.2) * 0.10 ) + center);
 
         w += (circles(elapsedTime * - 1.5, p, 260.) * stageAlpha(s, stage) > 0.5 ? 1. : 0.);
-        
     }
     
-    s++;
+    s++; //10
 
     // Noise floor
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
@@ -437,18 +511,18 @@ void main() {
         c = c > 0.5 ? 1. : 0.;
         w += c * stageAlpha(s, stage);
     }
-    s++;
+    s++; //11
 
     // Noise radial lines
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
         float c = 0;
         for(int i=0; i<5;i++){
             float n = perlin(vec2(elapsedTime/1000., elapsedTime/1200.1), 109, i);
-            c += radialLine(position.xy, centered.xy, n * PI * 10, 3.0);
+            c += radialLine(position.zy, centered.zy, n * PI * 5, 3.0);
         }
         w += c * stageAlpha(s, stage);
     }
-    s++;
+    s++; //12
 
     // Noise radial lines
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
@@ -459,17 +533,18 @@ void main() {
         }
         w += c * stageAlpha(s, stage);
     }
-    s++;
+    s++; //13
 
      // Noise radial lines
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
-        vec3 index = round(position/0.03);
+        vec3 index = round(position/0.04);
 
         float c = 0;
         
-        c = perlin(vec2(index.x + elapsedTime/109., index.y + elapsedTime/120.1), 209, index.z);
+        // c = perlin(vec2(index.x + cos(elapsedTime)/109., index.y + sin(elapsedTime)/120.1), 209, index.z);
+        c = perlin(vec2(index.x + cos(elapsedTime/10)/109., index.y + sin(elapsedTime)/120.1), 209, index.z);
 
-        c = c > 0.4 ? 1 : 0;
+        c = c > 0.5 ? 1 : 0;
         // c = 1
         // c = index.y;
 
@@ -479,20 +554,90 @@ void main() {
         // }
         w += c * stageAlpha(s, stage);
     }
-    s++;
-     
-    // BEAMS
-    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
-        vec3 beam = calculateBeamVector(texCoord);
-        float r = length(beam);
-        
-        float phi = atan(beam.x, beam.y); // -PI to PI
-        float theta = acos(beam.z / r);
+    s++; //14
 
-        float c = 1-abs(theta - mouse.y*2*PI + PI);
-        w += c * stageAlpha(s, stage);
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+        centered.xz = rotate(centered.xz, elapsedTime * 0.1);
+        w += (
+            hardStripes(elapsedTime * 0.15, centered.z + centered.y, 0.2, 0.01)
+            + hardStripes(elapsedTime * 0.15, centered.z - centered.y, 0.2, 0.01)
+        )
+        * stageAlpha(s, stage);;
+        
     }
-    s++;
+    
+    s++; //15
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+        centered.xy = rotate(centered.xy, elapsedTime * 0.1);
+        centered.xz = rotate(centered.xz, elapsedTime * 0.1);
+        w += (
+            hardStripes(elapsedTime * 0.01, 
+                sin(centered.y * 10 + elapsedTime) * 0.05  
+                + sin(centered.x * 23 + elapsedTime) * 0.02
+                + sin(centered.z * 23 + elapsedTime) * 0.001 
+                + centered.z 
+                + centered.x * 0.1
+                , 0.2, 
+                (sin(centered.z * 10.0 + elapsedTime + centered.y) + 1.0)*0.15)
+            // + hardStripes(elapsedTime * 0.01, sin(centered.x * 10 + elapsedTime) * 0.05 + centered.x + centered.y * 0.1, 0.2, 0.3)
+            // + hardStripes(elapsedTime * 0.01, centered.y, 0.1, 0.07)
+            // + hardStripes(elapsedTime * 0.01, centered.x, 0.1, 0.07)
+            // + hardStripes(elapsedTime * 0.15, centered.z - centered.y, 0.2, 0.01)
+        )
+        * stageAlpha(s, stage);
+        
+    }
+    
+    s++; //16
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+        // vec3 index = round(position/0.04);
+        // w += (
+        //     (
+        //         mod(position.x * 5,1) < 0.5 && mod(position.y * 5,1) < 0.5
+        //     ) ? 1.0 : 0.0
+        // )
+        // * stageAlpha(s, stage);;
+        centered.xz = rotate(centered.xz,  - PI / 2);
+        // centered.xz = rotate(centered.xz,  elapsedTime / 8.0);
+        float x = centered.x;
+        float y = centered.z;
+        float z = centered.y;
+       
+        float r = sqrt(x*x+y*y+z*z);
+        float theta = atan(y,x);
+        float phi = atan(sqrt(x*x+y*y),z);
+
+        // vec2 st = position.zx/10 ;
+        vec2 st = vec2(phi, theta + elapsedTime/ 8) /10;
+ 
+        float d = dot(st-.5,st-.5);
+        vec3 c = voronoi( 25.*st, pow(d,.4) );
+
+        
+        // borders
+        float color = smoothstep( 0.11, 0.18, c.x );
+        // feature points
+        float dd = length( c.yz );
+        
+        
+        w += color
+        * stageAlpha(s, stage);;
+    }
+
+
+
+    // // Mouse Beams
+    // if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
+    //     vec3 beam = calculateBeamVector(texCoord);
+    //     float r = length(beam);
+        
+    //     float phi = atan(beam.x, beam.y); // -PI to PI
+    //     float theta = acos(beam.z / r);
+
+    //     float c = 1-abs(theta - mouse.y*2*PI + PI);
+    //     w += c * stageAlpha(s, stage);
+    // }
+    // s++; //15
 
     /* Stripes test */
     // // w = hardStripes(elapsedTime * 0.1, position.x, 0.1) ;
@@ -504,9 +649,9 @@ void main() {
     outputColor = vec4(vec3(w) * 1.0 , 1.);
     
     // avoid a bug that causes some pixels to end up on the far end
-    if(position.x == 0){
-        outputColor = vec4(0.);
-    }
+    // if(position.x == 0){
+    //     outputColor = vec4(0.);
+    // }
 
     // if( getProjectorNum(texCoord) != 0){
         // outputColor *= vec4(0,0,0,1);
