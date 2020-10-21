@@ -200,11 +200,10 @@ export class Model extends Scene {
         Math.abs(this.bbox.max.y),
         Math.abs(this.bbox.max.z)
       );
-      // console.log(this.bbox)
       material = new ShaderMaterial({
         uniforms: {
           range: { value: range },
-          zero: { value: new Vector3(0, 0, 0) },
+          zero: { value: new Vector3(this.bbox.min.x, this.bbox.min.y, this.bbox.min.z) },
         },
         vertexShader: xyzMapVertexShader,
         fragmentShader: xyzMapFragShader,
