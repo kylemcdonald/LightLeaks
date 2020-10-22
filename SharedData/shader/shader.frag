@@ -33,6 +33,7 @@ int numStages = 17;
 // #define TEST_POSITION_ALT 1
 // #define OVERWRITE_STAGE 17
 // #define MOUSE_BEAM
+// #define PHOTOGRAPHY_MODE
 
 #define M_PI 3.14159265358979323846
 
@@ -86,11 +87,11 @@ float stageAlpha(float stageNum, float stage){
 }
 
 //Lighthouse beam
-float lighthouse(float elapsedTime,vec3 position,vec3 centered){
+float lighthouse(float t, vec3 position,vec3 centered){
     // vec2 rotated = rotate(centered.xy, beamAngle);
-    vec2 rotated = rotate(centered.xz, elapsedTime);
+    vec2 rotated = rotate(centered.xz, t);
     float positionAngle = atan(rotated.y, rotated.x);
-    // float positionAngle = elapsedTime;
+    // float positionAngle = t;
     
     return 1. - ((positionAngle + PI) / TWO_PI);
 }
@@ -148,7 +149,7 @@ float unstableFloor(float time, vec2 position, float size){
 float radialLine(vec2 position, vec2 centered, float r, float width){
     vec2 rotated = rotate(centered.xy, r);
     float positionAngle = atan(rotated.y, rotated.x);
-    // float positionAngle = elapsedTime;
+    // float positionAngle = t;
     return positionAngle > width ? 1 : 0;
     // return  ((positionAngle + PI) / TWO_PI);
 }
@@ -211,7 +212,7 @@ vec2 random2( vec2 p ) {
     return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
 }
 
-vec3 voronoi( in vec2 x, float rnd ) {
+vec3 voronoi( in vec2 x, float rnd, float t ) {
     vec2 n = floor(x);
     vec2 f = fract(x);
 
@@ -223,7 +224,7 @@ vec3 voronoi( in vec2 x, float rnd ) {
             vec2 g = vec2(float(i),float(j));
             vec2 o = random2( n + g )*rnd;
             // #ifdef ANIMATE
-            o = 0.5 + 0.5*sin( elapsedTime + 6.2831*o );
+            o = 0.5 + 0.5*sin( t + 6.2831*o );
             // #endif
             vec2 r = g + o - f;
             float d = dot(r,r);
@@ -243,7 +244,7 @@ vec3 voronoi( in vec2 x, float rnd ) {
             vec2 g = mg + vec2(float(i),float(j));
             vec2 o = random2(n + g)*rnd;
             // #ifdef ANIMATE
-            o = 0.5 + 0.5*sin( elapsedTime + 6.2831*o );
+            o = 0.5 + 0.5*sin( t + 6.2831*o );
             // #endif
             vec2 r = g + o - f;
 
@@ -254,9 +255,9 @@ vec3 voronoi( in vec2 x, float rnd ) {
     return vec3( md, mr );
 }
 
-// vec2 movingTiles(vec2 _st, float _zoom, float _speed){
+// vec2 movingTiles(vec2 _st, float _zoom, float _speed, float t){
 //     _st *= _zoom;
-//     float time = elapsedTime*_speed;
+//     float time = t*_speed;
 //     if( fract(time)>0.5 ){
 //         if (fract( _st.y * 0.5) > 0.5){
 //             _st.x += fract(time)*2.0;
@@ -280,6 +281,12 @@ vec3 voronoi( in vec2 x, float rnd ) {
 
 
 void main() {
+#ifdef PHOTOGRAPHY_MODE
+    float elapsedTimeMod = 15 + 30 * floor(elapsedTime/5);
+#else
+    float elapsedTimeMod = elapsedTime;
+#endif
+
     vec2 texCoord = adjustOffset(texCoordVarying.st);
 
     vec3 position = texture(xyzMap, texCoord.st).xyz;    
@@ -290,7 +297,7 @@ void main() {
     float masked = texture(mask, texCoord.st).r;
 
     // Calculate stage
-    float t = elapsedTime / 30.; // duration of each stage
+    float t = elapsedTimeMod / 30.; // duration of each stage
     float stage = floor(t); // index of current stage
     float i = t - stage; // progress in current stage
     
@@ -333,7 +340,7 @@ void main() {
 
     /* test strobe */
     // float q = .01;
-    // if(mod(elapsedTime,q) > (q/2)) {
+    // if(mod(elapsedTimeMod,q) > (q/2)) {
     //     outputColor = vec4(1);
     // } else {
     //     outputColor = vec4(0,0,0,1);
@@ -342,7 +349,7 @@ void main() {
     
     /* test mask */
     if (debugMode == 1) {
-        // if(mod(elapsedTime / 2., 1) > 0.5){  
+        // if(mod(elapsedTimeMod / 2., 1) > 0.5){  
         outputColor = vec4(vec3(masked), 1);
         return;
         // } else {
@@ -372,7 +379,7 @@ void main() {
     /* Position tester: */
     #ifdef TEST_POSITION_ALT
     int axis = TEST_POSITION_ALT;
-    if(position[axis] > center_alt[axis] + sin(elapsedTime) * 0.005){
+    if(position[axis] > center_alt[axis] + sin(elapsedTimeMod) * 0.005){
         outputColor = vec4(1.,0.,0.,1.);
         return;
     } else {
@@ -470,14 +477,14 @@ void main() {
     int s = 0; //0
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += (lighthouse(elapsedTime, position, centered)  > 0.5 ? 1. : 0.)
+        w += (lighthouse(elapsedTimeMod, position, centered)  > 0.5 ? 1. : 0.)
         * stageAlpha(s, stage);
     }
     
     s++; //1
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += stripes(elapsedTime + sin(elapsedTime)
+        w += stripes(elapsedTimeMod + sin(elapsedTimeMod)
                      * 0.4, -position.z + position.y * 0.1, 3)
         * stageAlpha(s, stage);
     }
@@ -485,14 +492,14 @@ void main() {
     s++; //2
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += glitter(elapsedTime, centered)
+        w += glitter(elapsedTimeMod, centered)
         * stageAlpha(s, stage);
     }
     
     s++; //3 
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += smoothstep(0.0, 0.6, circles(sin(0.9 * elapsedTime) * 1.8, centered, 160.))
+        w += smoothstep(0.0, 0.6, circles(sin(0.9 * elapsedTimeMod) * 1.8, centered, 160.))
         * stageAlpha(s, stage);
     }
     
@@ -511,10 +518,10 @@ void main() {
         float phi = atan(sqrt(x*x+y*y),z);
 
         // vec2 st = position.zx/10 ;
-        vec2 st = vec2(phi, theta + elapsedTime/ 8) /10;
+        vec2 st = vec2(phi, theta + elapsedTimeMod/ 8) /10;
  
         float d = dot(st-.5,st-.5);
-        vec3 c = voronoi( 25.*st, pow(d,.4) );
+        vec3 c = voronoi( 25.*st, pow(d,.4), elapsedTimeMod );
 
         
         // borders
@@ -533,41 +540,41 @@ void main() {
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         w += (
-            hardStripes(elapsedTime * 0.15, position.z + position.x * 0.8, 0.2, 0.25)
-            // + hardStripes(elapsedTime * 0.15, position.z - position.x * 0.8, 0.2, 0.015)
+            hardStripes(elapsedTimeMod * 0.15, position.z + position.x * 0.8, 0.2, 0.25)
+            // + hardStripes(elapsedTimeMod * 0.15, position.z - position.x * 0.8, 0.2, 0.015)
         )
-        // w += hardStripes(elapsedTime * 0.10, position.z + position.y * 0.8, 0.1)
+        // w += hardStripes(elapsedTimeMod * 0.10, position.z + position.y * 0.8, 0.1)
         // w += hardStripes(0 * 0.10, position.z + position.x * 0.8, 0.1)
         * stageAlpha(s, stage);;
-        // c.r = hardStripes(elapsedTime * 0.3, position.z + position.y * 0.5, 0.3);
-        // c.b = hardStripes(elapsedTime * 0.2, position.z + position.y * 0.5, 0.3);
+        // c.r = hardStripes(elapsedTimeMod * 0.3, position.z + position.y * 0.5, 0.3);
+        // c.b = hardStripes(elapsedTimeMod * 0.2, position.z + position.y * 0.5, 0.3);
     }
     
     s++; //6
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += circles(sin(0.8 * elapsedTime) * 1.8, centered_stage , 160.)
+        w += circles(sin(0.8 * elapsedTimeMod) * 1.8, centered_stage , 160.)
         * stageAlpha(s, stage);
     }
     
     s++; //7
 
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        centered.xy = rotate(centered.xy, elapsedTime * 0.1);
-        centered.xz = rotate(centered.xz, elapsedTime * 0.1);
+        centered.xy = rotate(centered.xy, elapsedTimeMod * 0.1);
+        centered.xz = rotate(centered.xz, elapsedTimeMod * 0.1);
         w += (
-            hardStripes(elapsedTime * 0.01, 
-                sin(centered.y * 10 + elapsedTime) * 0.05  
-                + sin(centered.x * 23 + elapsedTime) * 0.02
-                + sin(centered.z * 23 + elapsedTime) * 0.001 
+            hardStripes(elapsedTimeMod * 0.01, 
+                sin(centered.y * 10 + elapsedTimeMod) * 0.05  
+                + sin(centered.x * 23 + elapsedTimeMod) * 0.02
+                + sin(centered.z * 23 + elapsedTimeMod) * 0.001 
                 + centered.z 
                 + centered.x * 0.1
                 , 0.2, 
-                (sin(centered.z * 10.0 + elapsedTime + centered.y) + 1.0)*0.15)
-            // + hardStripes(elapsedTime * 0.01, sin(centered.x * 10 + elapsedTime) * 0.05 + centered.x + centered.y * 0.1, 0.2, 0.3)
-            // + hardStripes(elapsedTime * 0.01, centered.y, 0.1, 0.07)
-            // + hardStripes(elapsedTime * 0.01, centered.x, 0.1, 0.07)
-            // + hardStripes(elapsedTime * 0.15, centered.z - centered.y, 0.2, 0.01)
+                (sin(centered.z * 10.0 + elapsedTimeMod + centered.y) + 1.0)*0.15)
+            // + hardStripes(elapsedTimeMod * 0.01, sin(centered.x * 10 + elapsedTimeMod) * 0.05 + centered.x + centered.y * 0.1, 0.2, 0.3)
+            // + hardStripes(elapsedTimeMod * 0.01, centered.y, 0.1, 0.07)
+            // + hardStripes(elapsedTimeMod * 0.01, centered.x, 0.1, 0.07)
+            // + hardStripes(elapsedTimeMod * 0.15, centered.z - centered.y, 0.2, 0.01)
         )
         * stageAlpha(s, stage);  
     }
@@ -576,27 +583,27 @@ void main() {
     s++; //8
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        float ss = sin(elapsedTime/1.0)/2.0;
-        float cc = cos(elapsedTime/1.3)/2.0;
-        w += hardStripes(elapsedTime * 0.07, position.z + position.x * (ss/ 5.0) + position.y * (cc/ 5.0), 0.15, 0.5)
+        float ss = sin(elapsedTimeMod/1.0)/2.0;
+        float cc = cos(elapsedTimeMod/1.3)/2.0;
+        w += hardStripes(elapsedTimeMod * 0.07, position.z + position.x * (ss/ 5.0) + position.y * (cc/ 5.0), 0.15, 0.5)
         * stageAlpha(s, stage);;
     }
     
     s++; //9
 
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        vec3 p = position - (vec3(cos(elapsedTime*0.5) * 0.10,
-                                sin(elapsedTime*0.4) * 0.1,
-                                sin(elapsedTime*0.2) * 0.10 ) + center);
+        vec3 p = position - (vec3(cos(elapsedTimeMod*0.5) * 0.10,
+                                sin(elapsedTimeMod*0.4) * 0.1,
+                                sin(elapsedTimeMod*0.2) * 0.10 ) + center);
 
-        w += (circles(elapsedTime * - 1.5, p, 260.) * stageAlpha(s, stage) > 0.5 ? 1. : 0.);
+        w += (circles(elapsedTimeMod * - 1.5, p, 260.) * stageAlpha(s, stage) > 0.5 ? 1. : 0.);
     }
     
     s++; //10
 
     // Noise floor
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
-        float c = perlin(position.xy, 100, elapsedTime/3000000.);
+        float c = perlin(position.xy, 100, elapsedTimeMod/3000000.);
         c = c > 0.5 ? 1. : 0.;
         w += c * stageAlpha(s, stage);
     }
@@ -606,7 +613,7 @@ void main() {
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
         float c = 0;
         for(int i=0; i<5;i++){
-            float n = perlin(vec2(elapsedTime/1000., elapsedTime/1200.1), 109, i);
+            float n = perlin(vec2(elapsedTimeMod/1000., elapsedTimeMod/1200.1), 109, i);
             c += radialLine(position.zy, centered.zy, n * PI * 5, 3.0);
         }
         w += c * stageAlpha(s, stage);
@@ -617,7 +624,7 @@ void main() {
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
         float c = 0;
         for(int i=0; i<2;i++){
-            float n = i * 3.1 + elapsedTime / 15.;
+            float n = i * 3.1 + elapsedTimeMod / 15.;
             c += radialLine(position.xy, centered.xy, n * PI * 10, 2.5);
         }
         w += c * stageAlpha(s, stage);
@@ -630,15 +637,15 @@ void main() {
 
         float c = 0;
         
-        // c = perlin(vec2(index.x + cos(elapsedTime)/109., index.y + sin(elapsedTime)/120.1), 209, index.z);
-        c = perlin(vec2(index.x + cos(elapsedTime/10)/109., index.y + sin(elapsedTime)/120.1), 209, index.z);
+        // c = perlin(vec2(index.x + cos(elapsedTimeMod)/109., index.y + sin(elapsedTimeMod)/120.1), 209, index.z);
+        c = perlin(vec2(index.x + cos(elapsedTimeMod/10)/109., index.y + sin(elapsedTimeMod)/120.1), 209, index.z);
 
         c = c > 0.5 ? 1 : 0;
         // c = 1
         // c = index.y;
 
         // for(int i=0; i<2;i++){
-            // float n = i * 3.1 + elapsedTime / 15.;
+            // float n = i * 3.1 + elapsedTimeMod / 15.;
             // c += radialLine(position.xy, centered.xy, n * PI * 10, 2.5);
         // }
         w += c * stageAlpha(s, stage);
@@ -646,10 +653,10 @@ void main() {
     s++; //14
 
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        centered.xz = rotate(centered.xz, elapsedTime * 0.1);
+        centered.xz = rotate(centered.xz, elapsedTimeMod * 0.1);
         w += (
-            hardStripes(elapsedTime * 0.15, centered.z + centered.y, 0.2, audio == 0 ? 0.01 : 0.09)
-            + hardStripes(elapsedTime * 0.15, centered.z - centered.y, 0.2, audio == 0 ? 0.01 : 0.09)
+            hardStripes(elapsedTimeMod * 0.15, centered.z + centered.y, 0.2, audio == 0 ? 0.01 : 0.09)
+            + hardStripes(elapsedTimeMod * 0.15, centered.z - centered.y, 0.2, audio == 0 ? 0.01 : 0.09)
         )
         * stageAlpha(s, stage);;
         
@@ -660,7 +667,7 @@ void main() {
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
        float c = 0;
         for(int i=0; i<8;i++){
-            float n = perlin(vec2(elapsedTime/2500., elapsedTime/2200.1), 109, i);
+            float n = perlin(vec2(elapsedTimeMod/2500., elapsedTimeMod/2200.1), 109, i);
             c += radialLine(position.xz, centered.xz, n * PI * 10, 2.8);
         }
         w += c * stageAlpha(s, stage);
@@ -669,7 +676,7 @@ void main() {
     s++; //16
        
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += unstableFloor(elapsedTime, centered_stage.zy, 150.)
+        w += unstableFloor(elapsedTimeMod, centered_stage.zy, 150.)
         // w += unstableFloor(1, centered.yx, 150.)
         * stageAlpha(s, stage);;
     }
@@ -677,8 +684,8 @@ void main() {
     // s++; //17
        
     // if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-    //     // float r = perlin(position.xz + vec2(elapsedTime * 0.0), 50, 0);
-    //     float ry = abs(0.5-mod(position.y + elapsedTime * 0.3 + perlin(position.xz, 10, 0) , 1.0));
+    //     // float r = perlin(position.xz + vec2(elapsedTimeMod * 0.0), 50, 0);
+    //     float ry = abs(0.5-mod(position.y + elapsedTimeMod * 0.3 + perlin(position.xz, 10, 0) , 1.0));
 
         
     //     float c =step(ry,0.03);// step( ry, 0.1);
@@ -703,7 +710,7 @@ void main() {
     // s++; //15
 
     /* Stripes test */
-    // // w = hardStripes(elapsedTime * 0.1, position.x, 0.1) ;
+    // // w = hardStripes(elapsedTimeMod * 0.1, position.x, 0.1) ;
     // w = 1;
     // c *= 0.5;
     // // outputColor += vec4(vec3(w) * 0.5 * vec3(0.5, 0.5, 1.0) , 1.);
