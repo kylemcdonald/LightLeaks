@@ -33,12 +33,15 @@
   }
 
   async function connectCamera() {
-    await ccapi.connectCamera(get(preferences).cameraUrl).catch((err) => {
+    await ccapi.connectCamera(get(preferences).cameraUrl)
+    .then(()=>{
+      connected = true;
+      connecting = false;
+    })
+    .catch((err) => {
       connecting = false;
       console.error(err);
     });
-    connected = true;
-    connecting = false;
 
     // Turn of the display
     // await ccapi.shootingLiveView("small", "off");
