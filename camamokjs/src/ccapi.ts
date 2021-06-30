@@ -5,7 +5,7 @@ let cameraUrl: string | undefined = undefined;
 function apiCall<T>(
   endpoint: string,
   body: Object = {},
-  method: "get" | "post" = "get"
+  method: "get" | "post" | "put" = "get"
 ): Promise<T> {
   const ccapiurl = endpoint
     ? `${cameraUrl}/ccapi/${VER}${endpoint}`
@@ -90,14 +90,14 @@ export interface DeviceStatusBatteryResponse {
   name: string;
   kind: string;
   level:
-    | "low"
-    | "half"
-    | "high"
-    | "full"
-    | "unknown"
-    | "charge"
-    | "chargestop"
-    | "chargecomp";
+  | "low"
+  | "half"
+  | "high"
+  | "full"
+  | "unknown"
+  | "charge"
+  | "chargestop"
+  | "chargecomp";
   quality: "bad" | "normal" | "good" | "unknown";
 }
 export function getDeviceStatusBattery() {
@@ -113,8 +113,27 @@ export function getDeviceStatusLens() {
 }
 
 export function shootingControlShutterButton(af: boolean) {
-  return apiCall<{message?:string}>("/shooting/control/shutterbutton", { af }, 'post');
+  return apiCall<{ message?: string }>("/shooting/control/shutterbutton", { af }, 'post');
 }
+
+export function shootingControlShutterButtonManual(action: 'release' | 'half_press' | 'full_press', af: boolean) {
+  return apiCall<{ message?: string }>("/shooting/control/shutterbutton/manual", { af, action }, 'post');
+}
+
+
+export interface ShootingSettingsResponse {
+  shootingmodedial: { value: string },
+  av: { value: string }
+  tv: { value: string }
+  wb: { value: string }
+  iso: { value: string }
+  exposure: { value: string }
+}
+
+export function getShootingSettings() {
+  return apiCall<ShootingSettingsResponse>("/shooting/settings/");
+}
+
 
 export function shootingLiveView(
   liveviewsize: "off" | "small" | "medium",
@@ -127,11 +146,47 @@ export function shootingLiveView(
   );
 }
 
+export function parseTime(time: string): number {
+  const match1 = time.match(/(\d+)"(\d+)?/im)
+  const match2 = time.match(/(\d+)\/(\d+)/im)
+  let ret = 0;
+  if (match1) {
+    ret = parseInt(match1[1]) * 1000;
+    if (match1[2])
+      ret += parseInt(match1[2]) * 100
+  } else if (match2) {
+    ret = 1000 * parseInt(match2[1]) / parseInt(match2[2])
+  }
+
+  return ret
+}
+
+export function shootingSettingsDrive(value: "single" | "cont_super_hi" | "highspeed" | "lowspeed" | "self_10sec" | "self_2sec" | "self_continuous") {
+  return apiCall<[]>(
+    "/shooting/settings/drive",
+    { value: value },
+    "put"
+  );
+}
+
+export function shootingSettingsStillImageQuality(jpeg: "none" | "large_fine" | "large_normal" | "medium_fine" | "medium_normal" | "small1_fine" | "small1_normal" | "small2", raw: 'none' | 'raw' | 'craw' = 'none') {
+  return apiCall<[]>(
+    "/shooting/settings/stillimagequality",
+    {
+      value: {
+        raw,
+        jpeg
+      }
+    },
+    "put"
+  );
+}
+
 export interface PollingResponse {
   addedcontents?: string[],
   shuttermode?: Object,
   battery?: DeviceStatusBatteryResponse,
 }
-export function polling(wait){
-  return apiCall<PollingResponse>(`/event/polling?continue=${wait?'on':'off'}`)
+export function polling(wait) {
+  return apiCall<PollingResponse>(`/event/polling?continue=${wait ? 'on' : 'off'}`)
 }

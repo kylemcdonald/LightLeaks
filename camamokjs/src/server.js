@@ -7,6 +7,7 @@ const os = require("os");
 const fetch = require("node-fetch");
 const request = require('request');
 const shell = require('shelljs');
+const ExifReader = require('exifreader');
 
 const app = express();
 
@@ -143,6 +144,15 @@ app.get("/downloadImageFromUrl", async (req, res) => {
   });
 });
 
+app.get("/getExifFromUrl", async (req, res) => {
+  const dir =  '/tmp'
+  download(req.query.url, path.join(dir, req.query.filename), async ()=>{
+    const tags = await ExifReader.load(path.join(dir, req.query.filename));
+    console.log(tags)
+    res.send(tags);
+  });
+});
+
 
 app.get("/proxy", async (req, res, next) => {
   fetch(req.query.url)
@@ -156,6 +166,25 @@ app.post("/proxy/", async (req, res, next) => {
     console.log(req.body);
     fetch(req.query.url, {
       method: "post",
+      body: JSON.stringify(req.body),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+      .then((blob) => blob.json())
+      .then((json) => res.send(json))
+      .catch(next);
+    // console.log(apiResponse)
+  } catch (e) {
+    console.warn(e);
+  }
+});
+
+app.put("/proxy/", async (req, res, next) => {
+  try {
+    console.log(req.body);
+    fetch(req.query.url, {
+      method: "put",
       body: JSON.stringify(req.body),
       headers: {
         'Content-Type': 'application/json'

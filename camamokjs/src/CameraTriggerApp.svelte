@@ -5,6 +5,7 @@
   import { onDestroy, onMount } from "svelte";
   import * as ccapi from "./ccapi";
   import moment from "moment";
+  import * as ExifReader from "exifreader";
 
   let connected = false;
   let connecting = true;
@@ -23,25 +24,66 @@
 
   let deviceInfo: ccapi.DeviceInformationResponse;
 
+  const quality = "medium_fine";
+  // const continuousSpeed = "cont_super_hi";
+  const continuousSpeed = "highspeed";
+
   export const preferences = writable("camtriggerpreferences_v3", {
     cameraUrl: "http://192.168.1.2:8080",
     proCamScanUrl: "http://host.docker.internal:8000",
+    shutterSpeed: 0,
+    captureDuration: 0,
   });
 
   function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function Interval(fn, duration, ...args) {
+    const _this = this;
+    _this.stopping = false;
+    this.baseline = undefined;
+
+    this.run = function (flag) {
+      if (_this.stopping) return;
+      if (_this.baseline === undefined) {
+        _this.baseline = new Date().getTime() - duration;
+      }
+      if (flag) {
+        fn(...args);
+      }
+      const end = new Date().getTime();
+      _this.baseline += duration;
+
+      let nextTick = duration - (end - _this.baseline);
+      if (nextTick < 0) {
+        nextTick = 0;
+      }
+
+      console.log(nextTick);
+      _this.timer = setTimeout(function () {
+        _this.run(true);
+      }, nextTick);
+    };
+
+    this.stop = function () {
+      console.log("Stop ", _this.timer);
+      clearTimeout(_this.timer);
+      _this.stopping = true;
+    };
   }
 
   async function connectCamera() {
-    await ccapi.connectCamera(get(preferences).cameraUrl)
-    .then(()=>{
-      connected = true;
-      connecting = false;
-    })
-    .catch((err) => {
-      connecting = false;
-      console.error(err);
-    });
+    await ccapi
+      .connectCamera(get(preferences).cameraUrl)
+      .then(() => {
+        connected = true;
+        connecting = false;
+      })
+      .catch((err) => {
+        connecting = false;
+        console.error(err);
+      });
 
     // Turn of the display
     // await ccapi.shootingLiveView("small", "off");
@@ -54,25 +96,25 @@
   }
 
   async function takePicture() {
-    let retry =  3;
+    let retry = 10;
 
-    while(retry-- > 0){
+    while (retry-- > 0) {
       const response = await ccapi.shootingControlShutterButton(false);
-      if(response.message){
+      if (response.message) {
         console.warn("Problem taking photo", response.message);
         await sleep(1000);
-        console.log("Retrying ",retry)
+        console.log("Retrying ", retry);
       } else {
         break;
       }
     }
-    if(retry <= 0){
-      throw  new Error("Could not take photo");
+    if (retry <= 0) {
+      throw new Error("Could not take photo");
     }
     console.log("Wait for photo name");
 
-    console.log(addedContentPromise)
-    if(addedContentPromise.length == 0){
+    console.log(addedContentPromise);
+    if (addedContentPromise.length == 0) {
       poll();
     }
     const path = await new Promise((res, rej) => {
@@ -100,7 +142,7 @@
   }
 
   async function start() {
-    await ccapi.shootingLiveView("small", "off");
+    // await ccapi.shootingLiveView("small", "off");
 
     // await resetPattern();
     const scanName = `scan-${moment().format("MMDDTHH-mm-ss")}`;
@@ -116,10 +158,10 @@
 
       // Take photo
       console.log("Take photo");
-      await takePicture().then( path =>{
+      await takePicture().then((path) => {
         console.log("Photo taken:", path);
         paths.push([path, `${scanName}/cameraImages/${patternName}.jpg`]);
-      })
+      });
 
       // await sleep(900);
       // List photo for download
@@ -127,26 +169,189 @@
     // await Promise.all(promises);
     await setPattern(0);
     await ccapi.shootingLiveView("medium", "on");
-    
+
     // Download photos
     let downloaded = 1;
-    
+
     runInfo = `Downloading ${downloaded}/${paths.length}`;
-    for(let [url, path] of paths){
-      console.log("Download ",url, 'to', path)
-      await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`).then(() =>{
+    for (let [url, path] of paths) {
+      console.log("Download ", url, "to", path);
+      await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`)
+        .then(() => {
           runInfo = `Downloading ${++downloaded}/${paths.length}`;
-      }).then(()=> previewSrc = `/SharedData/${path}`)
+        })
+        .then(() => (previewSrc = `/SharedData/${path}`));
     }
 
     console.log("Done");
     runInfo = `Finished ${scanName}`;
-    console.timeEnd("Scan")
+    console.timeEnd("Scan");
 
-    var msg = new SpeechSynthesisUtterance('Scan complete');
+    var msg = new SpeechSynthesisUtterance("Scan complete");
     window.speechSynthesis.speak(msg);
-    
+
     // setTimeout(()=> runInfo = '', 3000);
+  }
+
+  // Experimental code that isnt finished:
+  async function startHighspeed() {
+    const settings = await ccapi.getShootingSettings();
+    const tv = ccapi.parseTime(settings.tv.value);
+    if (tv !== get(preferences).shutterSpeed) {
+      alert("Shutter speed not meassured, click Test Duration");
+      return;
+    }
+
+    const scanName = `scan-${moment().format("MMDDTHH-mm-ss")}`;
+    runInfo = `Capturing ${scanName} in highspeed`;
+
+    // Prepare
+    await ccapi.shootingSettingsStillImageQuality(quality);
+    await ccapi.shootingSettingsDrive(continuousSpeed);
+    await ccapi.polling(false);
+
+    // Lets go 🤞 hope the timing matches
+    setColor(1, 0, 0);
+
+    await ccapi.shootingControlShutterButtonManual("full_press", false);
+
+    const intervalDuration = get(preferences).captureDuration;
+    let i = 0;
+    var s = +new Date();
+
+    // const interval = setInterval(async () => {
+    const interval = new Interval(async () => {
+      // console.log(
+      //   (new Date() - s) % intervalDuration,
+      //   i - 1,
+      //   Math.round((new Date() - s) / intervalDuration)
+      // );
+
+      // const _numPatterns = numPatterns;
+      const _numPatterns = 10;
+      runInfo = `${i}/${_numPatterns * 2 + 4}`;
+      if (i == 0) {
+        setColor(1, 0, 0);
+      } else if (i == 1 || i == 2) {
+        setColor(0, 1, 0);
+      } else if (i == 3) {
+        setColor(1, 0, 0);
+      } else if (i < (_numPatterns + 1) * 2 + 4) {
+        // } else if(i<10*2+4){
+        setPattern(Math.floor((i - 4) / 2));
+        console.log(i, Math.floor((i - 4) / 2));
+      } else if (i < (_numPatterns + 1) * 2 + 5) {
+        setColor(255, 0, 0);
+      } else if (i < (_numPatterns + 1) * 2 + 7) {
+        setColor(0, 255, 0);
+      } else if (i < (_numPatterns + 1) * 2 + 8) {
+        setColor(255, 0, 0);
+      } else {
+        interval.stop();
+
+        console.log("Done");
+        await ccapi.shootingControlShutterButtonManual("release", false);
+        await sleep(5000);
+        await ccapi.shootingSettingsDrive("single");
+
+        const pollResponse = await ccapi.polling(false);
+        const numPhotos = pollResponse.addedcontents.length;
+        console.log("Took " + numPhotos);
+
+        // Download first 4 images and last 4 images
+        runInfo = `Downloading first and last photos`;
+        let paths = []
+        for(let u=0;u<4;u++){
+          const l = pollResponse.addedcontents.length;
+          paths.push([pollResponse.addedcontents[u], `${scanName}/checkImages/first${u}.jpg`]);
+          paths.push([pollResponse.addedcontents[l-u-1], `${scanName}/checkImages/last${u}.jpg`]);
+        }
+
+        for (let [url, path] of paths) {
+          console.log("Download ", url, "to", path);
+          await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`)
+            .then(() => (previewSrc = `/SharedData/${path}`));
+        }
+
+        
+
+      }
+      i++;
+    }, intervalDuration);
+
+    interval.run();
+  }
+
+  async function testDuration() {
+    const settings = await ccapi.getShootingSettings();
+    const tv = ccapi.parseTime(settings.tv.value);
+    const duration = Math.max(10000, tv * 3);
+    await ccapi.polling(false);
+
+    console.log("Shutter speed: ", tv);
+
+    await ccapi.shootingSettingsStillImageQuality("small2");
+    await ccapi.shootingSettingsDrive(continuousSpeed);
+    await sleep(1000);
+
+    console.log("Press");
+    await ccapi.shootingControlShutterButtonManual("full_press", false);
+
+    await sleep(duration);
+
+    console.log("Release");
+    await ccapi.shootingControlShutterButtonManual("release", false);
+
+    await sleep(1000);
+    await ccapi.shootingSettingsStillImageQuality(quality);
+    await ccapi.shootingSettingsDrive("single");
+
+    await sleep(2000);
+    const pollResponse = await ccapi.polling(false);
+    const numPhotos = pollResponse.addedcontents.length;
+    console.log(
+      "Took " +
+        numPhotos +
+        " photos over " +
+        duration +
+        "ms with shutter speed of " +
+        tv +
+        "ms"
+    );
+
+    console.log("Downloading exif of first and last image");
+    const timing1 = await fetch(
+      `/getExifFromUrl?url=${pollResponse.addedcontents[0]}&filename=first.jpg`
+    )
+      .then((res) => res.json())
+      .then(
+        (res) => res.DateTime.description + "." + res.SubSecTime.description
+      );
+
+    const timing2 = await fetch(
+      `/getExifFromUrl?url=${
+        pollResponse.addedcontents[numPhotos - 1]
+      }&filename=last.jpg`
+    )
+      .then((res) => res.json())
+      .then(
+        (res) => res.DateTime.description + "." + res.SubSecTime.description
+      );
+
+    console.log(timing1, timing2);
+
+    const diff = moment(timing2, "YYYY:MM:DD hh:mm:ss.SS").diff(
+      moment(timing1, "YYYY:MM:DD hh:mm:ss.SS")
+    );
+    console.log("Total diff is " + diff + "ms");
+    console.log("Diff per photo is " + diff / (numPhotos - 1) + "ms");
+    preferences.update((pref) => {
+      return {
+        ...pref,
+        shutterSpeed: tv,
+        captureDuration: diff / (numPhotos - 1),
+      };
+    });
   }
 
   async function getPattern() {
@@ -167,6 +372,10 @@
     await getPattern();
   }
 
+  async function setColor(r: number, g: number, b: number) {
+    await proCamScapApi("/actions/color/" + [r, g, b].join(","));
+  }
+
   async function poll() {
     console.log("Poll");
     if (connected) {
@@ -174,20 +383,25 @@
         console.error(e);
       });
 
-      if (pollResponse && pollResponse.addedcontents && addedContentPromise.length > 0) {
-        console.log(pollResponse.addedcontents)
-        pollResponse.addedcontents.forEach( path => {
-          if(addedContentPromise.length > 0){
-            addedContentPromise.shift()(path)
+      if (
+        pollResponse &&
+        pollResponse.addedcontents &&
+        addedContentPromise.length > 0
+      ) {
+        console.log(pollResponse.addedcontents);
+        pollResponse.addedcontents.forEach((path) => {
+          if (addedContentPromise.length > 0) {
+            addedContentPromise.shift()(path);
           }
-        })
+        });
         // addedContentPromise(pollResponse.addedcontents);
         // addedContentPromise = undefined;
-      } 
+      }
 
-      if(addedContentPromise.length > 0){
+      if (addedContentPromise.length > 0) {
         setTimeout(() => poll(), 100);
       }
+      return pollResponse;
     }
   }
 
@@ -201,26 +415,6 @@
   });
 </script>
 
-<style>
-  .panel-row {
-    display: flex;
-    align-items: stretch;
-    flex-direction: row;
-    overflow: hidden;
-  }
-
-  .panel {
-    position: relative;
-  }
-
-  .box {
-    margin: 20px;
-  }
-  .box div {
-    padding: 5px 10px;
-  }
-</style>
-
 <div class="panel">
   <div class="panel-row">
     <div class="box" id="device-info">
@@ -231,7 +425,8 @@
         <input
           type="text"
           bind:value={$preferences.cameraUrl}
-          style="width: 300px" />
+          style="width: 300px"
+        />
       </div>
       <div>
         <b>Status:</b>
@@ -263,7 +458,8 @@
         <input
           type="text"
           bind:value={$preferences.proCamScanUrl}
-          style="width: 300px" />
+          style="width: 300px"
+        />
       </div>
       <div>
         <b>Status:</b>
@@ -275,12 +471,31 @@
           <button on:click={() => setPattern(curPattern + 1)}>+</button>
           <button on:click={() => setPattern(curPattern - 1)}>-</button>
         </div>
+        <button on:click={() => setColor(1.0, 0, 0)}>Red</button>
+        <button on:click={() => setColor(0, 0, 1.0)}>Blue</button>
       {/if}
     </div>
 
     <div class="box">
       {#if proCamSampleConnected}
-        <div><button on:click={() => start()}>Start!</button> {runInfo}</div>
+        <div>
+          <button on:click={() => start()}>Start Calibration</button>
+          {runInfo}
+        </div>
+
+        <div>
+          Experimental stuff
+        </div>
+        <div>
+          <button on:click={() => startHighspeed()}>Start bulk (experimental)</button>
+          {runInfo}
+        </div>
+        <div>
+          <button on:click={() => testDuration()}>Test Duration!</button>
+          {#if $preferences.shutterSpeed}
+            {$preferences.shutterSpeed}ms + {$preferences.captureDuration - $preferences.shutterSpeed}ms
+          {/if}
+        </div>
       {/if}
     </div>
   </div>
@@ -288,3 +503,23 @@
     <div class="box"><img style="max-width: 100%" src={previewSrc} /></div>
   </div>
 </div>
+
+<style>
+  .panel-row {
+    display: flex;
+    align-items: stretch;
+    flex-direction: row;
+    overflow: hidden;
+  }
+
+  .panel {
+    position: relative;
+  }
+
+  .box {
+    margin: 20px;
+  }
+  .box div {
+    padding: 5px 10px;
+  }
+</style>
