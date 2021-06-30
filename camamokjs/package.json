@@ -39,7 +39,7 @@
     "sirv-cli": "^1.0.0",
     "stats.js": "^0.17.0",
     "svelte-local-storage-store": "^0.1.4",
-    "three": "^0.120.1"
+    "three": "^0.125.0"
   },
   "browser": {
     "fs": false,
