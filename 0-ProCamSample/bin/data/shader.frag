@@ -1,5 +1,8 @@
 #version 150
 
+uniform int useColor;
+uniform vec3 color;
+
 uniform int height;
 uniform int axis;
 uniform int level;
@@ -18,6 +21,11 @@ int isTrue(int x, int i) {
 }
 
 void main() {
+    if (useColor == 1) {
+        outputColor = vec4(color, 1);
+        return;
+    }
+
     int x = int(gl_FragCoord.x) + xcode;
     int y = int(height - gl_FragCoord.y) + ycode; // check this isn't off-by-one
     int src = (axis == 0) ? x : y;

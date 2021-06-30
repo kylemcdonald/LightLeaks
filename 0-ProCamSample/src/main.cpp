@@ -100,6 +100,8 @@ public:
     bool debug = false;
     bool capturing = false;
     bool needToCapture = false;
+    int useColor = 0;
+    ofVec3f color;
     uint64_t bufferTime = 100;
     uint64_t lastCaptureTime = 0;
     string timestamp;
@@ -226,6 +228,15 @@ public:
             needToCapture = false;
             httpResponse("Stopped");
         }
+        if(ofIsStringInString(url,"/actions/color") == 1){
+            useColor = 1;
+            
+            string p = "" + url;
+            ofStringReplace(p, "/actions/color/", "");
+            vector<string> parts = ofSplitString(p, ",");
+            color.set(ofToFloat(parts[0]), ofToFloat(parts[1]), ofToFloat(parts[2]));
+            httpResponse("Set color to " + ofToString(color));
+        }
         if(ofIsStringInString(url,"/actions/cameraHostname") == 1){
             string hostname = jsonconfig["osc"]["camera"];
             httpResponse(hostname);
@@ -239,6 +250,8 @@ public:
         }
         
         if(ofIsStringInString(url, "/actions/pattern") == 1) {
+            useColor = 0;
+            
             string p = ""+url;
             ofStringReplace(p, "/actions/pattern/", "");
             pattern = ofToInt(p);
@@ -283,6 +296,8 @@ public:
     }
     void draw() {
         shader.begin();
+        shader.setUniform1i("useColor", server->useColor);
+        shader.setUniform3f("color", server->color);
         shader.setUniform1i("height", ofGetHeight());
         shader.setUniform1i("axis", server->getAxis());
         shader.setUniform1i("level", server->getLevel());
