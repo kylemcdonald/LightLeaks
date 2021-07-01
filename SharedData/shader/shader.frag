@@ -21,19 +21,18 @@ out vec4 outputColor;
 
 // SETTINGS
 int numProjectors = 3;
-float threshold = 0.10;
-// x first axis is along the length of the room, with 0 towards the entrance
-// y second axis is along the width of the room, with 0 towards the bar
-// z third axis is floor to ceiling, with 0 on the floor
-const vec3 center = vec3(0.4390, 0.2, 0.507); // balls
-const vec3 center_alt = vec3(0.05, 0.40, 0.10); // stage
+float threshold = 0.1; //26;
+// x first axis is along the length of the room
+// y second axis is floor to ceiling, with 0 on the floor
+// z third axis is along the width of the room
+const vec3 center = vec3(0.322, 0.220, 0.323); // balls
+const vec3 center_alt = vec3(0.000, 0.000, 0.000); // stage
 int numStages = 17;
 
 // #define TEST_POSITION 2
 // #define TEST_POSITION_ALT 1
-// #define OVERWRITE_STAGE 17
+// #define OVERWRITE_STAGE 0
 // #define MOUSE_BEAM
-// #define PHOTOGRAPHY_MODE
 
 #define M_PI 3.14159265358979323846
 
@@ -129,9 +128,11 @@ float checkerboard(float time,vec3 position){
 
 // glittering floor
 float glitter(float time, vec3 centered){
-    float t = sin(time)*.5;
+    float glitterFrequency = 4;
+    float glitterSpeed = 1;
+    float t = sin(time) * 0.5;
     vec2 rot = vec2(sin(t), cos(t)) * (1. + sin(time) * .5) + time;
-    return sin(5 * dot(rot, 1+centered.xy));
+    return sin(glitterFrequency * dot(rot, glitterSpeed - centered.xy));
 }
 
 // concentric spheres
@@ -154,28 +155,27 @@ float radialLine(vec2 position, vec2 centered, float r, float width){
     // return  ((positionAngle + PI) / TWO_PI);
 }
 
-int getProjectorNum(vec2 texCoord){
+int getProjectorNum(){
+    float x = gl_FragCoord.x;
     float w = textureSize(confidenceMap).x;
-    float p = numProjectors * texCoord.x / w;
-    // p = ;
+    float p = numProjectors * x / w;
     return int(p);
 }
 
 vec2 getProjectorSize(){
-    int w = int(textureSize(confidenceMap).x / numProjectors);
-    int h = int(textureSize(confidenceMap).y);
+    float w = textureSize(confidenceMap).x / numProjectors;
+    float h = textureSize(confidenceMap).y;
     return vec2(w,h);
 }
 
 vec2 getProjectorOffsetCoordinate(vec2 texCoord){
-    
     vec2 ret = texCoord;
-    ret.x -= getProjectorSize().x * getProjectorNum(texCoord);
+    ret.x -= getProjectorSize().x * getProjectorNum();
     return ret;
 }
 
 vec2 adjustOffset(vec2 texCoord){
-    int p = getProjectorNum(texCoord);
+    int p = getProjectorNum();
     
     if(p == 0){
         // texCoord += vec2(100, 10);
@@ -206,7 +206,12 @@ vec3 calculateBeamVector(vec2 texCoord){
     return texture(xyzMap, texCoord.st).xyz - hit_point;
 }
 
-
+vec2 getProjectorFragCoord() {
+    vec2 projectorSize = getProjectorSize();
+    float x = mod(gl_FragCoord.x, projectorSize.x);
+    float y = mod(gl_FragCoord.y, projectorSize.y);
+    return vec2(x, y);
+}
 
 vec2 random2( vec2 p ) {
     return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
@@ -281,11 +286,10 @@ vec3 voronoi( in vec2 x, float rnd, float t ) {
 
 
 void main() {
-#ifdef PHOTOGRAPHY_MODE
-    float elapsedTimeMod = 15 + 30 * floor(elapsedTime/5);
-#else
     float elapsedTimeMod = elapsedTime;
-#endif
+    if (debugMode == 13) { 
+        elapsedTimeMod = 15 + 30 * floor(elapsedTime/5);
+    }
 
     vec2 texCoord = adjustOffset(texCoordVarying.st);
 
@@ -309,7 +313,7 @@ void main() {
     #ifdef OVERWRITE_STAGE
         stage = OVERWRITE_STAGE; // Overwrite stage
     #endif
-    stage = mod(stage, numStages);
+    stage = mod(stage, float(numStages));
     
     /* AUDIO stage num */
     if(audio > 0 && texCoordVarying.s < 1 &&  texCoordVarying.t < 1){
@@ -317,20 +321,6 @@ void main() {
         // outputColor = vec4(1);
         return;
     }
-
-
-    /* Test projector num */
-    // if(getProjectorNum(texCoord) != 0){
-        // outputColor = vec4(1,1,1,1);
-        // return;
-    // }
-    // return
-    // if(getProjectorNum(texCoord) != 3){
-    // if(getProjectorNum(texCoord) != 2 && getProjectorNum(texCoord) != 1){   
-        // outputColor = vec4(0,0,0,1);
-    //     return;
-    // }
-
 
     /* test white */
     if (debugMode == 0) {
@@ -366,6 +356,31 @@ void main() {
     /* test confidence */
     if (debugMode == 2) {
         outputColor = vec4(vec3(confidence > threshold ? 1.0 : 0.0),1.0);
+        return;
+    }
+
+    /* Draw white border around edges */
+    if (debugMode == 11) {
+        vec2 pwh = getProjectorSize();
+        vec2 p = getProjectorFragCoord();
+        if (p.x < 1 || p.y < 1 || p.x > (pwh.x-1) || p.y > (pwh.y-1)) {
+            outputColor = vec4(1.);
+        } else {
+            outputColor = vec4(vec3(0.), 1.);
+        }
+        return;
+    }
+
+    /* Color per projector */
+    if (debugMode == 12) {
+        int pn = getProjectorNum();
+        if (pn == 0) {
+            outputColor = vec4(1,0,0,1);
+        } else if (pn == 1) {
+            outputColor = vec4(0,1,0,1);
+        } else if (pn == 2) {
+            outputColor = vec4(0,0,1,1);
+        }
         return;
     }
 
@@ -484,8 +499,13 @@ void main() {
     s++; //1
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+        float slantiness = 0.1;
+        float baseSpeed = 0.4;
+        // magic number 1.5488 is ratio between length to width of room
+        // 2.5 creates alternating rising lines on walls, integer creates simultaneous flashes
+        float lineSpacing = 1.5488 * 2.5;
         w += stripes(elapsedTimeMod + sin(elapsedTimeMod)
-                     * 0.4, -position.z + position.y * 0.1, 3)
+                     * baseSpeed, -position.z + position.y * slantiness, lineSpacing)
         * stageAlpha(s, stage);
     }
     
@@ -507,8 +527,8 @@ void main() {
 
 
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-       
-        centered.xz = rotate(centered.xz,  - PI / 2);
+        centered.xz = rotate(centered.xz,  PI); // rotate seam to an appropriate wall
+
         float x = centered.x;
         float y = centered.z;
         float z = centered.y;
@@ -517,21 +537,22 @@ void main() {
         float theta = atan(y,x);
         float phi = atan(sqrt(x*x+y*y),z);
 
-        // vec2 st = position.zx/10 ;
-        vec2 st = vec2(phi, theta + elapsedTimeMod/ 8) /10;
- 
-        float d = dot(st-.5,st-.5);
-        vec3 c = voronoi( 25.*st, pow(d,.4), elapsedTimeMod );
+        float rotationSpeed = 0.15;
+        theta += elapsedTimeMod * rotationSpeed;
 
+        float scale = 2;
+        vec2 st = vec2(phi, theta) * scale;
+        vec3 c = voronoi( st, 1, elapsedTimeMod );
         
         // borders
         float color = smoothstep( 0.11, 0.18, c.x );
+
         // feature points
-        float dd = length( c.yz );
-        
+        // float dd = length( c.yz );
+        // color *= dd;
         
         w += color
-        * stageAlpha(s, stage);;
+            * stageAlpha(s, stage);;
     }
 
     
@@ -545,7 +566,7 @@ void main() {
         )
         // w += hardStripes(elapsedTimeMod * 0.10, position.z + position.y * 0.8, 0.1)
         // w += hardStripes(0 * 0.10, position.z + position.x * 0.8, 0.1)
-        * stageAlpha(s, stage);;
+        * stageAlpha(s, stage);
         // c.r = hardStripes(elapsedTimeMod * 0.3, position.z + position.y * 0.5, 0.3);
         // c.b = hardStripes(elapsedTimeMod * 0.2, position.z + position.y * 0.5, 0.3);
     }
@@ -553,8 +574,11 @@ void main() {
     s++; //6
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += circles(sin(0.8 * elapsedTimeMod) * 1.8, centered_stage , 160.)
-        * stageAlpha(s, stage);
+        float cycleSpeed = 0.8;
+        float maxSpeed = 1.8;
+        float scale = 6;
+        w += circles(sin(cycleSpeed * elapsedTimeMod) * maxSpeed, centered_stage , scale)
+            * stageAlpha(s, stage);
     }
     
     s++; //7
@@ -603,7 +627,7 @@ void main() {
 
     // Noise floor
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
-        float c = perlin(position.xy, 100, elapsedTimeMod/3000000.);
+        float c = perlin(position.zy, 100, elapsedTimeMod/3000000.);
         c = c > 0.5 ? 1. : 0.;
         w += c * stageAlpha(s, stage);
     }
@@ -723,55 +747,9 @@ void main() {
     //     outputColor = vec4(0.);
     // }
 
-    // if( getProjectorNum(texCoord) != 0){
-        // outputColor *= vec4(0,0,0,1);
-    // }
-
     /* Test beam direction */
     // vec3 beam = calculateBeamVector(texCoord) / length(calculateBeamVector(texCoord));
     // outputColor = vec4(vec3(-beam.z) , 1);
-    
-
-    // if( getProjectorNum(texCoord) == 0){
-    //     outputColor *= vec4(1,0,0,1);
-    // } else if( getProjectorNum(texCoord) == 1){
-    //     outputColor *= vec4(0,1,0,1);
-    // } else if( getProjectorNum(texCoord) == 2){
-    //     outputColor *= vec4(0,0,1,1);
-    // } else if( getProjectorNum(texCoord) == 3){
-    //     outputColor *= vec4(1,1,0,1);
-    // }
-    
-    // rgb debug
-    // if(texCoordVarying.x < 1920){
-    //     outputColor *= vec4(1., 0., 0., 1.0);
-    // } else if(texCoordVarying.x < 3840){
-    //     outputColor *= vec4(0., 1., 0., 1.0);
-    // } else {
-    //     outputColor *= vec4(0., 0., 1., 1.0);
-    // }
-
-    // if(gl_TexCoord[0].st.y < 1080){
-    //      outputColor *= vec4(1.0, 0., 0., 1.0);
-    // }
-    // if(gl_TexCoord[0].st.y > 1080){
-    //      outputColor *= vec4(0.0, 1., 0., 1.0);
-    // }
-    
-    // if(gl_TexCoord[0].st.x < 1920){
-    //      outputColor *= vec4(1.0, 0., 0., 1.0);
-    // }
-    // if(gl_TexCoord[0].st.x > 1920){
-    //      outputColor *= vec4(0.0, 1., 0., 1.0);
-    // }
-    
-    // if(gl_TexCoord[0].st.x > 1920){
-    // outputColor *= vec4(vec3(0.,0.0,1.0), 1.);
-    // return;
-    // }
-    // if(gl_TexCoord[0].st.y > 1080){
-    //     return;
-    // }
 
     // force alpha = 1
     // outputColor.a = 1.;
