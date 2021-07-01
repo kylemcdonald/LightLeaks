@@ -17,6 +17,7 @@
   let batteryStatus: ccapi.DeviceStatusBatteryResponse;
   let lensStatus: ccapi.DeviceStatusLensResponse;
   let previewSrc = "";
+  let numScheduledTransfer = 0
 
   let addedContentPromise = [];
 
@@ -142,7 +143,8 @@
   }
 
   async function start() {
-    // await ccapi.shootingLiveView("small", "off");
+    await ccapi.shootingLiveView("small", "off");
+    await ccapi.shootingSettingsStillImageQuality(quality);
 
     // await resetPattern();
     const scanName = `scan-${moment().format("MMDDTHH-mm-ss")}`;
@@ -151,6 +153,7 @@
     const paths = [];
 
     console.time("Scan");
+
     // for (let i = 0; i < 3; i++) {
     for (let i = 0; i < numPatterns; i++) {
       console.log("Set pattern", i);
@@ -167,8 +170,12 @@
       // List photo for download
     }
     // await Promise.all(promises);
+
+    await setColor(0, 1, 0);
+    await sleep(2000);
     await setPattern(0);
     await ccapi.shootingLiveView("medium", "on");
+    
 
     // Download photos
     let downloaded = 1;
@@ -177,6 +184,7 @@
     for (let [url, path] of paths) {
       console.log("Download ", url, "to", path);
       await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`)
+      // await fetch(`/scheduleDownloadImageFromSD?url=${url}&filename=${path}`)
         .then(() => {
           runInfo = `Downloading ${++downloaded}/${paths.length}`;
         })
@@ -269,7 +277,7 @@
 
         for (let [url, path] of paths) {
           console.log("Download ", url, "to", path);
-          await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`)
+          await fetch(`/scheduleDownloadImageFromSD?url=${url}&filename=${path}`)
             .then(() => (previewSrc = `/SharedData/${path}`));
         }
 
@@ -376,6 +384,13 @@
     await proCamScapApi("/actions/color/" + [r, g, b].join(","));
   }
 
+  async function pollScheduledTransfer() {
+    const scheduled = await fetch('/SharedData/_scheduledDownload.json').then(res => res.json());
+    numScheduledTransfer = scheduled.length;
+  }
+
+  setInterval(pollScheduledTransfer, 5000);
+
   async function poll() {
     console.log("Poll");
     if (connected) {
@@ -481,6 +496,7 @@
         <div>
           <button on:click={() => start()}>Start Calibration</button>
           {runInfo}
+          {numScheduledTransfer} images need to be transfered
         </div>
 
         <div>

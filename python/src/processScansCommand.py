@@ -73,9 +73,10 @@ def gaussian_blur(img, distance):
     # Gaussian blur is the slowest part of the app
     return cv2.GaussianBlur(img, (distance, distance), 0)
 
-def image_load_job(blur_distance, fn):
+def image_load_job(blur_distance, cam_mask_image, fn):
     # faster to do conversion to gray here (in parallel) rather than later
     data = imread(fn).mean(axis=2)
+    data[cam_mask_image == 0] = 0
 
     if blur_distance > 0:
         lowpass = gaussian_blur(data, blur_distance)
@@ -84,9 +85,9 @@ def image_load_job(blur_distance, fn):
         gauss_highpass = gauss_highpass + 128
         gauss_highpass = np.clip(gauss_highpass, 0, 255)
         gauss_highpass = np.abs(gauss_highpass)
-        return gauss_highpass.astype(np.uint8)
+        return [gauss_highpass.astype(np.uint8), data.astype(np.uint8)]
     else:
-        return data.astype(np.uint8)
+        return [data.astype(np.uint8), data.astype(np.uint8)]
 
 
 def load_scan(scan_name, data_dir, blur_distance):
@@ -123,12 +124,32 @@ def load_scan(scan_name, data_dir, blur_distance):
                 data_dir, scan_name, 'cameraImages/{}/{}/{}.jpg'.format(*e)) for e in cur])
 
     with Pool(processes=cpu_count()) as pool:
-        func = partial(image_load_job, blur_distance)
-        images = list(
-            tqdm(pool.imap(func, filenames), total=len(filenames), desc=f"Preprocess {scan_name}", leave=False))
-        # images = pool.map(image_load_job, filenames)
-    # Load images in right buckets
+        func = partial(image_load_job, blur_distance, cam_mask_image)
+        images = np.asarray(list(
+            tqdm(pool.imap(func, filenames), total=len(filenames), desc=f"Preprocess {scan_name}", leave=False)))
+    
+    # Calculate the min image
+    normal = np.asarray([i[1] for i, d in zip(
+        images, descriptions) if d[1] == 'normal'])
+    inverse = np.asarray([i[1] for i, d in zip(
+        images, descriptions) if d[1] == 'inverse'])
+    min_images = np.vstack((normal[np.newaxis],inverse[np.newaxis])).min(0)
+    min_image = np.mean(min_images, axis=0)
 
+    # Calculate the mean of the min
+    # min_mean = np.mean(min_images)
+    
+    # Normalization factor to ensure 
+    # mean_goal = 94.0 # Why this number? Just because...
+    # gain_factor = mean_goal / min_mean
+    # tqdm.write(f'{scan_name}: Mean value {min_mean} gain factor {gain_factor}')
+
+    # # Gain the non-highpass filtered images (in index 1). 
+    # # Doing this in loop to keep memory usage down
+    # for i in range(len(images)):
+    #     images[i,1] = (images[i,1] * gain_factor).astype(np.uint8)
+    
+    # Load images in right buckets
     normal_h = np.asarray([i for i, d in zip(
         images, descriptions) if d[0] == 'horizontal' and d[1] == 'normal'])
     inverse_h = np.asarray([i for i, d in zip(
@@ -138,9 +159,7 @@ def load_scan(scan_name, data_dir, blur_distance):
     inverse_v = np.asarray([i for i, d in zip(
         images, descriptions) if d[0] == 'vertical' and d[1] == 'inverse'])
 
-    images_raw = np.asarray([i for i in images])
-    min_image = np.amin(images_raw, axis=0)
-    reference_image = cv2.equalizeHist(min_image)
+    reference_image = cv2.equalizeHist(min_image.astype(np.uint8)) 
 
     tqdm.write(scan_name+": Horizontal images loaded: %d" % len(normal_h))
     tqdm.write(scan_name+": Vertical images loaded: %d" % len(normal_v))
@@ -150,24 +169,61 @@ def load_scan(scan_name, data_dir, blur_distance):
 
 def calculate_diference(normal_h, inverse_h, normal_v, inverse_v, cam_mask_image):
     # Calculate differeence
-    diff_code_horizontal = normal_h.astype(
-        np.float32) - inverse_h.astype(np.float32)
-    diff_code_vertical = normal_v.astype(
-        np.float32) - inverse_v.astype(np.float32)
+    diff_code_horizontal = normal_h[:,0].astype(
+        np.float32) - inverse_h[:,0].astype(np.float32)
+    diff_code_vertical = normal_v[:,0].astype(
+        np.float32) - inverse_v[:,0].astype(np.float32)
 
-    confidence_horizontal = np.sum(
-        np.abs(diff_code_horizontal), axis=0) // len(diff_code_vertical)
-    confidence_vertical = np.sum(
-        np.abs(diff_code_vertical), axis=0) // len(diff_code_horizontal)
+    # Calculate difference on the non-highpass filtered images, used for confidence calculation
+    diff_code_horizontal_conf = normal_h[:,1].astype(
+        np.float32) - inverse_h[:,1].astype(np.float32)
+    diff_code_vertical_conf = normal_v[:,1].astype(
+        np.float32) - inverse_v[:,1].astype(np.float32)
 
-    # Another approach: Minimal confidence score (except highest frquency)
-    # confidence_horizontal = np.min(np.abs(diff_code_horizontal[5:6]), axis=0)
-    # confidence_vertical = np.min(np.abs(diff_code_vertical[5:6]), axis=0)
+    normal = np.vstack([normal_h[:,1], normal_v[:,1]])
+    inverse = np.vstack([inverse_h[:,1], inverse_v[:,1]])
 
-    confidence_vertical /= 256.0
-    confidence_horizontal /= 256.0
+    # print("normal shape", normal.shape)
 
-    confidence = np.mean((confidence_horizontal, confidence_vertical), axis=0)
+    bright = np.max([normal,inverse], axis=0)
+    dark = np.min([normal,inverse], axis=0)
+
+    std_bright = bright.std(axis=0)
+    std_dark = dark.std(axis=0)
+
+    diff = bright - dark
+    confidence = (diff.mean(0) / (std_dark + std_bright)).astype(np.float32) / 5.0 # Why 5? Just because
+    confidence[(std_dark + std_bright) == 0] = 0
+    
+    # print("confidence shape",confidence.shape)
+
+    # # u =0
+    # # out_path = '/SharedData/scan-0630T12-26-48/processedScan'
+    # # for i in diff_code_horizontal_conf:
+    # #     u += 1
+    # #     imwrite(os.path.join(out_path, f'_test{u}.jpg'), np.abs(i))
+
+    # # confidence_horizontal = np.min(
+    # #     np.abs(diff_code_horizontal_conf), axis=0) 
+    # # confidence_vertical = np.min(
+    # #     np.abs(diff_code_vertical_conf), axis=0)
+    # confidence_horizontal = np.sum(
+    #     np.abs(diff_code_horizontal_conf[2:]), axis=0) // len(diff_code_horizontal_conf[2:])
+    # confidence_vertical = np.sum(
+    #     np.abs(diff_code_vertical_conf[2:]), axis=0) // len(diff_code_vertical_conf[2:])
+
+    
+    # # Another approach: Minimal confidence score (except highest frquency)
+    # # confidence_horizontal = np.min(np.abs(diff_code_horizontal[5:6]), axis=0)
+    # # confidence_vertical = np.min(np.abs(diff_code_vertical[5:6]), axis=0)
+
+    # confidence_vertical /= 256.0
+    # confidence_horizontal /= 256.0
+
+    # # imwrite(os.path.join(out_path, f'_confidence_horizontal.exr'), confidence_horizontal)
+    # # imwrite(os.path.join(out_path, f'_confidence_vertical.exr'), confidence_vertical )
+
+    # confidence = np.mean((confidence_horizontal, confidence_vertical), axis=0)
 
     confidence[cam_mask_image == 0] = 0
 

@@ -8,11 +8,14 @@ const fetch = require("node-fetch");
 const request = require('request');
 const shell = require('shelljs');
 const ExifReader = require('exifreader');
+const fsPromise = require('fs/promises')
 
 const app = express();
 
 const shareDataPath =
   process.env.SHARED_DATA || path.join(__dirname, "../../SharedData/");
+
+const scheduleJsonTmp = path.join(shareDataPath, '_scheduledDownload.json')
 
 
 var download = function(uri, filename, callback){
@@ -144,6 +147,21 @@ app.get("/downloadImageFromUrl", async (req, res) => {
   });
 });
 
+app.get("/scheduleDownloadImageFromSD", async (req, res) => {
+  const dir =  path.join(shareDataPath, path.dirname(req.query.filename));
+  shell.mkdir('-p', dir);
+
+  let scheduledDownload = []
+  try {
+    const rawdata = fs.readFileSync(scheduleJsonTmp);
+    scheduledDownload = JSON.parse(rawdata);
+  } catch(e) {}
+
+  scheduledDownload.push({url: req.query.url, dest: req.query.filename})
+  fs.writeFileSync(scheduleJsonTmp, JSON.stringify(scheduledDownload))
+  res.send({});
+});
+
 app.get("/getExifFromUrl", async (req, res) => {
   const dir =  '/tmp'
   download(req.query.url, path.join(dir, req.query.filename), async ()=>{
@@ -202,3 +220,37 @@ app.put("/proxy/", async (req, res, next) => {
 app.listen(8080, () => {
   console.log("Camamok started and available at http://localhost:8080");
 });
+
+
+let checkSdInProgress = false
+async function checkSD() {
+  if(checkSdInProgress) return;
+  checkSdInProgress  = true
+  const exists = fs.existsSync('/Volumes/EOS_DIGITAL/')
+  if(!exists) return
+  if(!fs.existsSync(scheduleJsonTmp)) return
+  
+
+  const rawdata = fs.readFileSync(scheduleJsonTmp);
+  scheduledDownload = JSON.parse(rawdata);
+
+  if(scheduledDownload.length == 0) return;
+
+  console.log("SD Card found")
+
+  const promises = []
+  for({dest, url} of scheduledDownload ){
+    const sdpath = url.replace(/.+sd\/(.+)/gim, "/Volumes/EOS_DIGITAL/DCIM/$1")
+    console.log(`Downloading ${sdpath} to ${path.join(shareDataPath, dest)}`);
+    promises.push(fsPromise.copyFile(sdpath, path.join(shareDataPath, dest)));
+  }
+
+  await Promise.all(promises);
+  console.log(`DONE, downloaded ${promises.length} images`)
+  fs.writeFileSync(scheduleJsonTmp, "[]")
+
+  checkSdInProgress = false
+
+}
+
+setInterval(checkSD, 5000)

@@ -35,20 +35,6 @@
 			color: white;
 		}
 	</style>
-	<script>
-		function display(elt, status) {
-			document.getElementById(elt).style.display = status ? 'block' : 'none';
-		}
-		function reveal_debug() {
-			display('debug', true);
-			display('debug-link', false);
-		}
-
-		window.addEventListener('load', (event) => {
-			// display('debug', false);
-
-		})
-	</script>
 </head>
 
 <body>
@@ -62,7 +48,6 @@
 				<button onclick="fetch('/actions/start')">Restart loop</button>
 				<!-- <button onclick="fetch('/actions/stop')">Stop</button> -->
 			</p>
-			<a href="javascript:reveal_debug()" id="debug-link">Debug</a>
 			<span id="debug" >
 				<h3>White</h3>
 				<p>
@@ -83,6 +68,15 @@
 					<button onclick="fetch('/debug/8')">Half X</button>
 					<button onclick="fetch('/debug/9')">Half Y</button>
 					<button onclick="fetch('/debug/10')">Half Z</button>
+				</p>
+				<h3>Other</h3>
+				<p>
+					<button onclick="fetch('/debug/11')">Border</button>
+					<button onclick="fetch('/debug/12')">RGB</button>
+					<button onclick="fetch('/debug/13')">Photography</button>
+					<button onclick="fetch('/debug/14')">Speaker Test</button>
+					<button onclick="fetch('/debug/15')">Moving Line</button>
+					<button onclick="fetch('/debug/-1')">Disable Debug</button>
 				</p>
 			</span>
 		</div>

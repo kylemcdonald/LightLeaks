@@ -10,6 +10,7 @@ docker run -p 8080:8080 \
 -v "$PWD/camamokjs/rollup.config.js":/home/jovyan/camamokjs/rollup.config.js  \
 -v "$PWD/camamokjs/tsconfig.json":/home/jovyan/camamokjs/tsconfig.json  \
 -v "$PWD/camamokjs/public/":/home/jovyan/camamokjs/public  \
+-v "/Volumes/":/Volumes  \
 -v "$PWD/SharedData/":/SharedData  \
 --env SHARED_DATA="/SharedData" \
 jupyter/lightleaks-notebook /bin/sh -c "cd camamokjs; npm run dev"

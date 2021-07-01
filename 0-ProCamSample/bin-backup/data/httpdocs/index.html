@@ -1,0 +1,53 @@
+<html>
+	<head>
+		<style>
+			body {
+				font-family: sans-serif;
+			}
+		</style>
+		<script>
+			let hostname = "localhost";
+			let timer;
+
+			fetch("/actions/cameraHostname").then((resp)=> resp.text())
+			.then((_hostname)=>{
+				hostname = _hostname;
+				console.log("Camera hostname",hostname);
+				
+			})
+
+			function start(){
+				fetch('/actions/start')
+				timer = setInterval(()=>{
+					fetch("/actions/currentPattern")
+					.then((resp)=> resp.text())
+					.then((stats)=>{
+						// console.log(stats);
+						document.getElementById("status").innerText = stats;
+					})
+				}, 300)
+				
+			}
+			function stop(){
+				fetch('/actions/stop')
+				clearInterval(timer);
+			}
+
+			function preview(){
+				fetch('http://'+hostname+':8080/actions/takePhoto/httpdocs/preview.jpg', {mode:'no-cors'})
+				.then(()=>document.getElementById('img').src = 'http://'+hostname+':8080/preview.jpg?t='+Math.random())
+			}
+		</script>
+	</head>
+	
+	<body>
+	<h1>Light Leaks - ProCamSample remote</h1>
+	<ul>
+		<li><a href="javascript:start();">Start calibration</a><span id="status"></span></li>
+		<li><a href="javascript:stop();">Stop</a></li>
+		<li><a href="javascript:preview()" id="camera">Take preview</a></li>
+	</ul>
+	
+	<img src="" id="img" alt="" style="width:100%">
+	</body>
+</html>
