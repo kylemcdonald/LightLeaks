@@ -33,3 +33,6 @@ RUN cd camamokjs; npm install
 USER $NB_UID
 # CMD ["start-notebook.sh --NotebookApp.token="]
 RUN echo "c.NotebookApp.token = u''" >> ~/.jupyter/jupyter_notebook_config.py
+RUN echo "c.NotebookApp.disable_check_xsrf = True" >> ~/.jupyter/jupyter_notebook_config.py
+
+ 

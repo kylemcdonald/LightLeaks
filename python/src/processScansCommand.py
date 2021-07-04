@@ -175,10 +175,10 @@ def calculate_diference(normal_h, inverse_h, normal_v, inverse_v, cam_mask_image
         np.float32) - inverse_v[:,0].astype(np.float32)
 
     # Calculate difference on the non-highpass filtered images, used for confidence calculation
-    diff_code_horizontal_conf = normal_h[:,1].astype(
-        np.float32) - inverse_h[:,1].astype(np.float32)
-    diff_code_vertical_conf = normal_v[:,1].astype(
-        np.float32) - inverse_v[:,1].astype(np.float32)
+    # diff_code_horizontal_conf = normal_h[:,1].astype(
+    #     np.float32) - inverse_h[:,1].astype(np.float32)
+    # diff_code_vertical_conf = normal_v[:,1].astype(
+    #     np.float32) - inverse_v[:,1].astype(np.float32)
 
     normal = np.vstack([normal_h[:,1], normal_v[:,1]])
     inverse = np.vstack([inverse_h[:,1], inverse_v[:,1]])
@@ -238,13 +238,16 @@ def pack_raw(channels, dtype=np.uint16):
         packed[i] <<= n - i - 1
     return packed.sum(axis=0).astype(dtype)
 
-
-def gray_to_binary(packed, n, dtype=np.uint16):
+def gray_lut(n):
     codes = 1 << n
     lut = np.zeros(codes)
     for binary in range(codes):
         gray = (binary >> 1) ^ binary
         lut[gray] = binary
+    return lut
+
+def gray_to_binary(packed, n, dtype=np.uint16):
+    lut = gray_lut(n)
     return lut[packed].astype(dtype)
 
 
