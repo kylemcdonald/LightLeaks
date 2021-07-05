@@ -8,6 +8,7 @@
 #include "ofMain.h"
 #include "ofAppNoWindow.h"
 #include "ofAutoImage.h"
+#include "ofAutoShader.h"
 #include "ofxWebServer.h"
 
 ofJson jsonconfig;
@@ -270,31 +271,46 @@ public:
 
 class ClientApp : public ofBaseApp {
 public:
+    string codeType;
     int id, xcode, ycode;
     float hue;
     shared_ptr<ServerApp> server;
     
-    ofShader shader;
+    ofAutoShader shader;
     ofAutoImage<unsigned char> mask;
+    ofImage xcodeImage, ycodeImage;
     
-    void config(int id, int n, int xcode, int ycode, shared_ptr<ServerApp> server) {
+    void config(int id, int n, string codeType, int xcode, int ycode, shared_ptr<ServerApp> server) {
         this->id = id;
         this->hue = id / float(n);
+        this->codeType = codeType;
         this->xcode = xcode;
         this->ycode = ycode;
         this->server = server;
         mask.loadAuto("../../../SharedData/mask-" + ofToString(id) + ".png");
+        
+        int width = ofGetWidth();
+        int height = ofGetHeight();
+        int xbits = ceilf(log2(width));
+        int ybits = ceilf(log2(height));
+        string codeDir = "../../../codes/" + codeType + "/";
+        xcodeImage.load(codeDir + ofToString(xbits) + ".png");
+        ycodeImage.load(codeDir + ofToString(ybits) + ".png");
     }
     void setup() {
+        ofLog() << "Running setup()";
         ofBackground(0);
         ofSetVerticalSync(true);
         ofHideCursor();
         ofDisableAntiAliasing();
-        shader.load("shader");
+        shader.loadAuto("shader");
     }
     void update() {
     }
     void draw() {
+        ofImage& curCodeImage = server->getAxis() == 0 ? xcodeImage : ycodeImage;
+        curCodeImage.getTexture().setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
+        
         shader.begin();
         shader.setUniform1i("useColor", server->useColor);
         shader.setUniform3f("color", server->color);
@@ -304,6 +320,7 @@ public:
         shader.setUniform1i("inverted", server->getInverted());
         shader.setUniform1i("xcode", xcode);
         shader.setUniform1i("ycode", ycode);
+        shader.setUniformTexture("code", curCodeImage, 0);
         ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
         shader.end();
         
@@ -364,7 +381,8 @@ int main() {
         settings.windowMode = curConfig["fullscreen"] ? OF_FULLSCREEN : OF_WINDOW;
         shared_ptr<ofAppBaseWindow> winClient = ofCreateWindow(settings);
         shared_ptr<ClientApp> appClient(new ClientApp);
-        appClient->config(i, n, curConfig["xcode"], curConfig["ycode"], appServer);
+        appClient->config(i, n, curConfig["codeType"], curConfig["xcode"], curConfig["ycode"], appServer);
+        ofLog() << "Launching window";
         ofRunApp(winClient, appClient);
     }
     

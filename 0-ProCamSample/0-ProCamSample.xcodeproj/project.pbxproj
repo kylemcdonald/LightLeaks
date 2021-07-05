@@ -26,6 +26,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2759F7402693A24100FC1D26 /* ofAutoShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofAutoShader.h; sourceTree = "<group>"; };
 		27D7D576268BC483005D9150 /* ofAutoImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofAutoImage.h; sourceTree = "<group>"; };
 		3E28BF73389A54EFA3F40A94 /* ofxWSRequestHandler.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxWSRequestHandler.h; path = ../../../addons/ofxWebServer/src/ofxWSRequestHandler.h; sourceTree = SOURCE_ROOT; };
 		73671D3734DAEBEB8AFF6E2D /* mongoose.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 4; name = mongoose.c; path = ../../../addons/ofxWebServer/libs/mongoose.c; sourceTree = SOURCE_ROOT; };
@@ -248,6 +249,7 @@
 		27D7D575268BC483005D9150 /* SharedCode */ = {
 			isa = PBXGroup;
 			children = (
+				2759F7402693A24100FC1D26 /* ofAutoShader.h */,
 				27D7D576268BC483005D9150 /* ofAutoImage.h */,
 			);
 			name = SharedCode;
