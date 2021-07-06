@@ -21,7 +21,7 @@ out vec4 outputColor;
 
 // SETTINGS
 int numProjectors = 3;
-float threshold = 0.3; //26;
+float threshold = 0.4; //26;
 // x first axis is along the length of the room
 // y second axis is floor to ceiling, with 0 on the floor
 // z third axis is along the width of the room
@@ -31,7 +31,7 @@ int numStages = 17;
 
 // #define TEST_POSITION 2
 // #define TEST_POSITION_ALT 1
-#define OVERWRITE_STAGE 11
+// #define OVERWRITE_STAGE 17
 // #define MOUSE_BEAM
 // #define SPEAKER_TEST
 
@@ -89,7 +89,7 @@ float stageAlpha(float stageNum, float stage){
 //Lighthouse beam
 float lighthouse(float t, vec3 position,vec3 centered){
     // vec2 rotated = rotate(centered.xy, beamAngle);
-    vec2 rotated = rotate(centered.zx, t);
+    vec2 rotated = rotate(centered.xz, t);
     float positionAngle = atan(rotated.y, rotated.x);
     // float positionAngle = t;
     return 1. - ((positionAngle + PI) / TWO_PI);
@@ -217,6 +217,14 @@ vec2 random2( vec2 p ) {
     return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
 }
 
+int grayCode(int x) {
+    return (x >> 1) ^ x;
+}
+
+int isTrue(int x, int i) {
+    return (x >> i) & 1;
+}
+
 vec3 voronoi( in vec2 x, float rnd, float t ) {
     vec2 n = floor(x);
     vec2 f = fract(x);
@@ -319,7 +327,7 @@ void main() {
     if(audio > 0 && texCoordVarying.s < 1 &&  texCoordVarying.t < 1){
         outputColor = vec4(vec3(stage < 1 ? 0 : 1), 1);
         // outputColor = vec4(vec3(0), 1); // this turns off lighthouse sound
-        outputColor = vec4(vec3(1), 1); // this turns on lighthouse sound
+        // outputColor = vec4(vec3(1), 1); // this turns on lighthouse sound
         return;
     }
 
@@ -392,6 +400,29 @@ void main() {
         float offset = mod(elapsedTime * 200., w);
         float c = (x > offset && x < offset + 10) ? 1 : 0;
         outputColor = vec4(vec3(c), 1);
+        return;
+    }
+
+    // /* Graycode debug */
+    if(debugMode == 16) {
+        int xcode = 0;
+        int ycode = 0;
+        int inverted = 0;
+        int axis = 0;
+        int level = int(mod(floor(elapsedTime*4),24.0));
+        if(level > 12){
+            level = level - 12;
+            axis = 1;
+        }
+        float height = getProjectorSize().y;
+        
+        int x = int(gl_FragCoord.x) + xcode;
+        int y = int(height - gl_FragCoord.y) + ycode; // check this isn't off-by-one
+        int src = (axis == 0) ? x : y;
+        src = grayCode(src);
+        src = isTrue(src, level);
+        src = inverted == 0 ? src : 1 - src;
+        outputColor = vec4(vec3(src),1);
         return;
     }
 
@@ -529,7 +560,7 @@ void main() {
         // 2.5 creates alternating rising lines on walls, integer creates simultaneous flashes
         float lineSpacing = 1.5488 * 2.5;
         w += stripes(elapsedTimeMod + sin(elapsedTimeMod)
-                     * baseSpeed, -position.z + position.y * slantiness, lineSpacing)
+                     * baseSpeed, position.x + position.y * slantiness, lineSpacing)
         * stageAlpha(s, stage);
     }
     
@@ -681,7 +712,7 @@ void main() {
 
      // Noise radial lines
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
-        vec3 index = round(position/0.04);
+        vec3 index = round(position/0.06);
 
         float c = 0;
         
