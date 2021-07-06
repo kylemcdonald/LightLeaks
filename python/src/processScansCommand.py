@@ -50,7 +50,7 @@ def processScans(data_dir, prefix, dest_folder, force_reprocess, blur_distance):
             normal_h, inverse_h, normal_v, inverse_v, cam_mask_image)
 
         tqdm.write(scan+": Packing binary image")
-        packed_h, packed_v = pack_image(diff_code_h, diff_code_v)
+        packed_h, packed_v = pack_image(diff_code_h, diff_code_v, data_dir)
 
         tqdm.write(scan+": Building projector map")
         pro_map, pro_confidence = build_pro_map(
@@ -61,11 +61,14 @@ def processScans(data_dir, prefix, dest_folder, force_reprocess, blur_distance):
                       confidence, reference_image, min_image, np.dstack((packed_v, packed_h)))
 
 
-def get_projector_size(data_dir):
+def get_settings(data_dir):
     with open(data_dir+'/settings.json') as json_file:
-        data = json.load(json_file)
-        proj_width = data['projectors'][0]['width']
-        proj_height = data['projectors'][0]['height']
+        return json.load(json_file)
+    
+def get_projector_size(data_dir):
+    data = get_settings(data_dir)
+    proj_width = data['projectors'][0]['width']
+    proj_height = data['projectors'][0]['height']
     return proj_width, proj_height
 
 
@@ -238,31 +241,32 @@ def pack_raw(channels, dtype=np.uint16):
         packed[i] <<= n - i - 1
     return packed.sum(axis=0).astype(dtype)
 
-def gray_lut(n):
-    codes = 1 << n
-    lut = np.zeros(codes)
-    for binary in range(codes):
-        gray = (binary >> 1) ^ binary
-        lut[gray] = binary
-    return lut
 
-def gray_to_binary(packed, n, dtype=np.uint16):
-    lut = gray_lut(n)
+def pack_binary(channels, data_dir, dtype=np.uint16):
+    lut = load_lut(data_dir, len(channels))
+    packed = pack_raw(channels, dtype)
     return lut[packed].astype(dtype)
 
 
-def pack_binary(channels, dtype=np.uint16):
-    return gray_to_binary(pack_raw(channels, dtype), len(channels), dtype)
-
-
-def pack_image(diff_code_horizontal, diff_code_vertical):
-    packed_horizontal = pack_binary(diff_code_horizontal)
-    packed_vertical = pack_binary(diff_code_vertical)
-
-    # packed_vertical[cam_mask_image == 0] = 0
-    # packed_horizontal[cam_mask_image == 0] = 0
-
+def pack_image(diff_code_horizontal, diff_code_vertical, data_dir):
+    packed_horizontal = pack_binary(diff_code_horizontal, data_dir)
+    packed_vertical = pack_binary(diff_code_vertical, data_dir)
     return packed_horizontal, packed_vertical
+
+
+# Load the graycode lut image
+def load_lut(data_dir, bits):
+    settings = get_settings(data_dir)
+    codeType = settings['projectors'][0]['codeType']
+    lut_img = imread(os.path.join(data_dir,f"../codes/{codeType}/{bits}.png"))
+    if lut_img is None:
+        raise Exception(f"Graycode lut image {codeType}/{bits} not found")
+
+    codes = pack_raw(lut_img[::-1] == 255)
+    lut = np.zeros(len(codes), np.uint32)
+    for i,code in enumerate(codes):
+        lut[code] = i
+    return lut
 
 
 # Pro Map
