@@ -2,15 +2,19 @@
 # and the webserver for camamokjs
 
 # Start from a core stack version
-FROM jupyter/minimal-notebook:612aa5710bf9
+FROM jupyter/minimal-notebook:notebook-6.4.0
 USER root
 
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && apt-get install -y libsm6 libxext6 libturbojpeg  libxrender-dev libjpeg-dev libjpeg8-dev libgl1-mesa-glx
+RUN apt-get update && apt-get install -y libsm6 libxext6 libturbojpeg  libxrender-dev libjpeg-dev libjpeg8-dev libgl1-mesa-glx gcc g++ build-essential llvm-10 llvm-10-dev
 
 USER $NB_UID
 
+# RUN echo python --version
+
 COPY python/requirements.txt /tmp/
+
+RUN LLVM_CONFIG=/usr/bin/llvm-config-10 pip install llvmlite==0.34.0
 
 RUN pip install --requirement /tmp/requirements.txt && \
     fix-permissions $CONDA_DIR && \
@@ -29,3 +33,6 @@ RUN cd camamokjs; npm install
 USER $NB_UID
 # CMD ["start-notebook.sh --NotebookApp.token="]
 RUN echo "c.NotebookApp.token = u''" >> ~/.jupyter/jupyter_notebook_config.py
+RUN echo "c.NotebookApp.disable_check_xsrf = True" >> ~/.jupyter/jupyter_notebook_config.py
+
+ 

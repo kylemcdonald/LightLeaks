@@ -5,4 +5,5 @@ cd $parent_path/../
 docker run -it \
 -v "$PWD/python":/home/jovyan/Lightleaks  \
 -v "$PWD/SharedData/":/SharedData  \
+-v "$PWD/codes/":/codes  \
 jupyter/lightleaks-notebook python Lightleaks/src/lightleaks.py $@

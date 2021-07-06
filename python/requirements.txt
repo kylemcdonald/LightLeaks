@@ -1,12 +1,12 @@
 jpeg4py==0.1.4
 msgpack==0.6.0
 numpy-indexed==0.3.5
-opencv-python==3.4.11.41
+opencv-python==3.4.11.45
 pillow==7.2.0
 matplotlib==3.3.2
-scipy==1.5.2
+scipy==1.7.0
 numba==0.51.2
-numpy==1.19.2
+numpy==1.21.0
 click8==8.0.1
 tqdm==4.49.0
 colorama==0.4.3

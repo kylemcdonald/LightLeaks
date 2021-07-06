@@ -10,6 +10,8 @@ uniform int inverted;
 uniform int xcode;
 uniform int ycode;
 
+uniform sampler2DRect code;
+
 out vec4 outputColor;
 
 int grayCode(int x) {
@@ -29,8 +31,14 @@ void main() {
     int x = int(gl_FragCoord.x) + xcode;
     int y = int(height - gl_FragCoord.y) + ycode; // check this isn't off-by-one
     int src = (axis == 0) ? x : y;
-    src = grayCode(src);
-    src = isTrue(src, level);
+
+    // old
+    // src = grayCode(src);
+    // src = isTrue(src, level);
+
+    // new
+    src = texture(code, vec2(src, level)).x > 0.5 ? 1 : 0;
+
     src = inverted == 0 ? src : 1 - src;
     outputColor = vec4(vec3(src),1);
 }
