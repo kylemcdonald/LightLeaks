@@ -35,7 +35,7 @@
     "pixi-viewport": "^4.15.0",
     "pixi.js": "^5.3.3",
     "request": "^2.88.2",
-    "shelljs": "^0.8.4",
+    "shelljs": "^0.8.5",
     "sirv-cli": "^1.0.0",
     "stats.js": "^0.17.0",
     "svelte-local-storage-store": "^0.1.4",
