@@ -11,7 +11,7 @@
     "express": "~4.16.1",
     "express-ws": "^4.0.0",
     "livereload": "^0.8.2",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "node-fetch": "^2.6.1",
     "nodemon": "^2.0.1",
     "nosleep.js": "^0.9.0",
