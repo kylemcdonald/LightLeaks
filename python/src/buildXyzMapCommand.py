@@ -3,7 +3,7 @@ import json
 import os
 import re
 from tqdm import tqdm
-from utils.imutil import *
+from imutil import *
 import numpy as np
 import math
 
