@@ -151,16 +151,16 @@ public:
         ofDisableAntiAliasing();
         ofBackground(0);
         
-        shader.loadAuto("../../../SharedData/shader/shader");
-        defaultShader.loadAuto("../../../SharedData/shader/default");
+        shader.loadAuto("../../../../../../SharedData/shader/shader");
+        defaultShader.loadAuto("../../../../../SharedData/shader/default");
         
-        xyzMap.loadAuto("../../../SharedData/xyzMap-" + ofToString(id) + ".exr");
+        xyzMap.loadAuto("../../../../../SharedData/xyzMap-" + ofToString(id) + ".exr");
         xyzMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
         
-        confidenceMap.loadAuto("../../../SharedData/confidenceMap-" + ofToString(id) + ".exr");
+        confidenceMap.loadAuto("../../../../../SharedData/confidenceMap-" + ofToString(id) + ".exr");
         confidenceMap.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
         
-        mask.loadAuto("../../../SharedData/mask-" + ofToString(id) + ".png");
+        mask.loadAuto("../../../../../SharedData/mask-" + ofToString(id) + ".png");
         mask.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
         
         ofLog() << xyzMap.getWidth() << " x " << xyzMap.getHeight();
