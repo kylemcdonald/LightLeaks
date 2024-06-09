@@ -1,41 +1,50 @@
 #pragma once
-
+#include <ofImage.h>
+#include <chrono>
+#include <filesystem>
+#include <iostream>
+  
+namespace fs = std::filesystem;
+  
 template <class T>
 class ofAutoImage : public ofImage_<T> {
 public:
-	void loadAuto(string name) {
+    void loadAuto(std::string name) {
         setFilename(name);
-		ofAddListener(ofEvents().update, this, &ofAutoImage::update);
-	}
+        ofAddListener(ofEvents().update, this, &ofAutoImage::update);
+    }
     
-    void setFilename(string name) {
+    void setFilename(std::string name) {
         this->name = name;
         ofEventArgs args;
         update(args);
     }
-	
-	void update(ofEventArgs &args) {
+      
+    void update(ofEventArgs &args) {
         reload();
-	}
+    }
     
     void reload(bool force=false) {
-        ofFile file(name);
-        if(file.exists()) {
-            time_t timestamp = filesystem::last_write_time(file);
+        fs::path file(name);
+        if(fs::exists(file)) {
+            auto ftime = fs::last_write_time(file);
+            auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now());
+            std::time_t timestamp = std::chrono::system_clock::to_time_t(sctp);
             if(force || timestamp != lastTimestamp) {
                 ofSleepMillis(100);
                 if(!ofImage_<T>::load(name)) {
-                    cout << "[ofAutoImage] Exists, but error loading: " << name << endl;
+                    std::cout << "[ofAutoImage] Exists, but error loading: " << name << std::endl;
                 } else {
-                    cout << "[ofAutoImage] Timestamp for " << name << ": " << timestamp << endl;
+                    std::cout << "[ofAutoImage] Timestamp for " << name << ": " << timestamp << std::endl;
                     lastTimestamp = timestamp;
                 }
             }
         } else {
-            cout << "[ofAutoImage] Does not exist: " << name << endl;
+            std::cout << "[ofAutoImage] Does not exist: " << name << std::endl;
         }
     }
+  
 private:
-    string name = "";
-    time_t lastTimestamp = 0;
-};
+    std::string name = "";
+    std::time_t lastTimestamp = 0;
+};  

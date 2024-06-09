@@ -1,70 +1,76 @@
 #pragma once
-
+#include <ofShader.h>
+#include <chrono>
+#include <filesystem>
+#include <iostream>
+  
+namespace fs = std::filesystem;
+  
 class ofAutoShader : public ofShader {
 public:
-	void loadAuto(string name) {
-		this->name = name;
-		ofEventArgs args;
-		update(args);
-		ofAddListener(ofEvents().update, this, &ofAutoShader::update);
-	}
+    void loadAuto(std::string name) {
+        this->name = name;
+        ofEventArgs args;
+        update(args);
+        ofAddListener(ofEvents().update, this, &ofAutoShader::update);
+    }
     
-	void update(ofEventArgs &args) {	
-		bool needsReload = false;
-			
-		string fragName = name + ".frag";
-		ofFile fragFile(fragName);
-		if(fragFile.exists()) {
-            time_t fragTimestamp = filesystem::last_write_time(fragFile);
-			if(fragTimestamp != lastFragTimestamp) {
-                cout << "[ofAutoShader] Timestamp for " << fragName << ": " << fragTimestamp << endl;
-				needsReload = true;
-				lastFragTimestamp = fragTimestamp;
-			}
-		} else {
-			fragName = "";
-		}
-		
-		string vertName = name + ".vert";
-		ofFile vertFile(vertName);
-        if(vertFile.exists()) {
-            time_t vertTimestamp = filesystem::last_write_time(vertFile);
-			if(vertTimestamp != lastVertTimestamp) {
-                cout << "[ofAutoShader] Timestamp for " << vertName << ": " << vertTimestamp << endl;
-				needsReload = true;
-				lastVertTimestamp = vertTimestamp;
-			}
-		} else {
-			vertName = "";
-		}
-		
-		if(needsReload) {
+    void update(ofEventArgs &args) {
+        bool needsReload = false;
+              
+        std::string fragName = name + ".frag";
+        fs::path fragFile(fragName);
+        if (fs::exists(fragFile)) {
+            auto ftime = fs::last_write_time(fragFile);
+            auto fragTimestamp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now());
+            std::time_t fragTime = std::chrono::system_clock::to_time_t(fragTimestamp);
+            if(fragTime != lastFragTimestamp) {
+                std::cout << "[ofAutoShader] Timestamp for " << fragName << ": " << fragTime << std::endl;
+                needsReload = true;
+                lastFragTimestamp = fragTime;
+            }
+        } else {
+            fragName = "";
+        }
+          
+        std::string vertName = name + ".vert";
+        fs::path vertFile(vertName);
+        if (fs::exists(vertFile)) {
+            auto vtime = fs::last_write_time(vertFile);
+            auto vertTimestamp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(vtime - fs::file_time_type::clock::now() + std::chrono::system_clock::now());
+            std::time_t vertTime = std::chrono::system_clock::to_time_t(vertTimestamp);
+            if(vertTime != lastVertTimestamp) {
+                std::cout << "[ofAutoShader] Timestamp for " << vertName << ": " << vertTime << std::endl;
+                needsReload = true;
+                lastVertTimestamp = vertTime;
+            }
+        } else {
+            vertName = "";
+        }
+  
+        if (needsReload) {
             ofSleepMillis(100);
-			ofShader::load(vertName, fragName);
+            ofShader::load(vertName, fragName);
             ready = checkReady();
-		}
-	}
+        }
+    }
     
     bool isReady() {
         return ready;
     }
+  
 protected:
-    // originally checkProgramLinkStatus
     bool checkReady() {
         GLuint program = getProgram();
         GLint status;
         glGetProgramiv(program, GL_LINK_STATUS, &status);
         GLuint err = glGetError();
-        if (err != GL_NO_ERROR){
-            return false;
-        }
-        if (status == GL_FALSE) {
-            return false;
-        }
-        return true;
+        return err == GL_NO_ERROR && status != GL_FALSE;
     }
+  
 private:
-	string name;
-	time_t lastFragTimestamp, lastVertTimestamp;
+    std::string name;
+    std::time_t lastFragTimestamp = 0;
+    std::time_t lastVertTimestamp = 0;
     bool ready = false;
-};
+};  
