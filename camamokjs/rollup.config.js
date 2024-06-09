@@ -46,6 +46,11 @@ export default {
 			css: css => {
 				css.write('bundle.css');
 			},
+			onwarn: (warning, handler) => {
+				// disable a11y warnings
+				if (warning.code.startsWith("a11y-")) return;
+				handler(warning);
+			},
 			preprocess: sveltePreprocess(),
 		}),
 
@@ -56,6 +61,7 @@ export default {
 		// https://github.com/rollup/plugins/tree/master/packages/commonjs
 		resolve({
 			browser: true,
+			preferBuiltins: true,
 			dedupe: ['svelte']
 		}),
 		commonjs(),
