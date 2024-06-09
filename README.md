@@ -75,7 +75,7 @@ Installation at Lights All Night festival, using 4 x 30K projectors
 
 ### LLUM (ES, 2019)
 
-Outdoor installation in courdyard of [Can Framis Museum](https://goo.gl/maps/dArwnudpRqq)
+Outdoor installation in courtyard of [Can Framis Museum](https://goo.gl/maps/dArwnudpRqq)
 ![LLUM, Photo by Jonas Jongejan](photos/LLUM.jpg)
 
 ### Lights all Night (US, 2019)
@@ -84,7 +84,7 @@ Outdoor installation in courdyard of [Can Framis Museum](https://goo.gl/maps/dAr
 
 ### Wonderspace (US, 2020-2023)
 
-Long term installation at Wonderspace in Scottsdale, Arizona. [Video](https://www.youtube.com/watch?v=kLF6wUwy0iQ)
+Long-term installation at Wonderspace in Scottsdale, Arizona. [Video](https://www.youtube.com/watch?v=kLF6wUwy0iQ)
 ![Wonderspace, Photo by Jonas Jongejan](photos/wonderspace.jpg)
 
 ### [Thousand Deep](https://www.thousanddeep.com/blogs/experiences/light-leaks) (US, 2021)
@@ -102,7 +102,7 @@ The repo is meant to be used with openFrameworks 0.10.0 (a0bd41a75).
 - https://github.com/mazbox/ofxWebServer # 6472ba043075c685977ecca36851d51db1ec4648
 - https://github.com/HalfdanJ/ofxGrabCam
 
-## Python implementation
+## Python Implementation
 
 At TodaysArt we ported the ProCamScan and BuildXYZ from openFrameworks to python.
 
