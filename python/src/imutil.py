@@ -70,14 +70,16 @@ def imwrite(filename, img):
     if len(img.shape) == 2:
         return cv2.imwrite(filename, img)
     if len(img.shape) == 3:
-        if img.shape[-1] == 3:
+        if img.shape[-1] == 1:
+            return cv2.imwrite(filename, img[:,:,0])
+        elif img.shape[-1] == 3:
             return cv2.imwrite(filename, img[...,::-1])
-        if img.shape[-1] == 4:
+        elif img.shape[-1] == 4:
             return cv2.imwrite(filename, img[...,(2,1,0,3)])
         else:
-            raise Exception('Unsupported number of channels')
+            raise Exception('Unsupported number of channels for shape', img.shape)
     else:
-        raise Exception('Unsupported image shape')
+        raise Exception('Unsupported image shape', img.shape)
 
 def downsample(img, scale=None, output_wh=None, max_side=None, min_side=None, block_size=None, mode=None):
     if max_side is not None:

@@ -13,3 +13,12 @@ The server can also be started from the Lightleaks docker image by running
 ```
 bin/camamok
 ```
+
+## Running without Docker
+
+```
+nvm install 14
+nvm use 14
+npm install
+npm run dev
+```

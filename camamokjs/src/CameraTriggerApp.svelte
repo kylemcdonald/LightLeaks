@@ -31,7 +31,7 @@
 
   export const preferences = writable("camtriggerpreferences_v3", {
     cameraUrl: "http://192.168.1.2:8080",
-    proCamScanUrl: "http://host.docker.internal:8000",
+    proCamScanUrl: "http://localhost:8000", // should be host.docker.internal if running inside docker
     shutterSpeed: 0,
     captureDuration: 0,
   });
@@ -516,7 +516,7 @@
     </div>
   </div>
   <div class="panel-row">
-    <div class="box"><img style="max-width: 100%" src={previewSrc} /></div>
+    <div class="box"><img style="max-width: 100%" src={previewSrc} alt="preview" /></div>
   </div>
 </div>
 
