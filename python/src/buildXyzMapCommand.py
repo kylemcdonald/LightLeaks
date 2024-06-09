@@ -1,6 +1,8 @@
+import os
+os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
+
 import click
 import json
-import os
 import re
 from tqdm import tqdm
 from imutil import *
@@ -19,11 +21,10 @@ def buildXyzMap(data_dir, prefix):
         click.secho(
             f'Error: Projector mask not found at path {os.path.join(data_dir, "mask-0.png")}', err=True, fg='red')
         return
-
+    
     scan_folders = sorted(
         [f for f in os.listdir(data_dir) if re.match('^'+prefix, f)])
-    scan_folders = list(filter(lambda x: os.path.isdir(
-        os.path.join(data_dir, x, PROCESSED_SCAN_FOLDER)), scan_folders))
+    scan_folders = list(filter(lambda x: os.path.isdir(os.path.join(data_dir, x)), scan_folders))
 
     if len(scan_folders) == 0:
         click.secho(

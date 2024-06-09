@@ -1,3 +1,6 @@
+import os
+os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
+
 from imutil import *
 import glob
 from numba import jit,njit 
@@ -9,7 +12,6 @@ import cv2
 import json
 import click
 import numpy as np
-import os
 from tqdm import tqdm
 import re
 from functools import partial
@@ -60,7 +62,7 @@ def processScans(data_dir, prefix, dest_folder, force_reprocess, blur_distance):
 
 
 def get_settings(data_dir):
-    with open(data_dir+'/settings.json') as json_file:
+    with open(os.path.join(data_dir, 'settings.json')) as json_file:
         return json.load(json_file)
     
 def get_projector_size(data_dir):
@@ -109,11 +111,16 @@ def load_scan(scan_name, data_dir, blur_distance):
     # print(glob.glob1(os.path.join(
     # data_dir, scan_name, 'cameraImages/vertical/normal'), "*.jpg"))
     try:
-        cam_mask_image = imread(os.path.join(data_dir, scan_name, "camamok/mask.jpg"))
+        mask_fns = [
+            "camamok/mask.jpg",
+            "mask.png"
+        ]
+        mask_fn = next(fn for fn in mask_fns if os.path.exists(os.path.join(data_dir, scan_name, fn)))
+        cam_mask_image = imread(os.path.join(data_dir, scan_name, mask_fn))
         cam_mask_image = cv2.cvtColor(cam_mask_image, cv2.COLOR_BGR2GRAY)
     except:
         cam_mask_image = None
-        tqdm.write(Fore.YELLOW + scan_name+": No mask loadeed")
+        tqdm.write(Fore.YELLOW + scan_name+": No mask loaded")
 
     filenames = []
     descriptions = []
@@ -272,7 +279,7 @@ def add_channel(x):
     return np.pad(x, pad_width=((0, 0), (0, 0), (0, 1)), mode='constant', constant_values=0)
 
 
-@jit('uint16(uint16[:], uint16[:], uint16[:], int64, int64)')
+# @jit('uint16(uint16[:], uint16[:], uint16[:], int64, int64)')
 def build_pro_map(packed_vertical, packed_horizontal, confidence, w, h):
     packed_vertical = np.minimum(packed_vertical, w-1)
     packed_horizontal = np.minimum(packed_horizontal, h-1)

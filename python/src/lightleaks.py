@@ -7,7 +7,7 @@ def cli():
 
 @cli.command()
 @click.option('--force', expose_value=True, is_flag=True, help="Force reprocess scans, even if they have already been processed")
-@click.option('--datadir', default='/SharedData', help="Path to SharedData containing scan folders")
+@click.option('--datadir', default='../../SharedData', help="Path to SharedData containing scan folders")
 @click.option('--prefix', default='scan', help="Prefix for scan folder names to process. Default is 'scan'")
 @click.option('--destination', default='processedScan', help="Name of folder to store results within the scan folder", show_default=True)
 @click.option('--blur', default=301, help="Set the gausian blur radius", show_default=True)
@@ -20,7 +20,7 @@ def processScans(datadir, prefix, destination, force, blur):
 
 
 @cli.command()
-@click.option('--datadir', default='/SharedData', help="Path to SharedData containing scan folders")
+@click.option('--datadir', default='../../SharedData', help="Path to SharedData containing scan folders")
 @click.option('--prefix', default='scan', help="Prefix for scan folder names to process. Default is 'scan'")
 def buildXyzMap(datadir, prefix):
     click.echo("Building xyz map")
