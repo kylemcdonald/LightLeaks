@@ -278,11 +278,10 @@ def load_lut(data_dir, bits):
 def add_channel(x):
     return np.pad(x, pad_width=((0, 0), (0, 0), (0, 1)), mode='constant', constant_values=0)
 
-
-# @jit('uint16(uint16[:], uint16[:], uint16[:], int64, int64)')
-def build_pro_map(packed_vertical, packed_horizontal, confidence, w, h):
-    packed_vertical = np.minimum(packed_vertical, w-1)
-    packed_horizontal = np.minimum(packed_horizontal, h-1)
+@jit(nopython=True)
+def build_pro_map_jit(packed_vertical, packed_horizontal, confidence, w, h):
+    packed_vertical = np.minimum(packed_vertical, w - 1)
+    packed_horizontal = np.minimum(packed_horizontal, h - 1)
     cam_map = np.dstack((packed_horizontal, packed_vertical))
 
     pro_map = np.zeros((h, w, 2), dtype=np.uint16)
@@ -290,13 +289,18 @@ def build_pro_map(packed_vertical, packed_horizontal, confidence, w, h):
 
     for i in range(cam_map.shape[0]):
         for j in range(cam_map.shape[1]):
-            idx = cam_map[i, j]
+            idx0 = cam_map[i, j, 0]
+            idx1 = cam_map[i, j, 1]
             pconf = confidence[i, j]
-            # (j, i) should probably be swapped, but
-            # this is how it was done in c++
-            if pconf > 0 and pconf > pro_confidence[idx[0], idx[1]]:
-                pro_map[idx[0], idx[1]] = (j, i)
-                pro_confidence[idx[0], idx[1]] = pconf
+            if idx0 < h and idx1 < w and pconf > pro_confidence[idx0, idx1]:
+                pro_map[idx0, idx1, 0] = j
+                pro_map[idx0, idx1, 1] = i
+                pro_confidence[idx0, idx1] = pconf
+
+    return pro_map, pro_confidence
+
+def build_pro_map(packed_vertical, packed_horizontal, confidence, w, h):
+    pro_map, pro_confidence = build_pro_map_jit(packed_vertical, packed_horizontal, confidence, w, h)
     return (add_channel(pro_map), pro_confidence)
 
 def imwrite(filename, img):
