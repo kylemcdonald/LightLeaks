@@ -70,7 +70,7 @@ public:
     
     void takePhoto(string filename) {
         ofLog() <<"Take photo"<< filename;
-        ofStringReplace(filename, "../../../SharedData", "/SharedData");
+        ofStringReplace(filename, "../../../../../SharedData", "/SharedData");
         string hostname = jsonconfig["osc"]["camera"];
         auto resp = ofLoadURL("http://"+hostname+":8080/actions/takePhoto/"+filename);
         if(resp.status != 200){
@@ -172,7 +172,7 @@ public:
         }
         if(capturing) {
             if(needToCapture && curTime > bufferTime + lastCaptureTime) {
-                string directory = "../../../SharedData/scan-" + timestamp + "/cameraImages/" +
+                string directory = "../../../../../SharedData/scan-" + timestamp + "/cameraImages/" +
                 (getAxis() == 0 ? "vertical/" : "horizontal/") +
                 (getInverted() == 0 ? "normal/" : "inverse/");
                 // we need to invert here to keep with an older style
@@ -287,7 +287,7 @@ public:
         this->xcode = xcode;
         this->ycode = ycode;
         this->server = server;
-        mask.loadAuto("../../../SharedData/mask-" + ofToString(id) + ".png");
+        mask.loadAuto("../../../../../SharedData/mask-" + ofToString(id) + ".png");
         
         int width = ofGetWidth();
         int height = ofGetHeight();

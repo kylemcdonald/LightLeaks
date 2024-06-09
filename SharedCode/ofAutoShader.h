@@ -9,6 +9,7 @@ namespace fs = std::filesystem;
 class ofAutoShader : public ofShader {
 public:
     void loadAuto(std::string name) {
+        name = fs::absolute(name).string();     
         this->name = name;
         ofEventArgs args;
         update(args);

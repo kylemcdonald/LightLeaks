@@ -10,6 +10,7 @@ template <class T>
 class ofAutoImage : public ofImage_<T> {
 public:
     void loadAuto(std::string name) {
+        name = fs::absolute(name).string();        
         setFilename(name);
         ofAddListener(ofEvents().update, this, &ofAutoImage::update);
     }
