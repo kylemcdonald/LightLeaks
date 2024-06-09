@@ -26,13 +26,16 @@ RUN cd utils; git checkout e1e84ba; cd ..
 ENV PYTHONPATH="${PYTHONPATH}:/home/jovyan/"
 
 RUN mkdir /home/jovyan/camamokjs 
-COPY camamokjs/package.json /home/jovyan/camamokjs/package.json
 
-RUN cd camamokjs; npm install
+# Install nodejs 16
+RUN npm -g install npm@9
+COPY camamokjs/package.json /home/jovyan/camamokjs/package.json
+COPY camamokjs/package-lock.json /home/jovyan/camamokjs/package-lock.json
+
+RUN node --version; npm --version; cd camamokjs; npm ci
 
 USER $NB_UID
 # CMD ["start-notebook.sh --NotebookApp.token="]
 RUN echo "c.NotebookApp.token = u''" >> ~/.jupyter/jupyter_notebook_config.py
 RUN echo "c.NotebookApp.disable_check_xsrf = True" >> ~/.jupyter/jupyter_notebook_config.py
 
- 
