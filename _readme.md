@@ -1,6 +1,6 @@
 # Light Leaks
 
-"Light Leaks" by Kyle McDonald and Jonas Jongejan is an immersive installation built from a pile of mirror balls and a few projectors, created originally for CLICK Festival 2013 in Elsinore, Denmark.
+"Light Leaks" by Kyle McDonald and Jonas Jongejan is an immersive installation built from a pile of mirror balls and a few projectors, created originally for CLICK Festival 2012 in Elsinore, Denmark.
 
 ## Past installations
 
@@ -75,12 +75,21 @@ Installation at Lights All Night festival, using 4 x 30K projectors
 
 ### LLUM (ES, 2019)
 
-Outdoor installation in couryard of [Can Framis Museum](https://goo.gl/maps/dArwnudpRqq)
+Outdoor installation in courdyard of [Can Framis Museum](https://goo.gl/maps/dArwnudpRqq)
 ![LLUM, Photo by Jonas Jongejan](photos/LLUM.jpg)
 
 ### Lights all Night (US, 2019)
 
 ![Lights All Night, Photo by Jonas Jongejan](photos/lan2.jpg)
+
+### Wonderspace (US, 2020-2023)
+
+Long term installation at Wonderspace in Scottsdale, Arizona. [Video](https://www.youtube.com/watch?v=kLF6wUwy0iQ)
+![Wonderspace, Photo by Jonas Jongejan](photos/wonderspace.jpg)
+
+### [Thousand Deep](https://www.thousanddeep.com/blogs/experiences/light-leaks) (US, 2021)
+
+![Thousand Deep, Photo by Jonas Jongejan](photos/thousanddeep.webp)
 
 ## Technical notes
 
