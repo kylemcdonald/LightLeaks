@@ -4,10 +4,10 @@
       "monitor": 0,
       "codeType": "gray",
       "width": 5760,
-      "height": 1080,
+      "height": 1200,
       "xcode": 0,
       "ycode": 0,
-      "xwindow": 0,
+      "xwindow": 1920,
       "ywindow": 0,
       "multimonitor": true,
       "fullscreen": false

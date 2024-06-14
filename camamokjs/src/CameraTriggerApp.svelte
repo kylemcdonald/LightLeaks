@@ -6,6 +6,7 @@
   import * as ccapi from "./ccapi";
   import moment from "moment";
   import * as ExifReader from "exifreader";
+  import { CompressedTextureLoader } from "three";
 
   let connected = false;
   let connecting = true;
@@ -17,7 +18,7 @@
   let batteryStatus: ccapi.DeviceStatusBatteryResponse;
   let lensStatus: ccapi.DeviceStatusLensResponse;
   let previewSrc = "";
-  let numScheduledTransfer = 0
+  let numScheduledTransfer = 0;
 
   let addedContentPromise = [];
 
@@ -31,7 +32,7 @@
 
   export const preferences = writable("camtriggerpreferences_v3", {
     cameraUrl: "http://192.168.1.2:8080",
-    proCamScanUrl: "http://localhost:8000", // should be host.docker.internal if running inside docker
+    proCamScanUrl: "http://host.docker.internal:8000", // should be host.docker.internal if running inside docker
     shutterSpeed: 0,
     captureDuration: 0,
   });
@@ -175,16 +176,18 @@
     await sleep(2000);
     await setPattern(0);
     await ccapi.shootingLiveView("medium", "on");
-    
 
     // Download photos
     let downloaded = 1;
 
     runInfo = `Downloading ${downloaded}/${paths.length}`;
+
+    console.log("Scan files:", paths);
+
     for (let [url, path] of paths) {
       console.log("Download ", url, "to", path);
       await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`)
-      // await fetch(`/scheduleDownloadImageFromSD?url=${url}&filename=${path}`)
+        // await fetch(`/scheduleDownloadImageFromSD?url=${url}&filename=${path}`)
         .then(() => {
           runInfo = `Downloading ${++downloaded}/${paths.length}`;
         })
@@ -268,21 +271,25 @@
 
         // Download first 4 images and last 4 images
         runInfo = `Downloading first and last photos`;
-        let paths = []
-        for(let u=0;u<4;u++){
+        let paths = [];
+        for (let u = 0; u < 4; u++) {
           const l = pollResponse.addedcontents.length;
-          paths.push([pollResponse.addedcontents[u], `${scanName}/checkImages/first${u}.jpg`]);
-          paths.push([pollResponse.addedcontents[l-u-1], `${scanName}/checkImages/last${u}.jpg`]);
+          paths.push([
+            pollResponse.addedcontents[u],
+            `${scanName}/checkImages/first${u}.jpg`,
+          ]);
+          paths.push([
+            pollResponse.addedcontents[l - u - 1],
+            `${scanName}/checkImages/last${u}.jpg`,
+          ]);
         }
 
         for (let [url, path] of paths) {
           console.log("Download ", url, "to", path);
-          await fetch(`/scheduleDownloadImageFromSD?url=${url}&filename=${path}`)
-            .then(() => (previewSrc = `/SharedData/${path}`));
+          await fetch(
+            `/scheduleDownloadImageFromSD?url=${url}&filename=${path}`
+          ).then(() => (previewSrc = `/SharedData/${path}`));
         }
-
-        
-
       }
       i++;
     }, intervalDuration);
@@ -385,7 +392,9 @@
   }
 
   async function pollScheduledTransfer() {
-    const scheduled = await fetch('/SharedData/_scheduledDownload.json').then(res => res.json());
+    const scheduled = await fetch(
+      "/SharedData/_scheduledDownload.json"
+    ).then((res) => res.json());
     numScheduledTransfer = scheduled.length;
   }
 
@@ -499,9 +508,7 @@
           {numScheduledTransfer} images need to be transfered
         </div>
 
-        <div>
-          Experimental stuff
-        </div>
+        <div>Experimental stuff</div>
         <div>
           <button on:click={() => startHighspeed()}>Start bulk (experimental)</button>
           {runInfo}
@@ -516,7 +523,9 @@
     </div>
   </div>
   <div class="panel-row">
-    <div class="box"><img style="max-width: 100%" src={previewSrc} alt="preview" /></div>
+    <div class="box">
+      <img style="max-width: 100%" src={previewSrc} alt="preview" />
+    </div>
   </div>
 </div>
 

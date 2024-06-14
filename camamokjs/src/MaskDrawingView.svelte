@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { BatchRenderer, Renderer } from "@pixi/core";
   import { onMount } from "svelte";
   import * as PIXI from "pixi.js";
   import { Viewport } from "pixi-viewport";
@@ -21,6 +22,8 @@
   let curMouseWorldPos: PIXI.Point;
 
   onMount(() => {
+    Renderer.registerPlugin("batch", BatchRenderer);
+
     var elem = document.getElementById("canvas-container");
 
     app = new PIXI.Application({
@@ -211,9 +214,9 @@
             errorMsg = `Could not load image at ${src}`;
           }
 
-          const img = PIXI.Sprite.from(texture);
+          console.log("Create sprite from text");
+          const img = PIXI.Sprite.from(srcToLoad, {});
           img.blendMode = PIXI.BLEND_MODES.SCREEN;
-
           container.addChild(img);
 
           const parent = document.getElementById("container");
@@ -221,6 +224,7 @@
           const scaleH = height / parent.clientHeight;
           viewport.setZoom(1 / Math.max(scaleW, scaleH));
 
+          console.log(scaleW, scaleH);
           updateGraphics();
         });
         loader.load();
@@ -335,6 +339,22 @@
   }
 </script>
 
+<div id="container">
+  <div id="canvas-container" />
+  <div id="error">{errorMsg}</div>
+  <div id="instructions">
+    {#if curPolygon}
+      <span>Mouse click to draw polygon</span>
+      <span>Double click to finish drawing</span>
+      <span>Delete / Esc to cancel polygon</span>
+    {:else}<span>Mouse click to add point</span>{/if}
+    <span>Cmd-z to undo</span>
+    {#if polygons.some((p) => curMouseWorldPos && p.contains(curMouseWorldPos.x, curMouseWorldPos.y))}
+      <span>Delete to delete polygon</span>
+    {/if}
+  </div>
+</div>
+
 <style>
   #container {
     height: 100%;
@@ -364,19 +384,3 @@
     display: block;
   }
 </style>
-
-<div id="container">
-  <div id="canvas-container" />
-  <div id="error">{errorMsg}</div>
-  <div id="instructions">
-    {#if curPolygon}
-      <span>Mouse click to draw polygon</span>
-      <span>Double click to finish drawing</span>
-      <span>Delete / Esc to cancel polygon</span>
-    {:else}<span>Mouse click to add point</span>{/if}
-    <span>Cmd-z to undo</span>
-    {#if polygons.some((p) => curMouseWorldPos && p.contains(curMouseWorldPos.x, curMouseWorldPos.y))}
-      <span>Delete to delete polygon</span>
-    {/if}
-  </div>
-</div>
