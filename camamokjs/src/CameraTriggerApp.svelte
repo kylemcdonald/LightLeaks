@@ -5,11 +5,11 @@
   import { onDestroy, onMount } from "svelte";
   import * as ccapi from "./ccapi";
   import moment from "moment";
-  import * as ExifReader from "exifreader";
-  import { CompressedTextureLoader } from "three";
 
   let connected = false;
   let connecting = true;
+
+  let isCalibrating = false;
 
   let proCamSampleConnected = false;
   let curPattern;
@@ -98,6 +98,8 @@
   }
 
   async function takePicture() {
+    await poll();
+
     let retry = 10;
 
     while (retry-- > 0) {
@@ -133,9 +135,14 @@
   }
 
   async function proCamScapApi(method: string) {
-    return await fetch(
-      `/proxy?url=${get(preferences).proCamScanUrl}${method}`
-    ).then((res) => res.text());
+    return await fetch(`/proxy?url=${get(preferences).proCamScanUrl}${method}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to connect to ProCamSample");
+        }
+        return res;
+      })
+      .then((res) => res.text());
   }
 
   async function connectProCamSample() {
@@ -144,12 +151,13 @@
   }
 
   async function start() {
+    isCalibrating = true;
+    runInfo = "Preparing camera...";
     await ccapi.shootingLiveView("small", "off");
     await ccapi.shootingSettingsStillImageQuality(quality);
 
     // await resetPattern();
     const scanName = `scan-${moment().format("MMDDTHH-mm-ss")}`;
-    runInfo = `Capturing ${scanName}`;
 
     const paths = [];
 
@@ -157,6 +165,8 @@
 
     // for (let i = 0; i < 3; i++) {
     for (let i = 0; i < numPatterns; i++) {
+      runInfo = `Capturing ${scanName} ${i}/${numPatterns}`;
+
       console.log("Set pattern", i);
       await setPattern(i);
 
@@ -172,39 +182,44 @@
     }
     // await Promise.all(promises);
 
-    await setColor(0, 1, 0);
-    await sleep(2000);
+    // await setColor(0, 1, 0);
+    // await sleep(2000);
     await setPattern(0);
     await ccapi.shootingLiveView("medium", "on");
 
-    // Download photos
-    let downloaded = 1;
+    // // Download photos
+    // let downloaded = 1;
 
-    runInfo = `Downloading ${downloaded}/${paths.length}`;
+    // runInfo = `Downloading ${downloaded}/${paths.length}`;
 
-    console.log("Scan files:", paths);
+    // console.log("Scan files:", paths);
 
     for (let [url, path] of paths) {
       console.log("Download ", url, "to", path);
-      await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`)
-        // await fetch(`/scheduleDownloadImageFromSD?url=${url}&filename=${path}`)
-        .then(() => {
-          runInfo = `Downloading ${++downloaded}/${paths.length}`;
-        })
-        .then(() => (previewSrc = `/SharedData/${path}`));
+      // await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`)
+      await fetch(`/scheduleDownloadImageFromSD?url=${url}&filename=${path}`);
+      // .then(() => {
+      //   runInfo = `Downloading ${++downloaded}/${paths.length}`;
+      // })
+      // .then(() => (previewSrc = `/SharedData/${path}`));
     }
 
-    console.log("Done");
-    runInfo = `Finished ${scanName}`;
-    console.timeEnd("Scan");
+    runInfo = `Completed`;
 
-    var msg = new SpeechSynthesisUtterance("Scan complete");
-    window.speechSynthesis.speak(msg);
+    // console.log("Done");
+    // runInfo = `Finished ${scanName}`;
+    // console.timeEnd("Scan");
+
+    // var msg = new SpeechSynthesisUtterance("Scan complete");
+    // window.speechSynthesis.speak(msg);
 
     // setTimeout(()=> runInfo = '', 3000);
+
+    isCalibrating = false;
   }
 
   // Experimental code that isnt finished:
+  /*
   async function startHighspeed() {
     const settings = await ccapi.getShootingSettings();
     const tv = ccapi.parseTime(settings.tv.value);
@@ -368,6 +383,7 @@
       };
     });
   }
+    */
 
   async function getPattern() {
     const curPatternStr = await proCamScapApi("/actions/currentPattern");
@@ -398,6 +414,7 @@
     numScheduledTransfer = scheduled.length;
   }
 
+  pollScheduledTransfer();
   setInterval(pollScheduledTransfer, 5000);
 
   async function poll() {
@@ -476,7 +493,7 @@
 
     <div class="box" id="pattern-info">
       <div>
-        <h3>Computer</h3>
+        <h3>ProCamSample</h3>
       </div>
       <div>
         <input
@@ -495,19 +512,24 @@
           <button on:click={() => setPattern(curPattern + 1)}>+</button>
           <button on:click={() => setPattern(curPattern - 1)}>-</button>
         </div>
-        <button on:click={() => setColor(1.0, 0, 0)}>Red</button>
-        <button on:click={() => setColor(0, 0, 1.0)}>Blue</button>
+        <!-- <button on:click={() => setColor(1.0, 0, 0)}>Red</button>
+        <button on:click={() => setColor(0, 0, 1.0)}>Blue</button> -->
       {/if}
     </div>
 
     <div class="box">
       {#if proCamSampleConnected}
         <div>
-          <button on:click={() => start()}>Start Calibration</button>
-          {runInfo}
-          {numScheduledTransfer} images need to be transfered
-        </div>
+          <div>
+            {#if !isCalibrating}
+              <button on:click={() => start()}>Start Calibration</button>
+            {:else}<button disabled>Calibrating...</button>{/if}
+          </div>
 
+          <div>{runInfo}</div>
+          <div>{numScheduledTransfer} images need to be transfered</div>
+        </div>
+        <!-- 
         <div>Experimental stuff</div>
         <div>
           <button on:click={() => startHighspeed()}>Start bulk (experimental)</button>
@@ -518,7 +540,7 @@
           {#if $preferences.shutterSpeed}
             {$preferences.shutterSpeed}ms + {$preferences.captureDuration - $preferences.shutterSpeed}ms
           {/if}
-        </div>
+        </div> -->
       {/if}
     </div>
   </div>
