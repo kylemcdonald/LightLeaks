@@ -195,9 +195,18 @@
     // console.log("Scan files:", paths);
 
     for (let [url, path] of paths) {
-      console.log("Download ", url, "to", path);
-      // await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`)
+      // console.log("Download ", url, "to", path);
+      // await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`);
       await fetch(`/scheduleDownloadImageFromSD?url=${url}&filename=${path}`);
+      // .then(() => {
+      //   runInfo = `Downloading ${++downloaded}/${paths.length}`;
+      // })
+      // .then(() => (previewSrc = `/SharedData/${path}`));
+    }
+    for (let [url, path] of paths) {
+      console.log("Download ", url, "to", path);
+      await fetch(`/downloadImageFromUrl?url=${url}&filename=${path}`);
+      // await fetch(`/scheduleDownloadImageFromSD?url=${url}&filename=${path}`);
       // .then(() => {
       //   runInfo = `Downloading ${++downloaded}/${paths.length}`;
       // })

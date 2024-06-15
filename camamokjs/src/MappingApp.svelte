@@ -101,6 +101,7 @@
         scan: loadedScan,
       }),
     });
+    console.log("calibration saved");
 
     const arraybuffer = renderSceneToArray(
       xyzMapWidth,
@@ -110,8 +111,10 @@
       cameraMatrix,
       new Vector2(imageWidth, imageHeight)
     );
+    console.log("Saving xyz map", arraybuffer);
     const formData = new FormData();
     formData.append("image", new Blob([arraybuffer]));
+    console.log(formData);
     await fetch("/saveXYZMap/" + loadedScan, {
       method: "POST",
       body: formData,
@@ -210,26 +213,14 @@
   });
 </script>
 
-<style>
-  .panel-row {
-    display: flex;
-    align-items: stretch;
-    flex-direction: row;
-    overflow: hidden;
-  }
-
-  .panel {
-    position: relative;
-  }
-</style>
-
 <div class="panel-row" style="flex:1; ">
   <div class="panel" style="    overflow: scroll;">
     <ScanList
       bind:this={scanListComponent}
       {scans}
       {loadedScan}
-      on:loadscan={(ev) => loadScan(ev.detail)} />
+      on:loadscan={(ev) => loadScan(ev.detail)}
+    />
     <CalibrationSettings
       bind:calibrationFlags
       errorValue={calibrationErrorValue}
@@ -237,7 +228,8 @@
       focalLength={calibrationValues.focalLength}
       fov={new Vector2(calibrationValues.fovx, calibrationValues.fovy)}
       principalPoint={calibrationValues.principalPoint}
-      aspectRatio={calibrationValues.aspectRatio} />
+      aspectRatio={calibrationValues.aspectRatio}
+    />
     <PointList bind:objectPoints bind:imagePoints bind:highlightedIndex />
   </div>
 
@@ -251,7 +243,8 @@
       {calibratedCamera}
       showCamera={calibrationErrorValue != -1}
       on:selectpoint={(ev) => (placingImagePoint = true)}
-      on:deselectpoint={() => (placingImagePoint = false)} />
+      on:deselectpoint={() => (placingImagePoint = false)}
+    />
   </div>
   <div class="panel" style="flex:1;">
     <ImageView
@@ -285,10 +278,24 @@
       }}
       on:imagepointmove={(ev) => {
         imagePoints[ev.detail.index] = ev.detail.point;
-      }} />
+      }}
+    />
     <div />
   </div>
 </div>
 <div class="panel-row">
   <div class="panel" />
 </div>
+
+<style>
+  .panel-row {
+    display: flex;
+    align-items: stretch;
+    flex-direction: row;
+    overflow: hidden;
+  }
+
+  .panel {
+    position: relative;
+  }
+</style>

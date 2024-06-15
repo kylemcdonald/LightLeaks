@@ -136,6 +136,10 @@ def buildXyzMap(data_dir, prefix):
             else:
                 t("\tNo scan: %.2f%% (%i)" % (100*_c / sum(c), _c))
 
+        # valid_pixels = projector_confidence > threshold
+        # valid_but_zero_count = np.sum(projector_xyz[valid_pixels] == [0,0,0]) # can't remember how to do this
+        # valid_pixels_count = np.sum(valid_pixels)
+        # t("Above-threshold but [0,0,0] pixels: %.2f%" % (100 * valid_but_zero_count / valid_pixels_count))
 
 def get_projector_size(data_dir):
     with open(os.path.join(data_dir, 'settings.json')) as json_file:

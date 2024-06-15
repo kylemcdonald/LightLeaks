@@ -85,7 +85,7 @@ app.post("/saveCalibration", async (req, res) => {
   res.send();
 });
 
-var upload = multer({ dest: os.tmpdir() });
+var upload = multer({ dest: os.tmpdir()});
 var type = upload.single("image");
 
 app.post("/saveXYZMap/:scan", upload.single("image"), async (req, res) => {
@@ -93,6 +93,7 @@ app.post("/saveXYZMap/:scan", upload.single("image"), async (req, res) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
   }
+  
   fs.copyFileSync(req.file.path, path.join(dir, "xyzMap.raw"));
   fs.unlinkSync(req.file.path);
 
@@ -173,7 +174,8 @@ app.get("/getExifFromUrl", async (req, res) => {
 app.get("/proxy", async (req, res, next) => {
   fetch(req.query.url)
     .then((blob) => blob.text())
-    .then((res) => res.send(res));
+    .then((resp) => res.send(resp))
+    .catch(next)
 });
 
 app.post("/proxy/", async (req, res, next) => {
@@ -187,8 +189,8 @@ app.post("/proxy/", async (req, res, next) => {
       },
     })
       .then((blob) => blob.json())
-      .then((json) => res.send(json));
-    // .catch(next);
+      .then((json) => res.send(json))
+    .catch(next);
     // console.log(apiResponse)
   } catch (e) {
     console.warn(e);

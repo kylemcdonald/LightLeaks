@@ -25,13 +25,16 @@ float threshold = 0.4; //26;
 // x first axis is along the length of the room
 // y second axis is floor to ceiling, with 0 on the floor
 // z third axis is along the width of the room
-const vec3 center = vec3(0.322, 0.220, 0.323); // balls
+const vec3 center = vec3(0.51, 0.12, 0.52); // balls
 const vec3 center_alt = vec3(0.000, 0.000, 0.000); // stage
-int numStages = 17;
+int numStages = 18;
 
 // #define TEST_POSITION 2
-// #define TEST_POSITION_ALT 1
-// #define OVERWRITE_STAGE 17
+
+// Good for speaker calibration:
+// #define TEST_POSITION_ALT vec3(0.882, 0.124, 0.70)
+// #define OVERWRITE_STAGE 0
+// #define OVERWRITE_TIME 1.0
 // #define MOUSE_BEAM
 // #define SPEAKER_TEST
 
@@ -299,6 +302,10 @@ void main() {
         elapsedTimeMod = 15 + 30 * floor(elapsedTime/5);
     }
 
+    #ifdef OVERWRITE_TIME
+        elapsedTimeMod = OVERWRITE_TIME;
+    #endif
+
     vec2 texCoord = adjustOffset(texCoordVarying.st);
 
     vec3 position = texture(xyzMap, texCoord.st).xyz;    
@@ -312,6 +319,28 @@ void main() {
     float t = elapsedTimeMod / 30.; // duration of each stage
     float stage = floor(t); // index of current stage
     float i = t - stage; // progress in current stage
+
+
+    // float minX = 0.0;
+    // float maxX = 1920.0;
+
+    // if(mod(elapsedTimeMod, 1.0) > 0.33){
+    //     minX = 1920.0;
+    //     maxX = 2.0 * 1920.0;
+    // }
+    // if(mod(elapsedTimeMod, 1.0) > 0.66){
+    //     minX = 1920.0 * 2.0;
+    //     maxX = 3.0 * 1920.0;
+    // }
+    
+    // if(texCoord.x <  minX || texCoord.x > maxX){
+    //     outputColor = vec4(0);
+    //     return;
+    // }
+    // if(texCoord.x < sin(elapsedTimeMod) * 1200.0) {
+    //     outputColor = vec4(0);
+    //     return;
+    // }
     
     // Crossfade
     if(i > 0.9){
@@ -426,6 +455,7 @@ void main() {
         return;
     }
 
+
     /* Discard low confidence and masked */
     /* All full-screen effects must be before this point */
     if(audio == 0 && (confidence < threshold || masked == 0)) {
@@ -445,15 +475,23 @@ void main() {
     }
     #endif
 
+
     /* Position debug mode */
     /* Position tester: */
     #ifdef TEST_POSITION_ALT
-    int axis = TEST_POSITION_ALT;
-    if(position[axis] > center_alt[axis] + sin(elapsedTimeMod) * 0.005){
-        outputColor = vec4(1.,0.,0.,1.);
+    vec3 testPos = TEST_POSITION_ALT;
+    float width = 0.01;
+    if(position.x > testPos.x - width && position.x < testPos.x + width){
+        outputColor = vec4(1.,1.,1.,1.);
         return;
-    } else {
-        outputColor = vec4(0.,1.,0.,1.);
+    } else if(position.y > testPos.y - width && position.y < testPos.y + width){
+        outputColor = vec4(1.,1.,1.,1.);
+        return;
+    } else if(position.z > testPos.z - width && position.z < testPos.z + width){
+        outputColor = vec4(1.,1.,1.,1.);
+        return;
+    }  else {
+        outputColor = vec4(0.,0.,0.,0.);
         return;
     }
     #endif
@@ -547,7 +585,7 @@ void main() {
     int s = 0; //0
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        w += (lighthouse(elapsedTimeMod, position, centered)  > 0.5 ? 1. : 0.)
+        w += (lighthouse(elapsedTimeMod * 0.5, position, centered)  > 0.5 ? 1. : 0.)
         * stageAlpha(s, stage);
     }
     
@@ -592,10 +630,10 @@ void main() {
         float theta = atan(y,x);
         float phi = atan(sqrt(x*x+y*y),z);
 
-        float rotationSpeed = 0.15;
+        float rotationSpeed = 0.1;
         theta += elapsedTimeMod * rotationSpeed;
 
-        float scale = 2;
+        float scale = 4;
         vec2 st = vec2(phi, theta) * scale;
         vec3 c = voronoi( st, 1, elapsedTimeMod );
         
@@ -630,8 +668,8 @@ void main() {
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         float cycleSpeed = 0.8;
-        float maxSpeed = 1.8;
-        float scale = 6;
+        float maxSpeed = 1.2;
+        float scale = 40;
         w += circles(sin(cycleSpeed * elapsedTimeMod) * maxSpeed, centered_stage , scale)
             * stageAlpha(s, stage);
     }
@@ -671,14 +709,41 @@ void main() {
     s++; //9
 
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
-        vec3 p = position - (vec3(cos(elapsedTimeMod*0.5) * 0.10,
+        vec3 p = position - (vec3(cos(elapsedTimeMod*0.5) * 0.30,
                                 sin(elapsedTimeMod*0.4) * 0.1,
-                                sin(elapsedTimeMod*0.2) * 0.10 ) + center);
+                                sin(elapsedTimeMod*0.2) * 0.30 ) + center);
 
-        w += (circles(elapsedTimeMod * - 1.5, p, 260.) * stageAlpha(s, stage) > 0.5 ? 1. : 0.);
+        w += (circles(elapsedTimeMod * - 0.5, p, 260.) * stageAlpha(s, stage) > 0.5 ? 1. : 0.);
     }
     
     s++; //10
+
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+
+        float minX = 0.0;
+        float maxX = 1920.0;
+        float proj = mod(elapsedTimeMod*1.0, 3.0);
+
+        if(proj > 1.0){
+            minX = 1920.0;
+            maxX = 2.0 * 1920.0;
+        }
+        if(proj > 2.0){
+            minX = 1920.0 * 2.0;
+            maxX = 3.0 * 1920.0;
+        }
+        
+        if(texCoord.x <  minX || texCoord.x > maxX){
+            outputColor = vec4(0);
+            return;
+        }
+
+        w += (lighthouse(elapsedTimeMod * 0.5, position, centered)  > 0.5 ? 1. : 0.)
+        * stageAlpha(s, stage);
+    }
+    
+    s++; //11
+    
 
     // Noise floor
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
@@ -686,33 +751,33 @@ void main() {
         c = c > 0.5 ? 1. : 0.;
         w += c * stageAlpha(s, stage);
     }
-    s++; //11
-
-    // Noise radial lines
-    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
-        float c = 0;
-        for(int i=0; i<5;i++){
-            float n = perlin(vec2(elapsedTimeMod/1000., elapsedTimeMod/1200.1), 109, i);
-            c += radialLine(centered.zy, n * PI * 5, 3.0);
-        }
-        w += c * stageAlpha(s, stage);
-    }
     s++; //12
 
     // Noise radial lines
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
         float c = 0;
-        for(int i=0; i<2;i++){
-            float n = i * 3.1 + elapsedTimeMod / 15.;
-            c += radialLine(centered.xy, n * PI * 10, 2.5);
+        for(int i=0; i<5;i++){
+            float n = perlin(vec2(elapsedTimeMod/3500., elapsedTimeMod/2200.1), 109, i);
+            c += radialLine(centered.zy, n * PI * 5, 3.0);
         }
         w += c * stageAlpha(s, stage);
     }
     s++; //13
 
+    // Noise radial lines
+    if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
+        float c = 0;
+        for(int i=0; i<2;i++){
+            float n = i * 3.1 + elapsedTimeMod / 25.;
+            c += radialLine(centered.xy, n * PI * 10, 2.5);
+        }
+        w += c * stageAlpha(s, stage);
+    }
+    s++; //14
+
      // Noise radial lines
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {   
-        vec3 index = round(position/0.06);
+        vec3 index = round(position/0.09);
 
         float c = 0;
         
@@ -729,7 +794,7 @@ void main() {
         // }
         w += c * stageAlpha(s, stage);
     }
-    s++; //14
+    s++; //15
 
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
         centered.xz = rotate(centered.xz, elapsedTimeMod * 0.1);
@@ -741,20 +806,25 @@ void main() {
         
     }
     
-    s++; //15
+    s++; //16
     
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
        float c = 0;
         for(int i=0; i<8;i++){
-            float n = perlin(vec2(elapsedTimeMod/2500., elapsedTimeMod/2200.1), 109, i);
+            float n = perlin(vec2(elapsedTimeMod/3500., elapsedTimeMod/3200.1), 109, i);
             c += radialLine(centered.xz, n * PI * 10, 2.8);
         }
         w += c * stageAlpha(s, stage);
     }
     
-    s++; //16
+    s++; //17
        
     if(stageAlpha(s, stage) > 0. && stageAlpha(s, stage) <= 1.) {
+        if(texCoord.y < sin(elapsedTimeMod) * 1200.0) {
+            outputColor = vec4(0);
+            return;
+        }
+        
         w += unstableFloor(elapsedTimeMod, centered_stage.zy, 150.)
         // w += unstableFloor(1, centered.yx, 150.)
             * stageAlpha(s, stage);
