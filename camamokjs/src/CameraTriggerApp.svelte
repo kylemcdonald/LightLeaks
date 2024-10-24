@@ -26,7 +26,7 @@
 
   let deviceInfo: ccapi.DeviceInformationResponse;
 
-  const quality = "medium_fine";
+  const quality = "large_fine";
   // const continuousSpeed = "cont_super_hi";
   const continuousSpeed = "highspeed";
 
@@ -152,9 +152,11 @@
 
   async function start() {
     isCalibrating = true;
-    runInfo = "Preparing camera...";
+    runInfo = "Setting live view...";
     await ccapi.shootingLiveView("small", "off");
+    runInfo = "Setting image quality...";
     await ccapi.shootingSettingsStillImageQuality(quality);
+    runInfo = "Setting scanName...";
 
     // await resetPattern();
     const scanName = `scan-${moment().format("MMDDTHH-mm-ss")}`;

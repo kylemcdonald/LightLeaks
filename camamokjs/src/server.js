@@ -9,6 +9,7 @@ const request = require("request");
 const shell = require("shelljs");
 const ExifReader = require("exifreader");
 const fsPromise = require("fs/promises");
+const https = require('https');
 
 const app = express();
 
@@ -172,7 +173,13 @@ app.get("/getExifFromUrl", async (req, res) => {
 });
 
 app.get("/proxy", async (req, res, next) => {
-  fetch(req.query.url)
+  let fetchArgs = {};
+  if (req.query.url.includes("https")) {
+    fetchArgs.agent = new https.Agent({
+      rejectUnauthorized: false,
+    });
+  }
+  fetch(req.query.url, fetchArgs)
     .then((blob) => blob.text())
     .then((resp) => res.send(resp))
     .catch(next)
@@ -180,16 +187,21 @@ app.get("/proxy", async (req, res, next) => {
 
 app.post("/proxy/", async (req, res, next) => {
   try {
-    console.log(req.body);
-    fetch(req.query.url, {
+    let fetchArgs = {
       method: "post",
       body: JSON.stringify(req.body),
       headers: {
         "Content-Type": "application/json",
       },
-    })
-      .then((blob) => blob.json())
-      .then((json) => res.send(json))
+    };
+    if (req.query.url.includes("https")) {
+      fetchArgs.agent = new https.Agent({
+        rejectUnauthorized: false,
+      });
+    }
+    fetch(req.query.url, fetchArgs)
+      .then((blob) => blob.text())
+      .then((text) => res.send(text))
     .catch(next);
     // console.log(apiResponse)
   } catch (e) {
@@ -200,15 +212,21 @@ app.post("/proxy/", async (req, res, next) => {
 app.put("/proxy/", async (req, res, next) => {
   try {
     console.log(req.body);
-    fetch(req.query.url, {
+    let fetchArgs = {
       method: "put",
       body: JSON.stringify(req.body),
       headers: {
         "Content-Type": "application/json",
-      },
-    })
-      .then((blob) => blob.json())
-      .then((json) => res.send(json))
+      }
+    };
+    if (req.query.url.includes("https")) {
+      fetchArgs.agent = new https.Agent({
+        rejectUnauthorized: false,
+      });
+    };
+    fetch(req.query.url, fetchArgs)
+      .then((blob) => blob.text())
+      .then((text) => res.send(text))
       .catch(next);
     // console.log(apiResponse)
   } catch (e) {

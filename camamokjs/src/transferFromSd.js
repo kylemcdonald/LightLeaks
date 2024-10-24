@@ -8,7 +8,7 @@ const sdPath = "/Volumes/LEXAR/DCIM/";
 console.log(`Transfering ${data.length} files...`);
 
 for (const file of data) {
-  const source = `${sdPath}${file.url.split("/sd/")[1]}`;
+  const source = `${sdPath}${file.url.split("/card1/")[1]}`;
   const dst = `../SharedData/${file.dest}`;
 
   console.log(`Transfering ${source} to ${dst}`);

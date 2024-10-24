@@ -7,8 +7,13 @@ function apiCall<T>(
   body: Object = {},
   method: "get" | "post" | "put" = "get"
 ): Promise<T> {
+  let version = VER;
+  if (endpoint.includes("stillimagequality") || 
+      endpoint.includes("polling")) {
+    version = "ver110";
+  }
   const ccapiurl = endpoint
-    ? `${cameraUrl}/ccapi/${VER}${endpoint}`
+    ? `${cameraUrl}/ccapi/${version}${endpoint}`
     : `${cameraUrl}/ccapi`;
   const url = `/proxy/?url=${ccapiurl}`;
   // console.log(body, method)
@@ -188,5 +193,6 @@ export interface PollingResponse {
   battery?: DeviceStatusBatteryResponse,
 }
 export function polling(wait) {
-  return apiCall<PollingResponse>(`/event/polling?continue=${wait ? 'on' : 'off'}`)
+  // return apiCall<PollingResponse>(`/event/polling?continue=${wait ? 'on' : 'off'}`)
+  return apiCall<PollingResponse>(`/event/polling?timeout=${wait ? 'short' : 'immediately'}`)
 }
