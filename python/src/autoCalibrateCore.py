@@ -574,7 +574,18 @@ def reconstruct(views, observations, init_pair=None, verbose=False,
                 new_rms = bundle_adjust(
                     views, observations, new_points, new_valid,
                     intrinsics='fk' if n_reg >= 3 else 'none')
-            # rollback if this registration wrecked the reconstruction
+            # if this registration hurt the fit, give it one second
+            # chance with outliers pruned before rolling it back: a
+            # correct pose often arrives with a tail of bad tracks
+            if do_ba and new_rms > max(3.0 * rms, rms + 2.0):
+                prune_observations(views, observations, new_points,
+                                   new_valid,
+                                   thresh=max(4.0, 2.0 * new_rms))
+                new_points, new_valid = triangulate_tracks(
+                    views, observations, reproj_thresh=50.0)
+                new_rms = bundle_adjust(
+                    views, observations, new_points, new_valid,
+                    intrinsics='fk')
             if do_ba and new_rms > max(3.0 * rms, rms + 2.0):
                 for v, (rv, tv, f, cx, cy, k1) in zip(views, state):
                     v.rvec, v.tvec = rv, tv
