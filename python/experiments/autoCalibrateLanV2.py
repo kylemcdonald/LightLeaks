@@ -351,7 +351,7 @@ def main():
             rerr, K, dist, rvs, tvs = cv2.calibrateCamera(
                 [objs], [imgs], (v.width, v.height), K, None,
                 flags=flags)
-            if rerr > 8.0:
+            if rerr > 12.0:
                 print(f"completion: {v.name} refine {rerr:.1f}px - "
                       f"rejected")
                 continue
@@ -493,7 +493,7 @@ def main():
             except cv2.error as e:
                 print("  refine failed:", str(e)[:60])
                 continue
-            if rerr > 8.0:
+            if rerr > 12.0:
                 print(f"  refine {rerr:.1f}px - rejected")
                 continue
             vk.f, vk.k1 = float(K[0, 0]), float(distc[0][0])
