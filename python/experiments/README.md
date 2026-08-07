@@ -82,11 +82,16 @@ verification replaces raw confidence as the quality gate), best-pair
 fusion across all camera pairs, and *mesh-fill* - single-camera pixels
 are raycast against the Poisson mesh built from the verified pixels,
 which is camamok's model-painting trick with a measured model instead
-of a hand-built one. Quality tiers against ground truth: triangulated
-pixels median 2.4%, mesh-filled 3.3% of scene diagonal (walls agree
-far tighter; the tail is ball-edge pixels where the "truth" is itself
-ambiguous). The saved `source` channel distinguishes the tiers so the
-confidence map can reflect them.
+of a hand-built one. Refinements on top: robust multi-pair fusion (component-wise median
+over up to 6 camera-pair triangulations per pixel), edge-aware speckle
+cleanup in projector space, and confidence-ordered mesh-fill. Quality
+tiers against ground truth: triangulated pixels median 2.2% (p90
+7.7%), mesh-filled 3.1% of scene diagonal. Walls agree far tighter
+than the medians suggest - the error tail is ball-edge pixels where
+"truth" is itself ambiguous, and the camamok GT carries 5-36 px of
+internal reprojection error, so at this level the comparison measures
+the old system's own noise as much as ours. The saved `source` channel
+distinguishes the tiers so the confidence map can reflect them.
 
 ## LightsAllNight 2019 validation (`autoCalibrateLightsAllNight.py`)
 
