@@ -392,15 +392,16 @@ def bundle_adjust(views, observations, points, valid,
 
     # intrinsic priors: without them, thousands of tiny per-observation
     # gains can drag f/pp/k1 to physically absurd values that happen to
-    # fit the current (noisy, partially converged) structure. weight each
-    # prior by sqrt(group's observation count) so a one-sigma deviation
-    # costs about one pixel rms across the group's observations.
+    # fit the current (noisy, partially converged) structure. the weight
+    # grows sublinearly with the group's observation count: strong enough
+    # to anchor a weakly-observed view, weak enough that dense data can
+    # pull an intrinsic several sigma from a bad initial guess.
     prior_rows = []  # (param_index, prior, sigma, weight)
     for g, members in enumerate(groups):
         v = views[reg[members[0]]]
         base = intr_offset + g * 4
         n_obs_g = sum((obs_view == p).sum() for p in members)
-        w = np.sqrt(max(1, n_obs_g))
+        w = max(1.0, n_obs_g) ** 0.25
         for off, prior, sigma in (
                 (0, v.f_prior, v.f_sigma), (1, v.cx_prior, v.cx_sigma),
                 (2, v.cy_prior, v.cy_sigma), (3, v.k1_prior, v.k1_sigma)):
@@ -465,8 +466,26 @@ def bundle_adjust(views, observations, points, valid,
     return np.sqrt(np.mean(np.minimum(err, 10.0) ** 2))
 
 
+def median_parallax_deg(views, points, valid, i, j):
+    """Median triangulation angle (degrees) of valid points seen by
+    views i and j - near zero for a rotation-only / same-tripod pair,
+    whose triangulated depths are meaningless."""
+    ci = views[i].camera_center()
+    cj = views[j].camera_center()
+    pts = points[valid]
+    if len(pts) == 0:
+        return 0.0
+    v1 = pts - ci
+    v2 = pts - cj
+    cosang = np.einsum('ij,ij->i', v1, v2) / (
+        np.linalg.norm(v1, axis=1) * np.linalg.norm(v2, axis=1) + 1e-12)
+    return float(np.degrees(np.arccos(np.clip(np.abs(cosang), -1, 1))
+                            ).mean())
+
+
 def reconstruct(views, observations, init_pair=None, verbose=False,
-                ba_every_registration=True, ba_stride=1):
+                ba_every_registration=True, ba_stride=1,
+                min_init_parallax_deg=2.0):
     """Full incremental pipeline: init pair -> PnP registration -> global BA.
 
     ba_stride: run the (expensive) global BA only every N successful
@@ -476,24 +495,42 @@ def reconstruct(views, observations, init_pair=None, verbose=False,
     """
     n_views = len(views)
     regs_since_ba = 0
-    if init_pair is None:
-        # choose the pair with the most shared tracks
-        counts = np.zeros((n_views, n_views), dtype=int)
-        for track in observations:
-            vis = [vi for vi, _, _ in track]
-            for a in range(len(vis)):
-                for b in range(a + 1, len(vis)):
-                    counts[vis[a], vis[b]] += 1
-                    counts[vis[b], vis[a]] += 1
-        init_pair = np.unravel_index(np.argmax(counts), counts.shape)
-    i, j = init_pair
-    n_inl = initialize_pair(views, observations, i, j)
-    if verbose:
-        print(f"init pair ({views[i].name}, {views[j].name}): "
-              f"{n_inl} essential-matrix inliers")
+    counts = np.zeros((n_views, n_views), dtype=int)
+    for track in observations:
+        vis = [vi for vi, _, _ in track]
+        for a in range(len(vis)):
+            for b in range(a + 1, len(vis)):
+                counts[vis[a], vis[b]] += 1
+                counts[vis[b], vis[a]] += 1
+    if init_pair is not None:
+        candidates = [tuple(init_pair)]
+    else:
+        pairs = [(i, j) for i in range(n_views) for j in range(i + 1,
+                 n_views) if counts[i, j] >= 50]
+        candidates = sorted(pairs, key=lambda ij: -counts[ij])[:20]
 
-    points, valid = triangulate_tracks(views, observations,
-                                       reproj_thresh=50.0)
+    # try candidate pairs until one yields real parallax: the pair with
+    # the most shared tracks is often two shots from the same tripod
+    # spot, whose essential-matrix cloud has meaningless depths
+    chosen = None
+    for i, j in candidates:
+        for v in views:
+            v.registered = False
+        n_inl = initialize_pair(views, observations, i, j)
+        points, valid = triangulate_tracks(views, observations,
+                                           reproj_thresh=50.0)
+        par = median_parallax_deg(views, points, valid, i, j)
+        if verbose:
+            print(f"init pair ({views[i].name}, {views[j].name}): "
+                  f"{n_inl} E-inliers, {valid.sum()} tracks, "
+                  f"parallax {par:.1f} deg")
+        if par >= min_init_parallax_deg and valid.sum() >= 50:
+            chosen = (i, j)
+            break
+    if chosen is None:
+        raise RuntimeError("no init pair with sufficient parallax")
+    i, j = chosen
+
     rms = bundle_adjust(views, observations, points, valid,
                         intrinsics='none')
     if verbose:
