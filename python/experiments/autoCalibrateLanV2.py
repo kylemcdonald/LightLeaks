@@ -336,7 +336,11 @@ def main():
             except cv2.error:
                 continue
             n_inl = 0 if (not ok2 or inl is None) else len(inl)
-            if n_inl < 60:
+            # absolute count alone is not enough: 76 inliers out of
+            # 72k shared anchors is chance agreement, and accepting
+            # such a pose puts a phantom far-away camera into densify
+            # where it inflates bmax and starves every real pair
+            if n_inl < 60 or n_inl < 0.02 * len(sel):
                 print(f"completion: {v.name} only {n_inl} anchor "
                       f"inliers of {len(sel)} - skipped")
                 continue
@@ -530,8 +534,17 @@ def main():
         rows_s = np.where(solved)[0]
         best_slot = np.argmin(cand_err[rows_s], axis=1)
         conf_all[rows_s] = cand_conf[rows_s, best_slot]
-        hi_conf = np.percentile(conf_all[rows_s], 80)
-        bright = dense_xyz[solved & (conf_all >= hi_conf)]
+        # confidence no longer separates glints from geometry: the v2
+        # decoder makes WALLS confident too, so a conf>=p80 "bright"
+        # set is just well-decoded geometry and any occupancy statistic
+        # over it flags the densest third of the room (this deleted
+        # 120k good pixels in one run). the signature that survives a
+        # better decoder is geometric: a mirror ball compresses the
+        # projector's entire image into a few voxels (thousands of
+        # points), while a wall is a 2d sheet crossing a voxel (tens).
+        # so: occupancy of ALL solved points, thresholded at an extreme
+        # outlier level - never below the 98th percentile of occupied
+        # voxels, never below 12x the median occupancy.
         lo_b = np.percentile(pts_all, 1, 0)
         hi_b = np.percentile(pts_all, 99, 0)
         NV = 48
@@ -540,9 +553,15 @@ def main():
             v = np.clip(((p - lo_b) / span_b * NV).astype(int), 0, NV-1)
             return v[:,0]*NV*NV + v[:,1]*NV + v[:,2]
         occ = np.zeros(NV**3, np.int32)
-        np.add.at(occ, vox(bright), 1)
-        thresh_occ = max(4, np.percentile(occ[occ>0], 70))
+        np.add.at(occ, vox(pts_all), 1)
+        occ_nz = occ[occ > 0]
+        med_occ = float(np.median(occ_nz))
+        thresh_occ = max(50.0, 12.0 * med_occ,
+                         float(np.percentile(occ_nz, 98)))
         ballvox = occ >= thresh_occ
+        print(f"ball detect: median occ {med_occ:.0f}, thresh "
+              f"{thresh_occ:.0f}, {int(ballvox.sum())} of "
+              f"{len(occ_nz)} occupied voxels flagged")
         # dilate by one voxel in each axis
         bv = ballvox.reshape(NV,NV,NV)
         for ax in range(3):

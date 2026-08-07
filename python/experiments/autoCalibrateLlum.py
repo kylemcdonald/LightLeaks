@@ -503,8 +503,13 @@ def main():
         rows_s = np.where(solved)[0]
         best_slot = np.argmin(cand_err[rows_s], axis=1)
         conf_all[rows_s] = cand_conf[rows_s, best_slot]
-        hi_conf = np.percentile(conf_all[rows_s], 80)
-        bright = dense_xyz[solved & (conf_all >= hi_conf)]
+        # glint signature is geometric, not photometric: a mirror ball
+        # compresses the projector's entire image into a few voxels
+        # (thousands of points) while a wall sheet crosses a voxel with
+        # tens - so threshold occupancy of ALL solved points at an
+        # extreme-outlier level (>=p98 of occupied voxels AND >=12x
+        # median occupancy). a confidence-based "bright" set stops
+        # working the moment the decoder makes walls confident too.
         lo_b = np.percentile(pts_all, 1, 0)
         hi_b = np.percentile(pts_all, 99, 0)
         NV = 48
@@ -513,9 +518,15 @@ def main():
             v = np.clip(((p - lo_b) / span_b * NV).astype(int), 0, NV-1)
             return v[:,0]*NV*NV + v[:,1]*NV + v[:,2]
         occ = np.zeros(NV**3, np.int32)
-        np.add.at(occ, vox(bright), 1)
-        thresh_occ = max(4, np.percentile(occ[occ>0], 70))
+        np.add.at(occ, vox(pts_all), 1)
+        occ_nz = occ[occ > 0]
+        med_occ = float(np.median(occ_nz))
+        thresh_occ = max(50.0, 12.0 * med_occ,
+                         float(np.percentile(occ_nz, 98)))
         ballvox = occ >= thresh_occ
+        print(f"ball detect: median occ {med_occ:.0f}, thresh "
+              f"{thresh_occ:.0f}, {int(ballvox.sum())} of "
+              f"{len(occ_nz)} occupied voxels flagged")
         # dilate by one voxel in each axis
         bv = ballvox.reshape(NV,NV,NV)
         for ax in range(3):
