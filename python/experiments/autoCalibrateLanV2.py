@@ -283,7 +283,17 @@ def main():
         # across modes would invent a point between them. cluster the
         # candidates around the lowest-error one and fuse only those.
         safe_err = np.where(np.isfinite(cand_err), cand_err, np.inf)
-        best = np.argmin(safe_err, axis=1)
+        # mode choice: HIGHEST-CONFIDENCE candidate, not lowest error.
+        # a projector pixel's light exists at several places (direct
+        # spill, primary bounce landing, secondary bounces); the map
+        # must answer with the brightest = primary landing, and decode
+        # confidence is the brightness proxy. triangulation error is a
+        # gate (candidates are already err<5px), not a preference -
+        # a well-triangulated secondary bounce is still wrong art.
+        # (measured: picking by error put 73% of verified pixels on a
+        # real surface but a DIFFERENT one than production used.)
+        conf_m = np.where(np.isfinite(safe_err), cand_conf, -1.0)
+        best = np.argmax(conf_m, axis=1)
         rows = np.arange(npix)
         bxyz = cand[rows, best]
         finite_b = np.isfinite(bxyz[:, 0])
@@ -581,7 +591,10 @@ def main():
             inb[okf] = in_ball(flat[okf])
             inb = inb.reshape(be.shape)
             be2 = np.where(inb, np.inf, be)
-            newbest = np.argmin(be2, axis=1)
+            # same rule as fusion: among non-ball candidates take the
+            # highest-confidence one (primary landing), not lowest-err
+            bcf = np.where(np.isfinite(be2), cand_conf[chunk], -1.0)
+            newbest = np.argmax(bcf, axis=1)
             has = np.isfinite(be2[np.arange(len(chunk)), newbest])
             cur_in = in_ball(dense_xyz[chunk])
             switch = cur_in & has
@@ -716,12 +729,34 @@ def main():
     print(f"comparison pixels: ours {solved.sum()}, gt {gt_ok.sum()}, "
           f"both {both.sum()}")
 
-    # anchor the GT alignment on verified triangulations only -
-    # mesh-filled and loose pixels would bias the similarity fit
-    anchor = both & (source == 2) & (dense_err < 1.0)
-    if anchor.sum() < 500:
-        anchor = both & (source == 2)
-    M = umeyama_alignment(dense_xyz[anchor], gt_pts[anchor])
+    # gauge the GT alignment on CAMERA CENTERS, not map pixels: pixel
+    # correspondences carry mode-selection differences (bounce choice)
+    # that bias a similarity fit, while recovered camera centers match
+    # the camamok poses to <1% of the room. fall back to verified
+    # pixels when too few cameras have a sane GT pose fit.
+    M = None
+    try:
+        gtp = np.load(os.path.join(HERE, 'lan_gt_poses.npy'),
+                      allow_pickle=True).item()
+        Cs, Gs = [], []
+        for v in views:
+            if not v.registered or v.name not in gtp:
+                continue
+            f_gt, k1_gt, c_gt, fitq = gtp[v.name]
+            if fitq > 100:
+                continue
+            Cs.append(v.camera_center())
+            Gs.append(c_gt)
+        if len(Cs) >= 4:
+            M = umeyama_alignment(np.array(Cs), np.array(Gs))
+            print(f"alignment gauged on {len(Cs)} camera centers")
+    except Exception as e:
+        print("camera-center alignment failed:", e)
+    if M is None:
+        anchor = both & (source == 2) & (dense_err < 1.0)
+        if anchor.sum() < 500:
+            anchor = both & (source == 2)
+        M = umeyama_alignment(dense_xyz[anchor], gt_pts[anchor])
     aligned = apply_transform(M, dense_xyz[both])
     err = np.linalg.norm(aligned - gt_pts[both], axis=1)
     gt_extent = np.percentile(gt_pts[both], 98, 0) - \
