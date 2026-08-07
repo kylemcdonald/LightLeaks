@@ -313,7 +313,13 @@ def main():
         # (measured: picking by error put 73% of verified pixels on a
         # real surface but a DIFFERENT one than production used.)
         conf_m = np.where(np.isfinite(safe_err), cand_conf, -1.0)
-        best = np.argmax(conf_m, axis=1)
+        if os.environ.get('ABL_FUSION') == 'err':
+            # ablation: pick lowest triangulation error instead of
+            # highest decode confidence (the "wrong art" baseline)
+            best = np.argmin(np.where(np.isfinite(safe_err),
+                                      safe_err, np.inf), axis=1)
+        else:
+            best = np.argmax(conf_m, axis=1)
         rows = np.arange(npix)
         bxyz = cand[rows, best]
         finite_b = np.isfinite(bxyz[:, 0])
@@ -562,7 +568,7 @@ def main():
     # light LAND" - never the mirror-ball surface. glints are the
     # brightest decodes and cluster into one compact volume (the rig);
     # detect that volume, then per pixel prefer candidates outside it.
-    MAP_BALLS = False
+    MAP_BALLS = os.environ.get('ABL_BALL') == 'off'
     if not MAP_BALLS and solved.sum() > 2000:
         cand = densify.cand
         cand_err = densify.cand_err
@@ -885,7 +891,7 @@ def main():
     print(f"median error = {rel*100:.2f}% of room diagonal")
 
     np.savez_compressed(
-        os.path.join(HERE, 'lan', 'result_v2.npz'),
+        os.path.join(HERE, 'lan', os.environ.get('ABL_OUT', 'result_v2.npz')),
         dense_xyz=dense_xyz.reshape(dh, dw_, 3),
         dense_err=dense_err.reshape(dh, dw_),
         gt=gt_pts.reshape(dh, dw_, 3),

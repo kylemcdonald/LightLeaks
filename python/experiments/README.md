@@ -142,3 +142,43 @@ cloud into a Poisson mesh (`.ply`, loadable in MeshLab/Blender):
 outlier removal -> normal estimation -> Poisson -> density trim.
 This closes the README's old wish: the 3d model is now an *output* of
 scanning instead of a hand-measured input.
+
+## Ablations — isolating what each change did
+
+Each pipeline change can be toggled alone, everything else fixed, so its
+effect is measurable on its own. Env toggles on `autoCalibrateLanV2.py`:
+
+| Env | Values | Isolates |
+| --- | --- | --- |
+| `ABL_FUSION` | `err` | fuse by lowest triangulation error instead of highest decode confidence |
+| `ABL_BALL` | `off` | leave mirror surfaces in the map (skip the occupancy-outlier mask) |
+| `ABL_OUT` | filename | write the result somewhere other than `result_v2.npz` |
+
+```bash
+ABL_FUSION=err ABL_OUT=result_ablfus.npz  python3 autoCalibrateLanV2.py
+ABL_BALL=off   ABL_OUT=result_ablball.npz python3 autoCalibrateLanV2.py
+```
+
+Decode-side ablations run standalone on one scan:
+
+- `ablProjectorMaps.py` — projector map under each decode/sampling toggle
+  (raw / dual-margin / sign-guarded, drop-finest 0 vs 2, bin-splat off vs on),
+  cropped to one ceiling-ball cluster and colored by the camera column each
+  projector pixel maps to.
+- `ablBinSplat.py` — solver-grid coverage with and without bin-splatting.
+- `ablDropFinest.py` — confident-pixel share with the finest levels voting or not.
+- `ablXyzCrop.py fuse|ball` — xyz-map crops for the dense ablations.
+- `ablFusionDiff.py` — highlights the pixels the fusion rule re-assigns.
+- `ablMirrorCoherence.py` — neighbor-landing distance on a matched pixel set.
+- `makeViewerData.py` — rebuilds the interactive viewer's point-cloud blob.
+
+### Measured results (LightsAllNight, scan-1831 / saved v2 poses)
+
+| Change | Before | After |
+| --- | --- | --- |
+| sign-guarded bit vote | 47.3 px | 10.6 px (raw-only reference 4.2 px) |
+| drop 2 finest levels | 7.3% confident | 17.2% confident |
+| bin-splat | 0.00% grid coverage | 31.88% |
+| ball mask (occupancy) | 219,742 px mapped | 172,926 px (46,816 were mirror surface) |
+| shared intrinsics | 40–500 cm | 0.7 cm |
+| parallax init pair | ±60% focal | <5% |
