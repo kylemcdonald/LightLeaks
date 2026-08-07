@@ -69,14 +69,14 @@ def main():
 
     scans = sorted(d for d in os.listdir(ROOT)
                    if os.path.exists(
-                       os.path.join(ROOT, d, 'proMapV2.npy')))
+                       os.path.join(ROOT, d, 'proMapC.npy')))
     n_scans = len(scans)
     print(f"{n_scans} scans, virtual projector {vw}x{vh}")
 
     scan_data = {}
     for scan in scans:
-        pm = np.load(os.path.join(ROOT, scan, 'proMapV2.npy'))
-        conf = np.load(os.path.join(ROOT, scan, 'proConfV2.npy'))
+        pm = np.load(os.path.join(ROOT, scan, 'proMapC.npy'))
+        conf = np.load(os.path.join(ROOT, scan, 'proConfC.npy'))
         scan_data[scan] = (pm[..., 0].astype(np.float64),
                            pm[..., 1].astype(np.float64), conf)
 
@@ -675,8 +675,8 @@ def main():
                            max(1, int(rr / SC)), 255, -1)
             mask_full = cv2.resize(mimg, (CAM_W, CAM_H),
                                    interpolation=cv2.INTER_NEAREST) > 0
-            code = np.load(os.path.join(ROOT, scan, 'camCodeV2.npy'))
-            cconf = np.load(os.path.join(ROOT, scan, 'camConfV2.npy'))
+            code = np.load(os.path.join(ROOT, scan, 'camCodeC.npy'))
+            cconf = np.load(os.path.join(ROOT, scan, 'camConfC.npy'))
             n_masked_cam = int((mask_full & (cconf > CONF_THRESH)).sum())
             cconf = np.where(mask_full, 0.0, cconf).astype(np.float32)
             pro_cam, pro_conf = build_promap(
