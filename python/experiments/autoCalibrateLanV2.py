@@ -576,7 +576,16 @@ def main():
     # light LAND" - never the mirror-ball surface. glints are the
     # brightest decodes and cluster into one compact volume (the rig);
     # detect that volume, then per pixel prefer candidates outside it.
-    MAP_BALLS = os.environ.get('ABL_BALL') == 'off'
+    # Automatic ball detection is OFF by default: measured on
+    # LightsAllNight it removed 117k pixels (200,077 -> 83,001), cut mean
+    # face coverage from 40.1% to 24.2%, and made accuracy WORSE (2.28% ->
+    # 2.86%). Every automatic version of it has misfired in a different
+    # way. Keeping mirror surfaces out of the map encodes artistic intent,
+    # not a measurement, so it belongs in a human-supplied mask -- and
+    # with a reconstruction in hand that is one 3D volume marked once,
+    # projected into every camera, instead of a mask painted per scan.
+    # Set ABL_BALL=auto to re-enable the detector.
+    MAP_BALLS = os.environ.get('ABL_BALL') != 'auto'
     if not MAP_BALLS and solved.sum() > 2000:
         cand = densify.cand
         cand_err = densify.cand_err
