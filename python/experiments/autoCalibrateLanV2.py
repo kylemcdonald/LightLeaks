@@ -31,10 +31,13 @@ CAM_W, CAM_H = 5184, 3456
 GRID_STEP = 12
 CONF_THRESH = float(os.environ.get('ABL_CONF', '0.05'))
 # decode products to consume: margin-only maps, or coherence-weighted
-PMAP = ('proMapCoh.npy' if os.environ.get('ABL_PMAP') == 'coh'
-        else 'proMapC.npy')
-PCONF = ('proConfCoh.npy' if os.environ.get('ABL_PMAP') == 'coh'
-         else 'proConfC.npy')
+_PM = {'coh': ('proMapCoh.npy', 'proConfCoh.npy'),
+       'grad': ('proMapGrad.npy', 'proConfGrad.npy')}
+PMAP, PCONF = _PM.get(os.environ.get('ABL_PMAP', ''),
+                      ('proMapC.npy', 'proConfC.npy'))
+# NOTE: the F-matrix cache and the pose checkpoint both freeze which
+# cameras register. Changing anything upstream of registration (decoder,
+# CONF_THRESH, gating) requires deleting BOTH or the change is a no-op.
 # v2 codes are quantized to 4-projector-px bins (drop_finest=2); the
 # resulting camera-space jitter measured ~3.6px median against the 2019
 # sub-pixel decode, so every geometric gate is opened up accordingly
