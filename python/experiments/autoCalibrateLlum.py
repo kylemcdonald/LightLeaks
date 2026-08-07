@@ -229,6 +229,7 @@ def main():
         a reprojection-error gate is the correct verification."""
         cand = np.full((npix, KCAND, 3), np.nan, np.float32)
         cand_err = np.full((npix, KCAND), np.inf, np.float32)
+        cand_conf = np.zeros((npix, KCAND), np.float32)
         cand_n = np.zeros(npix, np.int8)
         reg = [i for i in range(n_scans) if view_objs[i].registered]
         plist = list(itertools.combinations(reg, 2))
@@ -253,6 +254,8 @@ def main():
             slot = cand_n[gidx]
             cand[gidx, slot] = X[keep]
             cand_err[gidx, slot] = err[keep]
+            cand_conf[gidx, slot] = np.maximum(dcf[i][gidx],
+                                               dcf[j][gidx])
             cand_n[gidx] += 1
         # mode-aware fusion: a projector pixel can have TWO real
         # answers (ball glint and reflected-leak landing spot); median
@@ -275,6 +278,9 @@ def main():
             xyz = np.nanmedian(cand_near, axis=1)
         err_out = np.where(cand_n > 0, safe_err[rows, best], np.inf)
         xyz[cand_n == 0] = 0
+        densify.cand = cand
+        densify.cand_err = safe_err
+        densify.cand_conf = cand_conf
         return xyz, err_out, cand_n
 
     dense_xyz, dense_err, nviews_px = densify(views)
@@ -340,93 +346,209 @@ def main():
             print(f"  re-densified: {solved.sum()}/{npix} pixels")
             break
 
-    # --- far-pair island: cameras that share content only with each
-    # other (both aimed at the far wall of the 360 sweep) reconstruct
-    # as a two-view island, then merge into the main frame via bridge
-    # cameras that observe the island's wall pixels
-    un = [i for i, v in enumerate(views) if not v.registered]
-    if len(un) >= 2:
-        best = max(itertools.combinations(un, 2),
-                   key=lambda ij: (dok[ij[0]] & dok[ij[1]]).sum())
-        i2, j2 = best
-        mutual = np.where(dok[i2] & dok[j2])[0]
-        print(f"far island: {views[i2].name}+{views[j2].name}, "
-              f"{len(mutual)} mutual pixels")
-        if len(mutual) > 2000:
-            va, vb = views[i2], views[j2]
-            na = va.undistort_normalize(duv[i2][mutual])
-            nb = vb.undistort_normalize(duv[j2][mutual])
+    # --- full-resolution rescue: the sampling grid starves weakly
+    # connected scans of correspondences (16x fewer than exist). for
+    # each leftover camera, take EVERY projector pixel it shares with
+    # its best-connected registered partner, survive the glint-outlier
+    # rate with a long essential-matrix RANSAC, and resolve the scale
+    # through projector-pixel identity: pixels the new pair
+    # triangulates that already exist in the dense map are direct
+    # 3d-3d anchors.
+    full_xy = {}
+    for s_idx, scan in enumerate(scans):
+        cam_x, cam_y, conf = scan_data[scan]
+        full_xy[s_idx] = (cam_x, cam_y, conf > CONF_THRESH)
+
+    dense_grid_solved = solved.reshape(dh, dw_)
+    dense_grid_xyz = dense_xyz.reshape(dh, dw_, 3)
+
+    changed = True
+    while changed:
+        changed = False
+        unreg_now = [i for i, v in enumerate(views) if not v.registered]
+        reg_now = [i for i, v in enumerate(views) if v.registered]
+        for k in unreg_now:
+            # best partner by full-resolution mutual count
+            cnts = [(int((full_xy[k][2] & full_xy[r][2]).sum()), r)
+                    for r in reg_now]
+            cnts.sort(reverse=True)
+            if not cnts or cnts[0][0] < 5000:
+                continue
+            n_mut, r = cnts[0]
+            vk, vr = views[k], views[r]
+            ys, xs = np.where(full_xy[k][2] & full_xy[r][2])
+            uv_k = np.stack([full_xy[k][0][ys, xs],
+                             full_xy[k][1][ys, xs]], 1)
+            uv_r = np.stack([full_xy[r][0][ys, xs],
+                             full_xy[r][1][ys, xs]], 1)
+            nk = vk.undistort_normalize(uv_k)
+            nr = vr.undistort_normalize(uv_r)
             E, inlE = cv2.findEssentialMat(
-                na, nb, focal=1.0, pp=(0, 0), method=cv2.RANSAC,
-                prob=0.9999, threshold=2.5 / va.f)
-            if E is not None and inlE is not None and \
-                    inlE.sum() > 300:
-                _, Ri, ti, _ = cv2.recoverPose(
-                    E, na, nb, focal=1.0, pp=(0, 0), mask=inlE.copy())
-                va.rvec = np.zeros(3)
-                va.tvec = np.zeros(3)
-                vb.rvec = cv2.Rodrigues(Ri)[0].ravel()
-                vb.tvec = ti.ravel()
-                Xi, erri = triangulate_dense_pair(
-                    va, vb, duv[i2][mutual], duv[j2][mutual])
-                goodX = erri < 3.0
-                print(f"  island E-init: {int(inlE.sum())} inliers, "
-                      f"{int(goodX.sum())} triangulated")
-                # bridge registered cameras into the island frame
-                bridges = []
-                for k in [i for i, v in enumerate(views)
-                          if v.registered and i not in (i2, j2)]:
-                    m = dok[k][mutual] & goodX
-                    if m.sum() < 40:
-                        continue
-                    vk = views[k]
-                    try:
-                        okb, rvb, tvb, inlb = cv2.solvePnPRansac(
-                            Xi[m], duv[k][mutual][m], vk.K,
-                            np.array([vk.k1, 0, 0, 0.0]),
-                            reprojectionError=12.0,
-                            iterationsCount=1000,
-                            flags=cv2.SOLVEPNP_SQPNP)
-                    except cv2.error:
-                        continue
-                    if not okb or inlb is None or len(inlb) < 40:
-                        continue
-                    R2b = cv2.Rodrigues(rvb)[0]
-                    bridges.append((vk.R, vk.camera_center(), R2b,
-                                    (-R2b.T @ tvb).ravel()))
-                    print(f"  bridge {vk.name}: {len(inlb)} inliers")
-                if len(bridges) >= 2:
-                    Rs = [b[0].T @ b[2] for b in bridges]
-                    U, _, Vt = np.linalg.svd(np.sum(Rs, axis=0))
-                    R12 = (U @ Vt).T
-                    ratios = [np.linalg.norm(a[1] - b[1]) /
-                              max(np.linalg.norm(a[3] - b[3]), 1e-12)
-                              for a, b in
-                              itertools.combinations(bridges, 2)]
-                    s12 = float(np.median(ratios))
-                    T12 = np.mean([b[1] - s12 * R12 @ b[3]
-                                   for b in bridges], 0)
-                    # island camera poses re-expressed in main frame:
-                    # x1 = s R12 x2 + T  =>  R_m = R2 R12^T,
-                    # t_m = s t2 - R_m T
-                    for vv in (va, vb):
-                        R2v = vv.R
-                        t2v = vv.tvec
-                        Rm = R2v @ R12.T
-                        vv.rvec = cv2.Rodrigues(Rm)[0].ravel()
-                        vv.tvec = s12 * t2v - Rm @ T12
-                        vv.registered = True
-                    print(f"  merged island via {len(bridges)} bridges "
-                          f"(scale {s12:.3f})")
-                else:
-                    print(f"  only {len(bridges)} bridges - island "
-                          f"not merged")
+                nr, nk, focal=1.0, pp=(0, 0), method=cv2.RANSAC,
+                prob=0.99999, threshold=2.0 / vr.f,
+                maxIters=500000)
+            n_e = 0 if inlE is None else int(inlE.sum())
+            print(f"rescue {vk.name} via {vr.name}: {n_mut} mutual, "
+                  f"{n_e} E-inliers")
+            if E is None or n_e < 400:
+                continue
+            _, Rrel, tunit, _ = cv2.recoverPose(
+                E, nr, nk, focal=1.0, pp=(0, 0), mask=inlE.copy())
+            # triangulate in r's camera frame (r = identity)
+            P0 = np.hstack([np.eye(3), np.zeros((3, 1))])
+            P1 = np.hstack([Rrel, tunit.reshape(3, 1)])
+            m = inlE.ravel().astype(bool)
+            Xh = cv2.triangulatePoints(P0, P1,
+                                       nr[m].T.astype(np.float64),
+                                       nk[m].T.astype(np.float64))
+            Xl = (Xh[:3] / Xh[3]).T   # r-camera frame, unit baseline
+            okz = (Xl[:, 2] > 0)
+            # scale: the one remaining unknown. the island points
+            # X(s) = A*s + B are observed by OTHER registered cameras
+            # too - each observation constrains s via reprojection, no
+            # pixel-grid coincidence needed. 1-d robust search.
+            in_y, in_x = ys[m][okz], xs[m][okz]
+            Xl_ok = Xl[okz]
+            A = Xl_ok @ vr.R
+            Bv = -(vr.tvec @ vr.R)
+            cons = []
+            for c in reg_now:
+                if c == r:
+                    continue
+                vc2 = views[c]
+                mc = full_xy[c][2][in_y, in_x]
+                if mc.sum() < 30:
+                    continue
+                uvc = np.stack([full_xy[c][0][in_y, in_x][mc],
+                                full_xy[c][1][in_y, in_x][mc]], 1)
+                cons.append((vc2, A[mc], uvc))
+            n_cons = sum(len(u) for _, _, u in cons)
+            if n_cons < 50:
+                print(f"  only {n_cons} scale constraints - skip")
+                continue
+            svals = np.logspace(-3, 1, 500)
+            meds = np.empty(len(svals))
+            for si, s_c in enumerate(svals):
+                errs = []
+                for vc2, Ac, uvc in cons:
+                    uv_p, z = vc2.project(Ac * s_c + Bv)
+                    e = np.linalg.norm(uv_p - uvc, axis=1)
+                    e[z <= 0] = 1e9
+                    errs.append(e)
+                meds[si] = np.median(np.concatenate(errs))
+            bi_ = int(np.argmin(meds))
+            s_scale = float(svals[bi_])
+            best_med = float(meds[bi_])
+            print(f"  scale {s_scale:.4f} from {n_cons} reprojection "
+                  f"constraints, median err {best_med:.1f}px")
+            if best_med > 12.0 or bi_ in (0, len(svals) - 1):
+                print("  scale unreliable - skip")
+                continue
+            # k's pose in main frame
+            Rk = Rrel @ vr.R
+            tk = s_scale * tunit.ravel() + Rrel @ vr.tvec
+            # world points of all triangulated inliers for refinement
+            Xw = (s_scale * Xl[okz]) @ vr.R - (vr.R.T @ vr.tvec) @ \
+                np.eye(3)
+            Xw = (s_scale * Xl[okz] - vr.tvec) @ vr.R
+            objs = Xw.astype(np.float32)
+            imgs = uv_k[m][okz].astype(np.float32)
+            K = vk.K.copy()
+            flags = (cv2.CALIB_USE_INTRINSIC_GUESS |
+                     cv2.CALIB_FIX_ASPECT_RATIO |
+                     cv2.CALIB_FIX_PRINCIPAL_POINT |
+                     cv2.CALIB_ZERO_TANGENT_DIST |
+                     cv2.CALIB_FIX_K2 | cv2.CALIB_FIX_K3)
+            try:
+                rerr, K, distc, rvs, tvs = cv2.calibrateCamera(
+                    [objs], [imgs], (vk.width, vk.height), K, None,
+                    flags=flags)
+            except cv2.error as e:
+                print("  refine failed:", str(e)[:60])
+                continue
+            if rerr > 8.0:
+                print(f"  refine {rerr:.1f}px - rejected")
+                continue
+            vk.f, vk.k1 = float(K[0, 0]), float(distc[0][0])
+            vk.rvec = rvs[0].ravel()
+            vk.tvec = tvs[0].ravel()
+            vk.registered = True
+            changed = True
+            print(f"  REGISTERED {vk.name}: refine {rerr:.2f}px, "
+                  f"f={vk.f:.0f}, k1={vk.k1:+.3f}")
+            dense_xyz, dense_err, nviews_px = densify(views)
+            solved = np.isfinite(dense_err)
+            dense_grid_solved = solved.reshape(dh, dw_)
+            dense_grid_xyz = dense_xyz.reshape(dh, dw_, 3)
+            print(f"  re-densified: {solved.sum()}/{npix} pixels")
+            break
 
     # final dense pass with every registered camera
     dense_xyz, dense_err, nviews_px = densify(views)
     solved = np.isfinite(dense_err)
     print(f"dense: {solved.sum()}/{npix} pixels "
           f"(multi-pair: {(nviews_px >= 2).sum()})")
+
+    # --- ball exclusion: the map answers "where does this pixel's
+    # light LAND" - never the mirror-ball surface. glints are the
+    # brightest decodes and cluster into one compact volume (the rig);
+    # detect that volume, then per pixel prefer candidates outside it.
+    MAP_BALLS = False
+    if not MAP_BALLS and solved.sum() > 2000:
+        cand = densify.cand
+        cand_err = densify.cand_err
+        cand_conf = densify.cand_conf
+        pts_all = dense_xyz[solved]
+        conf_all = np.zeros(npix, np.float32)
+        rows_s = np.where(solved)[0]
+        best_slot = np.argmin(cand_err[rows_s], axis=1)
+        conf_all[rows_s] = cand_conf[rows_s, best_slot]
+        hi_conf = np.percentile(conf_all[rows_s], 80)
+        bright = dense_xyz[solved & (conf_all >= hi_conf)]
+        lo_b = np.percentile(pts_all, 1, 0)
+        hi_b = np.percentile(pts_all, 99, 0)
+        NV = 48
+        span_b = np.maximum(hi_b - lo_b, 1e-9)
+        def vox(p):
+            v = np.clip(((p - lo_b) / span_b * NV).astype(int), 0, NV-1)
+            return v[:,0]*NV*NV + v[:,1]*NV + v[:,2]
+        occ = np.zeros(NV**3, np.int32)
+        np.add.at(occ, vox(bright), 1)
+        thresh_occ = max(4, np.percentile(occ[occ>0], 70))
+        ballvox = occ >= thresh_occ
+        # dilate by one voxel in each axis
+        bv = ballvox.reshape(NV,NV,NV)
+        for ax in range(3):
+            bv = bv | np.roll(bv,1,ax) | np.roll(bv,-1,ax)
+        ballvox = bv.ravel()
+        def in_ball(p):
+            return ballvox[vox(p)]
+        n_ball_px = 0
+        # per solved pixel: if best candidate is in the ball volume,
+        # switch to the best NON-ball candidate; if none, unmap.
+        for chunk in np.array_split(rows_s, 8):
+            bc = cand[chunk]           # (c,K,3)
+            be = cand_err[chunk]       # (c,K)
+            flat = bc.reshape(-1,3)
+            okf = np.isfinite(flat[:,0])
+            inb = np.zeros(len(flat), bool)
+            inb[okf] = in_ball(flat[okf])
+            inb = inb.reshape(be.shape)
+            be2 = np.where(inb, np.inf, be)
+            newbest = np.argmin(be2, axis=1)
+            has = np.isfinite(be2[np.arange(len(chunk)), newbest])
+            cur_in = in_ball(dense_xyz[chunk])
+            switch = cur_in & has
+            unmap = cur_in & ~has
+            dense_xyz[chunk[switch]] = bc[switch, newbest[switch]]
+            dense_err[chunk[switch]] = be2[switch, newbest[switch]]
+            dense_err[chunk[unmap]] = np.inf
+            n_ball_px += int(cur_in.sum())
+        solved = np.isfinite(dense_err)
+        print(f"ball exclusion: {int(ballvox.sum())} voxels, "
+              f"{n_ball_px} glint-first pixels re-decided, "
+              f"{solved.sum()}/{npix} still mapped")
+        globals()['BALLVOX'] = (ballvox, lo_b, span_b, NV)
 
     # --- edge-aware outlier cleanup in projector space: a solved pixel
     # far from the median of its solved neighbors is replaced (lone
@@ -505,6 +627,15 @@ def main():
                 hits = scene.cast_rays(o3d.core.Tensor(rays))
                 t_hit = hits['t_hit'].numpy()
                 okh = np.isfinite(t_hit) & (t_hit < 2.0 * ext)
+                if 'BALLVOX' in globals():
+                    bvx, lo_b, span_b, NV = globals()['BALLVOX']
+                    hits_p = origin + dirs[okh] * \
+                        t_hit[okh][:, None]
+                    vv = np.clip(((hits_p - lo_b) / span_b * NV
+                                  ).astype(int), 0, NV-1)
+                    inb2 = bvx[vv[:,0]*NV*NV + vv[:,1]*NV + vv[:,2]]
+                    tmp = np.where(okh)[0][inb2]
+                    okh[tmp] = False
                 idx = todo[okh]
                 dense_xyz[idx] = origin + dirs[okh] * t_hit[okh][:, None]
                 dense_err[idx] = 2.9

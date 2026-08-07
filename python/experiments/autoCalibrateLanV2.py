@@ -30,7 +30,10 @@ FLOAT = Imath.PixelType(Imath.PixelType.FLOAT)
 CAM_W, CAM_H = 5184, 3456
 GRID_STEP = 12
 CONF_THRESH = 0.05
-SAMPSON_THRESH = 3.0
+# v2 codes are quantized to 4-projector-px bins (drop_finest=2); the
+# resulting camera-space jitter measured ~3.6px median against the 2019
+# sub-pixel decode, so every geometric gate is opened up accordingly
+SAMPSON_THRESH = 6.0
 
 
 def read_exr(fn, channels):
@@ -267,7 +270,7 @@ def main():
             good = np.where(sel)[0]
             X, err = triangulate_dense_pair(
                 view_objs[i], view_objs[j], duv[i][good], duv[j][good])
-            keep = err < 3.0
+            keep = err < 5.0
             gidx = good[keep]
             slot = cand_n[gidx]
             cand[gidx, slot] = X[keep]
@@ -409,7 +412,7 @@ def main():
             nr = vr.undistort_normalize(uv_r)
             E, inlE = cv2.findEssentialMat(
                 nr, nk, focal=1.0, pp=(0, 0), method=cv2.RANSAC,
-                prob=0.99999, threshold=2.0 / vr.f,
+                prob=0.99999, threshold=3.5 / vr.f,
                 maxIters=200000)
             n_e = 0 if inlE is None else int(inlE.sum())
             print(f"rescue {vk.name} via {vr.name}: {n_mut} mutual, "
@@ -465,7 +468,7 @@ def main():
             best_med = float(meds[bi_])
             print(f"  scale {s_scale:.4f} from {n_cons} reprojection "
                   f"constraints, median err {best_med:.1f}px")
-            if best_med > 12.0 or bi_ in (0, len(svals) - 1):
+            if best_med > 15.0 or bi_ in (0, len(svals) - 1):
                 print("  scale unreliable - skip")
                 continue
             # k's pose in main frame

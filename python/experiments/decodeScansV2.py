@@ -96,21 +96,38 @@ def subpixel_refine(cx, cy, conf, conf_floor):
     return out[0].astype(np.float32), out[1].astype(np.float32)
 
 
-def build_promap(cx, cy, conf, pw, ph):
-    """Projector-space winner map with float camera coords."""
-    xi = np.clip(np.round(cx).astype(np.int32), 0, pw - 1)
-    yi = np.clip(np.round(cy).astype(np.int32), 0, ph - 1)
-    flat = yi.ravel() * pw + xi.ravel()
+def build_promap(cx, cy, conf, pw, ph, bin_px=4):
+    """Projector-space winner map with float camera coords.
+
+    Codes are quantized to bin_px bins (drop_finest), so deciding
+    winners at full projector resolution leaves the map empty between
+    bin centers - downstream grid samples (step 4/12) then read zeros.
+    Decide the winner per BIN, then splat it across the whole bin."""
+    bw, bh = pw // bin_px, ph // bin_px
+    xi = np.clip((cx / bin_px).astype(np.int32), 0, bw - 1)
+    yi = np.clip((cy / bin_px).astype(np.int32), 0, bh - 1)
+    flat = yi.ravel() * bw + xi.ravel()
     order = np.argsort(conf.ravel())
     h, w = conf.shape
     ys, xs = np.mgrid[0:h, 0:w]
-    pro_cam = np.zeros((ph * pw, 2), np.float32)
-    pro_conf = np.zeros(ph * pw, np.float32)
+    pro_cam = np.zeros((bh * bw, 2), np.float32)
+    pro_conf = np.zeros(bh * bw, np.float32)
     f_sorted = flat[order]
     pro_cam[f_sorted, 0] = xs.ravel()[order]
     pro_cam[f_sorted, 1] = ys.ravel()[order]
     pro_conf[f_sorted] = conf.ravel()[order]
-    return (pro_cam.reshape(ph, pw, 2), pro_conf.reshape(ph, pw))
+    pro_cam = pro_cam.reshape(bh, bw, 2)
+    pro_conf = pro_conf.reshape(bh, bw)
+    pro_cam = np.repeat(np.repeat(pro_cam, bin_px, 0), bin_px, 1)
+    pro_conf = np.repeat(np.repeat(pro_conf, bin_px, 0), bin_px, 1)
+    # pad any remainder (pw/ph not divisible by bin_px) with zeros
+    if pro_cam.shape[0] != ph or pro_cam.shape[1] != pw:
+        full_cam = np.zeros((ph, pw, 2), np.float32)
+        full_conf = np.zeros((ph, pw), np.float32)
+        full_cam[:pro_cam.shape[0], :pro_cam.shape[1]] = pro_cam[:ph, :pw]
+        full_conf[:pro_conf.shape[0], :pro_conf.shape[1]] = pro_conf[:ph, :pw]
+        return full_cam, full_conf
+    return pro_cam, pro_conf
 
 
 def write_arr(fn, arr):
