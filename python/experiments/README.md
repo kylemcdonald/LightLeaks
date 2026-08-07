@@ -83,16 +83,24 @@ archive captured with a FIXED zoom (ground-truth focals 2362-2458), so
 the shared-intrinsics mode applies. Both capture sessions reconstruct
 excellently in isolation - 0.61 px and 0.64 px rms, shared focal
 recovered at 2479 / 2415 vs ~2400 ground truth - but they cannot be
-merged: cross-session correspondences are only ~16% epipolar-consistent
-(vs 40% within-session), the dense maps share only 102 projector
-pixels, and bridge-camera PnP finds zero consistent points. Conclusion:
-the mirror-ball pile was physically rearranged between the 6pm and
-11pm sessions. The runner includes the island-split reconstruction and
-a bridge-camera merge that applies whenever the scene actually stayed
-still.
+cross-linked (cross-session correspondences are only ~16%
+epipolar-consistent, and bridge-camera PnP finds zero consistent
+points).
 
-This adds a fifth capture rule: **don't move the balls (or projectors)
-mid-capture - if the scene changes, rescan everything after.**
+Placing each island into the ground-truth frame via its cameras' GT
+poses resolves what happened: the 18xx-session island matches the
+production calibration at **median 0.7% of scene diagonal** (camera
+centers align to 0.003), while the 23xx-session island does not match
+it at all (center residual 0.073) - consistent with how the install
+was actually calibrated: scans were manually curated and some were
+disabled (see the archive's `_unused/` folder), and the final map was
+effectively built from the accepted session. Against that accepted
+session, the model-free reconstruction is the closest ground-truth
+match of all three archives.
+
+The runner includes the island-split reconstruction and a
+bridge-camera merge that applies whenever all sessions actually share
+one calibration epoch.
 
 ## Mesh reconstruction (`buildMesh.py` / `renderMesh.py`)
 
