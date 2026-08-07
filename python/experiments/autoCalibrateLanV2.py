@@ -193,29 +193,49 @@ def main():
         v.intrinsic_group = 'camera'
         views.append(v)
 
+    # pose checkpoint: registration (reconstruct+completion+rescue) is
+    # deterministic and slow; once a run has produced poses, later
+    # runs iterating on the dense/mask/mesh stages resume from them
+    pose_ckpt = os.path.join(HERE, 'lan', 'poses_v2.npz')
+    RESUME = os.path.exists(pose_ckpt)
+    if RESUME:
+        pk = np.load(pose_ckpt)
+        vp_ck = pk['view_params']
+        nm_ck = [str(n) for n in pk['view_names']]
+        for v in views:
+            i = nm_ck.index(v.name)
+            v.rvec = vp_ck[i, :3].copy()
+            v.tvec = vp_ck[i, 3:6].copy()
+            v.f, v.cx, v.cy, v.k1 = vp_ck[i, 6:10]
+            v.registered = bool(vp_ck[i, 10] > 0.5)
+        print(f"resumed poses from checkpoint: "
+              f"{sum(v.registered for v in views)} registered")
+
     # initial pair restricted to the 18xx session: LAN has two scene
     # epochs and the production map was built from this one
-    counts18 = {}
-    for track in observations:
-        for (a, _, _), (b, _, _) in itertools.combinations(track, 2):
-            if scans[a].startswith('scan-18') and \
-                    scans[b].startswith('scan-18'):
-                counts18[(a, b)] = counts18.get((a, b), 0) + 1
-    cand18 = sorted(counts18, key=counts18.get, reverse=True)[:12]
-    points = valid = None
-    for pair in cand18:
-        try:
-            points, valid = reconstruct(
-                views, observations, verbose=True, ba_stride=3,
-                min_init_parallax_deg=5.0, init_pair=pair)
-            break
-        except RuntimeError as e:
-            print(f"init {scans[pair[0]]}/{scans[pair[1]]} failed: {e}")
-            for v in views:
-                v.registered = False
-    if points is None:
-        raise RuntimeError('no 18xx init pair worked')
-    print(f"reconstruct done in {time.time()-t0:.0f}s")
+    if not RESUME:
+        counts18 = {}
+        for track in observations:
+            for (a, _, _), (b, _, _) in itertools.combinations(track, 2):
+                if scans[a].startswith('scan-18') and \
+                        scans[b].startswith('scan-18'):
+                    counts18[(a, b)] = counts18.get((a, b), 0) + 1
+        cand18 = sorted(counts18, key=counts18.get, reverse=True)[:12]
+        points = valid = None
+        for pair in cand18:
+            try:
+                points, valid = reconstruct(
+                    views, observations, verbose=True, ba_stride=3,
+                    min_init_parallax_deg=5.0, init_pair=pair)
+                break
+            except RuntimeError as e:
+                print(f"init {scans[pair[0]]}/{scans[pair[1]]} failed: "
+                      f"{e}")
+                for v in views:
+                    v.registered = False
+        if points is None:
+            raise RuntimeError('no 18xx init pair worked')
+        print(f"reconstruct done in {time.time()-t0:.0f}s")
     for v in views:
         print(f"  {v.name}: registered={v.registered} f={v.f:.0f} "
               f"pp=({v.cx:.0f},{v.cy:.0f}) k1={v.k1:.3f}")
@@ -328,7 +348,7 @@ def main():
     # first far-side camera) become anchors for the next camera. RANSAC
     # absorbs view-dependent glint anchors; the dense stage's per-pixel
     # 3px reprojection gate self-limits any residual pose error.
-    newly = True
+    newly = not RESUME
     while newly:
         newly = False
         for k in [i for i, v in enumerate(views) if not v.registered]:
@@ -397,7 +417,7 @@ def main():
     dense_grid_solved = solved.reshape(dh, dw_)
     dense_grid_xyz = dense_xyz.reshape(dh, dw_, 3)
 
-    changed = True
+    changed = not RESUME
     while changed:
         changed = False
         unreg_now = [i for i, v in enumerate(views) if not v.registered]
@@ -524,6 +544,14 @@ def main():
             print(f"  re-densified: {solved.sum()}/{npix} pixels")
             break
 
+    if not RESUME:
+        np.savez(pose_ckpt,
+                 view_params=np.array(
+                     [[*v.rvec, *v.tvec, v.f, v.cx, v.cy, v.k1,
+                       float(v.registered)] for v in views]),
+                 view_names=np.array([v.name for v in views]))
+        print("saved pose checkpoint")
+
     # final dense pass with every registered camera
     dense_xyz, dense_err, nviews_px = densify(views)
     solved = np.isfinite(dense_err)
@@ -629,9 +657,16 @@ def main():
             if not v.registered:
                 continue
             uvb, zb = v.project(vc)
-            okz = zb > 1e-6
+            # a voxel near the camera's principal plane projects to
+            # absurd pixel coords (int32 overflow in cv2.circle) and a
+            # frame-filling radius; such a voxel cannot be a ball seen
+            # by this camera - require sane depth and on/near-frame uv
+            okz = (zb > 0.05) & np.isfinite(uvb).all(1) & \
+                (np.abs(uvb[:, 0]) < 4 * CAM_W) & \
+                (np.abs(uvb[:, 1]) < 4 * CAM_H)
             r_px = np.zeros(len(zb))
-            r_px[okz] = v.f * halfdiag / zb[okz] * 1.3
+            r_px[okz] = np.minimum(v.f * halfdiag / zb[okz] * 1.3,
+                                   CAM_W / 2)
             mimg = np.zeros((CAM_H // SC, CAM_W // SC), np.uint8)
             for (ux, uy), rr, oz in zip(uvb, r_px, okz):
                 if not oz:
