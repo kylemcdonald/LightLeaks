@@ -199,33 +199,6 @@ def main():
         print(f"  {v.name}: registered={v.registered} f={v.f:.0f} "
               f"pp=({v.cx:.0f},{v.cy:.0f}) k1={v.k1:.3f}")
 
-    # --- island 2: reconstruct scans the main cluster couldn't reach
-    island1 = [i for i, v in enumerate(views) if v.registered]
-    unreg = [i for i, v in enumerate(views) if not v.registered]
-    views2 = None
-    if len(unreg) >= 2:
-        sub_obs, track_grid2 = [], []
-        for t in range(len(gx)):
-            comp = [sx for sx in unreg if obs_ok[sx, t] and any(
-                agree[sx, o, t] for o in unreg if o != sx)]
-            if len(comp) >= 2:
-                sub_obs.append([(int(sx), obs_uv[sx, t, 0],
-                                 obs_uv[sx, t, 1]) for sx in comp])
-                track_grid2.append(t)
-        print(f"island 2: {len(unreg)} views, {len(sub_obs)} tracks")
-        if len(sub_obs) >= 100:
-            views2 = [View(v.name, v.width, v.height) for v in views]
-            for v, vv in zip(views, views2):
-                vv.f = vv.f_prior = v.f_prior
-                vv.f_sigma = v.f_sigma
-            try:
-                points2, valid2 = reconstruct(
-                    views2, sub_obs, verbose=True, ba_stride=3,
-                    min_init_parallax_deg=5.0)
-            except RuntimeError as e:
-                print("island 2 failed:", e)
-                views2 = None
-
     # --- dense: robust multi-pair fusion per projector pixel ---
     step = 4
     dy, dx = np.mgrid[0:vh:step, 0:vw:step]
@@ -243,18 +216,22 @@ def main():
         dok[s_idx] = conf[dyf, dxf] > CONF_THRESH
         dcf[s_idx] = conf[dyf, dxf]
 
-    KCAND = 6
+    KCAND = 8
 
     def densify(view_objs):
-        """Fuse triangulations from up to KCAND camera pairs per pixel:
-        component-wise median beats best-single-pair on noise and kills
-        lone bad pairs."""
+        """Fuse triangulations from up to KCAND camera pairs per pixel.
+
+        Every registered pair is tried - no fundamental-matrix
+        pre-check. The raw-pixel F gate is distortion-blind: wall dots
+        near the image borders (the 360-degree scan's main content)
+        fail a 3px sampson test purely from unmodeled k1. Once the
+        calibration is solved, triangulation with full intrinsics plus
+        a reprojection-error gate is the correct verification."""
         cand = np.full((npix, KCAND, 3), np.nan, np.float32)
         cand_err = np.full((npix, KCAND), np.inf, np.float32)
         cand_n = np.zeros(npix, np.int8)
         reg = [i for i in range(n_scans) if view_objs[i].registered]
-        plist = [(i, j) for i, j in itertools.combinations(reg, 2)
-                 if pair_F(i, j)[0] is not None]
+        plist = list(itertools.combinations(reg, 2))
         if not plist:
             return (np.zeros((npix, 3)), np.full(npix, np.inf),
                     np.zeros(npix, np.int8))
@@ -265,15 +242,10 @@ def main():
         plist = [ij for ij in plist if bl[ij] > 0.2 * bmax]
         plist.sort(key=lambda ij: -bl[ij])
         for i, j in plist:
-            F, flipped = pair_F(i, j)
             sel = dok[i] & dok[j] & (cand_n < KCAND)
             if not sel.any():
                 continue
-            a, b = (j, i) if flipped else (i, j)
-            d = sampson_dist(F, duv[a][sel], duv[b][sel])
-            good = np.where(sel)[0][d < SAMPSON_THRESH]
-            if not len(good):
-                continue
+            good = np.where(sel)[0]
             X, err = triangulate_dense_pair(
                 view_objs[i], view_objs[j], duv[i][good], duv[j][good])
             keep = err < 3.0
@@ -307,53 +279,154 @@ def main():
 
     dense_xyz, dense_err, nviews_px = densify(views)
     solved = np.isfinite(dense_err)
-    print(f"dense island 1: {solved.sum()}/{npix} pixels "
-          f"(multi-pair: {(nviews_px >= 2).sum()})")
+    print(f"provisional dense: {solved.sum()}/{npix} pixels")
 
-    if views2 is not None and any(v.registered for v in views2):
-        xyz2, err2, nv2 = densify(views2)
-        solved2 = np.isfinite(err2)
-        print(f"dense island 2: {solved2.sum()}/{npix} pixels")
-        # bridge cameras: island-1 views PnP'd into island-2's frame
-        bridges = []
-        for k in island1:
-            obj, img = [], []
-            for tp, t in enumerate(track_grid2):
-                if valid2[tp] and obs_ok[k, t]:
-                    obj.append(points2[tp])
-                    img.append(obs_uv[k, t])
-            if len(obj) < 30:
+    # --- completion: scans the track graph couldn't reach register by
+    # PnP against the dense anchors - thousands of already-triangulated
+    # projector pixels they also decoded (a 360-degree sweep leaves some
+    # cameras facing walls the main cluster barely sees; their link to
+    # the model is through the pixels, not through pairwise overlap)
+    # completion loop: each successful registration re-densifies, so
+    # newly triangulated regions (e.g. the far wall unlocked by the
+    # first far-side camera) become anchors for the next camera. RANSAC
+    # absorbs view-dependent glint anchors; the dense stage's per-pixel
+    # 3px reprojection gate self-limits any residual pose error.
+    newly = True
+    while newly:
+        newly = False
+        for k in [i for i, v in enumerate(views) if not v.registered]:
+            sel = np.where(dok[k] & solved)[0]
+            if len(sel) < 150:
                 continue
-            obj, img = np.array(obj), np.array(img)
-            vk = views[k]
-            dist = np.array([vk.k1, 0, 0, 0])
-            okp, rv, tv, inl = cv2.solvePnPRansac(
-                obj, img, vk.K, dist, reprojectionError=15.0,
-                iterationsCount=1000, flags=cv2.SOLVEPNP_SQPNP)
-            n_inl = 0 if (not okp or inl is None) else len(inl)
-            if n_inl < 30:
+            obj = dense_xyz[sel]
+            img = duv[k][sel]
+            v = views[k]
+            try:
+                ok2, rv, tv, inl = cv2.solvePnPRansac(
+                    obj, img, v.K, np.array([v.k1, 0, 0, 0.0]),
+                    reprojectionError=15.0, iterationsCount=1000,
+                    flags=cv2.SOLVEPNP_SQPNP)
+            except cv2.error:
                 continue
-            R2b = cv2.Rodrigues(rv)[0]
-            bridges.append((vk.R, vk.camera_center(), R2b,
-                            (-R2b.T @ tv).ravel()))
-            print(f"bridge {vk.name}: {n_inl} inliers")
-        if len(bridges) >= 2:
-            Rs = [b[0].T @ b[2] for b in bridges]
-            U, _, Vt = np.linalg.svd(np.sum(Rs, axis=0))
-            R12 = (U @ Vt).T
-            ratios = [np.linalg.norm(a[1] - b[1]) /
-                      max(np.linalg.norm(a[3] - b[3]), 1e-12)
-                      for a, b in itertools.combinations(bridges, 2)]
-            s12 = float(np.median(ratios))
-            T12 = np.mean([b[1] - s12 * R12 @ b[3] for b in bridges], 0)
-            take = solved2 & ~solved
-            dense_xyz[take] = xyz2[take] @ (s12 * R12).T + T12
-            dense_err[take] = err2[take]
+            n_inl = 0 if (not ok2 or inl is None) else len(inl)
+            if n_inl < 60:
+                print(f"completion: {v.name} only {n_inl} anchor "
+                      f"inliers of {len(sel)} - skipped")
+                continue
+            objs = obj[inl.ravel()].astype(np.float32)
+            imgs = img[inl.ravel()].astype(np.float32)
+            K = v.K.copy()
+            flags = (cv2.CALIB_USE_INTRINSIC_GUESS |
+                     cv2.CALIB_FIX_ASPECT_RATIO |
+                     cv2.CALIB_FIX_PRINCIPAL_POINT |
+                     cv2.CALIB_ZERO_TANGENT_DIST |
+                     cv2.CALIB_FIX_K2 | cv2.CALIB_FIX_K3)
+            rerr, K, dist, rvs, tvs = cv2.calibrateCamera(
+                [objs], [imgs], (v.width, v.height), K, None,
+                flags=flags)
+            if rerr > 8.0:
+                print(f"completion: {v.name} refine {rerr:.1f}px - "
+                      f"rejected")
+                continue
+            v.f, v.k1 = float(K[0, 0]), float(dist[0][0])
+            v.rvec = rvs[0].ravel()
+            v.tvec = tvs[0].ravel()
+            v.registered = True
+            newly = True
+            print(f"completion: registered {v.name} "
+                  f"({n_inl} anchors, refine {rerr:.2f}px, f={v.f:.0f})")
+            dense_xyz, dense_err, nviews_px = densify(views)
             solved = np.isfinite(dense_err)
-            print(f"merged islands via {len(bridges)} bridges: "
-                  f"{solved.sum()}/{npix}")
-        else:
-            print(f"only {len(bridges)} bridges - islands kept separate")
+            print(f"  re-densified: {solved.sum()}/{npix} pixels")
+            break
+
+    # --- far-pair island: cameras that share content only with each
+    # other (both aimed at the far wall of the 360 sweep) reconstruct
+    # as a two-view island, then merge into the main frame via bridge
+    # cameras that observe the island's wall pixels
+    un = [i for i, v in enumerate(views) if not v.registered]
+    if len(un) >= 2:
+        best = max(itertools.combinations(un, 2),
+                   key=lambda ij: (dok[ij[0]] & dok[ij[1]]).sum())
+        i2, j2 = best
+        mutual = np.where(dok[i2] & dok[j2])[0]
+        print(f"far island: {views[i2].name}+{views[j2].name}, "
+              f"{len(mutual)} mutual pixels")
+        if len(mutual) > 2000:
+            va, vb = views[i2], views[j2]
+            na = va.undistort_normalize(duv[i2][mutual])
+            nb = vb.undistort_normalize(duv[j2][mutual])
+            E, inlE = cv2.findEssentialMat(
+                na, nb, focal=1.0, pp=(0, 0), method=cv2.RANSAC,
+                prob=0.9999, threshold=2.5 / va.f)
+            if E is not None and inlE is not None and \
+                    inlE.sum() > 300:
+                _, Ri, ti, _ = cv2.recoverPose(
+                    E, na, nb, focal=1.0, pp=(0, 0), mask=inlE.copy())
+                va.rvec = np.zeros(3)
+                va.tvec = np.zeros(3)
+                vb.rvec = cv2.Rodrigues(Ri)[0].ravel()
+                vb.tvec = ti.ravel()
+                Xi, erri = triangulate_dense_pair(
+                    va, vb, duv[i2][mutual], duv[j2][mutual])
+                goodX = erri < 3.0
+                print(f"  island E-init: {int(inlE.sum())} inliers, "
+                      f"{int(goodX.sum())} triangulated")
+                # bridge registered cameras into the island frame
+                bridges = []
+                for k in [i for i, v in enumerate(views)
+                          if v.registered and i not in (i2, j2)]:
+                    m = dok[k][mutual] & goodX
+                    if m.sum() < 40:
+                        continue
+                    vk = views[k]
+                    try:
+                        okb, rvb, tvb, inlb = cv2.solvePnPRansac(
+                            Xi[m], duv[k][mutual][m], vk.K,
+                            np.array([vk.k1, 0, 0, 0.0]),
+                            reprojectionError=12.0,
+                            iterationsCount=1000,
+                            flags=cv2.SOLVEPNP_SQPNP)
+                    except cv2.error:
+                        continue
+                    if not okb or inlb is None or len(inlb) < 40:
+                        continue
+                    R2b = cv2.Rodrigues(rvb)[0]
+                    bridges.append((vk.R, vk.camera_center(), R2b,
+                                    (-R2b.T @ tvb).ravel()))
+                    print(f"  bridge {vk.name}: {len(inlb)} inliers")
+                if len(bridges) >= 2:
+                    Rs = [b[0].T @ b[2] for b in bridges]
+                    U, _, Vt = np.linalg.svd(np.sum(Rs, axis=0))
+                    R12 = (U @ Vt).T
+                    ratios = [np.linalg.norm(a[1] - b[1]) /
+                              max(np.linalg.norm(a[3] - b[3]), 1e-12)
+                              for a, b in
+                              itertools.combinations(bridges, 2)]
+                    s12 = float(np.median(ratios))
+                    T12 = np.mean([b[1] - s12 * R12 @ b[3]
+                                   for b in bridges], 0)
+                    # island camera poses re-expressed in main frame:
+                    # x1 = s R12 x2 + T  =>  R_m = R2 R12^T,
+                    # t_m = s t2 - R_m T
+                    for vv in (va, vb):
+                        R2v = vv.R
+                        t2v = vv.tvec
+                        Rm = R2v @ R12.T
+                        vv.rvec = cv2.Rodrigues(Rm)[0].ravel()
+                        vv.tvec = s12 * t2v - Rm @ T12
+                        vv.registered = True
+                    print(f"  merged island via {len(bridges)} bridges "
+                          f"(scale {s12:.3f})")
+                else:
+                    print(f"  only {len(bridges)} bridges - island "
+                          f"not merged")
+
+    # final dense pass with every registered camera
+    dense_xyz, dense_err, nviews_px = densify(views)
+    solved = np.isfinite(dense_err)
+    print(f"dense: {solved.sum()}/{npix} pixels "
+          f"(multi-pair: {(nviews_px >= 2).sum()})")
 
     # --- edge-aware outlier cleanup in projector space: a solved pixel
     # far from the median of its solved neighbors is replaced (lone

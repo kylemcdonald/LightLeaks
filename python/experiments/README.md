@@ -61,6 +61,19 @@ Findings from this archive (2018, pre-python pipeline):
 3. include a few scans framing mostly walls/floor (diffuse surfaces)
 4. any number of projectors is fine, but avoid warping/blending during
    the scan if projector-as-a-view triangulation is wanted
+5. **walk the 360 as an overlapping chain**: each scan should share
+   substantial diffuse content (wall/floor leak dots, not just ball
+   glints) with its neighbors. Mirror-ball glints are view-dependent,
+   so two cameras facing each other across the pile share almost no
+   usable geometry - the room connects through the chain of adjacent
+   viewpoints. Llum's three far-side scans have only 60-160 consistent
+   correspondences with ANY other camera (vs 5,000-15,000 within the
+   connected cluster) and are geometrically unregistrable from the
+   data alone; camamok never noticed because manual model-clicking
+   registers each camera independently. For old archives with this
+   gap, the pragmatic completion is a mini-camamok: click a few points
+   for just the unregistrable cameras against the RECONSTRUCTED mesh
+   instead of a hand-built model.
 
 ## Llum 2019 validation (`autoCalibrateLlum.py`)
 
