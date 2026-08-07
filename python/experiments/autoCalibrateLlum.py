@@ -282,10 +282,26 @@ def main():
             cand[gidx, slot] = X[keep]
             cand_err[gidx, slot] = err[keep]
             cand_n[gidx] += 1
-        xyz = np.nanmedian(cand, axis=1)
-        err_out = np.where(cand_n > 0, np.nanmin(
-            np.where(np.isfinite(cand_err), cand_err, np.nan), axis=1),
-            np.inf)
+        # mode-aware fusion: a projector pixel can have TWO real
+        # answers (ball glint and reflected-leak landing spot); median
+        # across modes would invent a point between them. cluster the
+        # candidates around the lowest-error one and fuse only those.
+        safe_err = np.where(np.isfinite(cand_err), cand_err, np.inf)
+        best = np.argmin(safe_err, axis=1)
+        rows = np.arange(npix)
+        bxyz = cand[rows, best]
+        finite_b = np.isfinite(bxyz[:, 0])
+        ext_est = np.linalg.norm(
+            np.nanpercentile(bxyz[finite_b], 98, axis=0) -
+            np.nanpercentile(bxyz[finite_b], 2, axis=0)) \
+            if finite_b.any() else 1.0
+        tol = 0.015 * ext_est
+        dcand = np.linalg.norm(cand - bxyz[:, None, :], axis=2)
+        near = np.isfinite(dcand) & (dcand < tol)
+        cand_near = np.where(near[..., None], cand, np.nan)
+        with np.errstate(all='ignore'):
+            xyz = np.nanmedian(cand_near, axis=1)
+        err_out = np.where(cand_n > 0, safe_err[rows, best], np.inf)
         xyz[cand_n == 0] = 0
         return xyz, err_out, cand_n
 
@@ -342,33 +358,35 @@ def main():
     # --- edge-aware outlier cleanup in projector space: a solved pixel
     # far from the median of its solved neighbors is replaced (lone
     # speckle) - real depth edges survive because MAD scales locally
-    grid = dense_xyz.reshape(dh, dw_, 3).copy()
-    gmask = solved.reshape(dh, dw_)
-    grid[~gmask] = np.nan
-    shifts = []
-    for oy in (-1, 0, 1):
-        for ox in (-1, 0, 1):
-            if oy == 0 and ox == 0:
-                continue
-            shifts.append(np.roll(np.roll(grid, oy, 0), ox, 1))
-    stack = np.stack(shifts)
-    with np.errstate(all='ignore'):
-        med = np.nanmedian(stack, axis=0)
-        nn = np.isfinite(stack[..., 0]).sum(0)
-        dev = np.linalg.norm(grid - med, axis=-1)
-        mad = np.nanmedian(np.linalg.norm(stack - med[None], axis=-1),
-                           axis=0)
-    bad = gmask & (nn >= 4) & (dev > np.maximum(4 * mad, 1e-6))
-    grid[bad] = med[bad]
-    n_fixed = int(bad.sum())
-    lone = gmask & (nn < 2)
-    grid[lone] = np.nan
-    gmask = gmask & ~lone
-    dense_xyz = np.nan_to_num(grid.reshape(-1, 3))
-    solved = gmask.reshape(-1)
+    def speckle_clean(xyz_flat, solved_flat, label):
+        grid = xyz_flat.reshape(dh, dw_, 3).copy()
+        gmask = solved_flat.reshape(dh, dw_)
+        grid[~gmask] = np.nan
+        shifts = []
+        for oy in (-1, 0, 1):
+            for ox in (-1, 0, 1):
+                if oy == 0 and ox == 0:
+                    continue
+                shifts.append(np.roll(np.roll(grid, oy, 0), ox, 1))
+        stack = np.stack(shifts)
+        with np.errstate(all='ignore'):
+            med = np.nanmedian(stack, axis=0)
+            nn = np.isfinite(stack[..., 0]).sum(0)
+            dev = np.linalg.norm(grid - med, axis=-1)
+            mad = np.nanmedian(
+                np.linalg.norm(stack - med[None], axis=-1), axis=0)
+        bad = gmask & (nn >= 4) & (dev > np.maximum(4 * mad, 1e-6))
+        grid[bad] = med[bad]
+        lone = gmask & (nn < 2)
+        grid[lone] = np.nan
+        gmask = gmask & ~lone
+        print(f"cleanup ({label}): fixed {int(bad.sum())} speckles, "
+              f"dropped {int(lone.sum())} isolated pixels")
+        return (np.nan_to_num(grid.reshape(-1, 3)),
+                gmask.reshape(-1).copy())
+
+    dense_xyz, solved = speckle_clean(dense_xyz, solved, 'triangulated')
     dense_err = np.where(solved, dense_err, np.inf)
-    print(f"cleanup: fixed {n_fixed} speckles, dropped {lone.sum()} "
-          f"isolated pixels")
 
     # --- mesh-fill: single-camera pixels raycast against the measured
     # mesh (camamok's model-painting with a measured model)
@@ -401,8 +419,8 @@ def main():
                 v = views[s_idx]
                 if not v.registered:
                     continue
-                todo = np.where((cams == s_idx) & dok[s_idx] &
-                                (source == 0))[0]
+                todo = np.where((cams == s_idx) & (source == 0) &
+                                (dcf[s_idx] > 2 * CONF_THRESH))[0]
                 if not len(todo):
                     continue
                 xn = v.undistort_normalize(duv[s_idx][todo])
@@ -421,8 +439,23 @@ def main():
                 filled += okh.sum()
         solved = source > 0
         print(f"mesh-fill: +{filled} pixels -> {solved.sum()}/{npix}")
+        dense_xyz, solved = speckle_clean(dense_xyz, solved, 'filled')
+        source[~solved] = 0
+        dense_err = np.where(solved, dense_err, np.inf)
     except Exception as e:
         print("mesh-fill failed:", e)
+
+    # --- projector mask parity with the old pipeline: hand-drawn
+    # mask-0.png excludes projector regions that should never map
+    mfile = os.path.join(ROOT, 'mask-0.png')
+    if os.path.exists(mfile):
+        pmask = cv2.imread(mfile, cv2.IMREAD_GRAYSCALE)
+        keep = pmask[dyf, dxf] > 127
+        n_masked = int((solved & ~keep).sum())
+        solved &= keep
+        source[~keep] = 0
+        dense_err = np.where(solved, dense_err, np.inf)
+        print(f"projector mask: removed {n_masked} pixels")
 
     # --- ground truth comparison ---
     gt = read_exr(os.path.join(ROOT, 'xyzMap-0.exr'), ['R', 'G', 'B'])

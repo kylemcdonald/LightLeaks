@@ -82,9 +82,12 @@ verification replaces raw confidence as the quality gate), best-pair
 fusion across all camera pairs, and *mesh-fill* - single-camera pixels
 are raycast against the Poisson mesh built from the verified pixels,
 which is camamok's model-painting trick with a measured model instead
-of a hand-built one. Refinements on top: robust multi-pair fusion (component-wise median
-over up to 6 camera-pair triangulations per pixel), edge-aware speckle
-cleanup in projector space, and confidence-ordered mesh-fill. Quality
+of a hand-built one. Refinements on top: mode-aware multi-pair fusion (a projector pixel
+can have TWO real answers - ball glint and reflected-leak landing
+spot - so candidates cluster around the lowest-error mode instead of
+a mode-mixing median), edge-aware speckle cleanup both before and
+after fill, confidence-gated mesh-fill (2x the decode threshold), and
+projector-mask parity with the old pipeline (mask-0.png). Quality
 tiers against ground truth: triangulated pixels median 2.2% (p90
 7.7%), mesh-filled 3.1% of scene diagonal. Walls agree far tighter
 than the medians suggest - the error tail is ball-edge pixels where
