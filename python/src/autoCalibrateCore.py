@@ -466,7 +466,7 @@ def bundle_adjust(views, observations, points, valid,
 
 
 def reconstruct(views, observations, init_pair=None, verbose=False,
-                ba_every_registration=True):
+                ba_every_registration=True, ba_stride=1):
     """Full incremental pipeline: init pair -> PnP registration -> global BA.
 
     Returns (points, valid) for the sparse tracks.
@@ -526,13 +526,15 @@ def reconstruct(views, observations, init_pair=None, verbose=False,
                 continue
             new_points, new_valid = triangulate_tracks(views, observations,
                                                        reproj_thresh=50.0)
-            if ba_every_registration:
+            do_ba = ba_every_registration and \
+                (regs_since_ba + 1 >= ba_stride)
+            if do_ba:
                 n_reg = sum(1 for v in views if v.registered)
                 new_rms = bundle_adjust(
                     views, observations, new_points, new_valid,
                     intrinsics='fk' if n_reg >= 3 else 'none')
             # rollback if this registration wrecked the reconstruction
-            if ba_every_registration and new_rms > max(3.0 * rms, rms + 2.0):
+            if do_ba and new_rms > max(3.0 * rms, rms + 2.0):
                 for v, (rv, tv, f, cx, cy, k1) in zip(views, state):
                     v.rvec, v.tvec = rv, tv
                     v.f, v.cx, v.cy, v.k1 = f, cx, cy, k1
@@ -541,7 +543,12 @@ def reconstruct(views, observations, init_pair=None, verbose=False,
                     print(f"rolled back {views[k].name}: rms "
                           f"{rms:.2f} -> {new_rms:.2f}px")
                 continue
-            points, valid, rms = new_points, new_valid, new_rms
+            if do_ba:
+                rms = new_rms
+                regs_since_ba = 0
+            else:
+                regs_since_ba += 1
+            points, valid = new_points, new_valid
             if verbose:
                 print(f"registered {views[k].name} ({n_inl} PnP inliers), "
                       f"rms {rms:.2f}px, {valid.sum()} tracks")
