@@ -469,9 +469,13 @@ def reconstruct(views, observations, init_pair=None, verbose=False,
                 ba_every_registration=True, ba_stride=1):
     """Full incremental pipeline: init pair -> PnP registration -> global BA.
 
+    ba_stride: run the (expensive) global BA only every N successful
+    registrations - between BAs a new view still gets its PnP+refine.
+
     Returns (points, valid) for the sparse tracks.
     """
     n_views = len(views)
+    regs_since_ba = 0
     if init_pair is None:
         # choose the pair with the most shared tracks
         counts = np.zeros((n_views, n_views), dtype=int)
