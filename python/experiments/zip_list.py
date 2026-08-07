@@ -45,6 +45,7 @@ def central_directory(obj):
         "<HII", tail[eocd_pos + 10:eocd_pos + 12] +
         tail[eocd_pos + 12:eocd_pos + 20])
 
+    eocd_abs = size - tail_len + eocd_pos
     if cd_offset == 0xFFFFFFFF or n_total == 0xFFFF or \
             cd_size == 0xFFFFFFFF:
         loc_pos = tail.rfind(b"PK\x06\x07")
@@ -57,8 +58,22 @@ def central_directory(obj):
         cd_size = struct.unpack("<Q", z64[40:48])[0]
         cd_offset = struct.unpack("<Q", z64[48:56])[0]
 
-    cd = fetch_range(obj, cd_offset, cd_offset + cd_size - 1)
-    return cd, n_total
+    # some writers of >4GB non-zip64 archives store the offset wrapped
+    # modulo 2^32; validate and fall back to deriving the offset from
+    # the EOCD's own position
+    def try_cd(off):
+        if off < 0 or off + cd_size > size:
+            return None
+        cd = fetch_range(obj, off, off + cd_size - 1)
+        return cd if cd[:4] == b"PK\x01\x02" else None
+
+    for off in (cd_offset, eocd_abs - cd_size,
+                *[cd_offset + k * 0x100000000 for k in range(1, 5)]):
+        cd = try_cd(off)
+        if cd is not None:
+            return cd, n_total
+    raise AssertionError("central directory not found at any "
+                         "candidate offset")
 
 
 def parse_entries(cd):

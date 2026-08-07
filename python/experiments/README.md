@@ -76,6 +76,24 @@ the camamok ground truth. The camera zoom was again changed between
 scans, and 4 of 10 archived per-scan xyzMaps are corrupted - both
 handled automatically.
 
+## LightsAllNight 2019 validation (`autoCalibrateLightsAllNight.py`)
+
+The 4x30K-projector festival install (7680x1080 virtual). The only
+archive captured with a FIXED zoom (ground-truth focals 2362-2458), so
+the shared-intrinsics mode applies. Both capture sessions reconstruct
+excellently in isolation - 0.61 px and 0.64 px rms, shared focal
+recovered at 2479 / 2415 vs ~2400 ground truth - but they cannot be
+merged: cross-session correspondences are only ~16% epipolar-consistent
+(vs 40% within-session), the dense maps share only 102 projector
+pixels, and bridge-camera PnP finds zero consistent points. Conclusion:
+the mirror-ball pile was physically rearranged between the 6pm and
+11pm sessions. The runner includes the island-split reconstruction and
+a bridge-camera merge that applies whenever the scene actually stayed
+still.
+
+This adds a fifth capture rule: **don't move the balls (or projectors)
+mid-capture - if the scene changes, rescan everything after.**
+
 ## Mesh reconstruction (`buildMesh.py` / `renderMesh.py`)
 
 `buildMesh.py <result.npz> <out_stem>` turns a calibration run's dense
