@@ -192,12 +192,30 @@ def main():
             v.f_sigma = 0.4 * v.f_prior
         views.append(v)
 
-    points, valid = reconstruct(views, observations, verbose=True,
-                                ba_stride=3, min_init_parallax_deg=5.0)
-    print(f"reconstruct done in {time.time()-t0:.0f}s")
-    for v in views:
-        print(f"  {v.name}: registered={v.registered} f={v.f:.0f} "
-              f"pp=({v.cx:.0f},{v.cy:.0f}) k1={v.k1:.3f}")
+    # pose checkpoint: registration is deterministic and slow; resume
+    # skips straight to the dense stages when a checkpoint exists
+    pose_ckpt = os.path.join(HERE, 'llum_poses.npz')
+    RESUME = os.path.exists(pose_ckpt)
+    if RESUME:
+        pk = np.load(pose_ckpt)
+        vp_ck = pk['view_params']
+        nm_ck = [str(n) for n in pk['view_names']]
+        for v in views:
+            i = nm_ck.index(v.name)
+            v.rvec = vp_ck[i, :3].copy()
+            v.tvec = vp_ck[i, 3:6].copy()
+            v.f, v.cx, v.cy, v.k1 = vp_ck[i, 6:10]
+            v.registered = bool(vp_ck[i, 10] > 0.5)
+        print(f"resumed poses from checkpoint: "
+              f"{sum(v.registered for v in views)} registered")
+    else:
+        points, valid = reconstruct(views, observations, verbose=True,
+                                    ba_stride=3,
+                                    min_init_parallax_deg=5.0)
+        print(f"reconstruct done in {time.time()-t0:.0f}s")
+        for v in views:
+            print(f"  {v.name}: registered={v.registered} f={v.f:.0f} "
+                  f"pp=({v.cx:.0f},{v.cy:.0f}) k1={v.k1:.3f}")
 
     # --- dense: robust multi-pair fusion per projector pixel ---
     step = 4
@@ -300,7 +318,7 @@ def main():
     # first far-side camera) become anchors for the next camera. RANSAC
     # absorbs view-dependent glint anchors; the dense stage's per-pixel
     # 3px reprojection gate self-limits any residual pose error.
-    newly = True
+    newly = not RESUME
     while newly:
         newly = False
         for k in [i for i, v in enumerate(views) if not v.registered]:
@@ -365,7 +383,7 @@ def main():
     dense_grid_solved = solved.reshape(dh, dw_)
     dense_grid_xyz = dense_xyz.reshape(dh, dw_, 3)
 
-    changed = True
+    changed = not RESUME
     while changed:
         changed = False
         unreg_now = [i for i, v in enumerate(views) if not v.registered]
@@ -485,6 +503,14 @@ def main():
             dense_grid_xyz = dense_xyz.reshape(dh, dw_, 3)
             print(f"  re-densified: {solved.sum()}/{npix} pixels")
             break
+
+    if not RESUME:
+        np.savez(pose_ckpt,
+                 view_params=np.array(
+                     [[*v.rvec, *v.tvec, v.f, v.cx, v.cy, v.k1,
+                       float(v.registered)] for v in views]),
+                 view_names=np.array([v.name for v in views]))
+        print("saved pose checkpoint", flush=True)
 
     # final dense pass with every registered camera
     dense_xyz, dense_err, nviews_px = densify(views)
