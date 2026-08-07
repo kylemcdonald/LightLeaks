@@ -609,6 +609,87 @@ def main():
               f"{solved.sum()}/{npix} still mapped")
         globals()['BALLVOX'] = (ballvox, lo_b, span_b, NV)
 
+        # --- the automated hand-mask: excluding ball CANDIDATES only
+        # unmaps ball-hit pixels, because each scan's winner-take-all
+        # already happened in camera space and the glint (brightest)
+        # won everywhere - the landing mode never reached the candidate
+        # list. production's hand masks worked by removing ball pixels
+        # BEFORE the winner was chosen. same thing, derived from data:
+        # project the detected ball volume into every registered
+        # camera, zero decode confidence there, rebuild the winner
+        # maps, re-fuse.
+        from decode_v2 import build_promap
+        vidx = np.where(ballvox)[0]
+        ix, iy, iz = (vidx // (NV * NV), (vidx // NV) % NV, vidx % NV)
+        vc = lo_b + (np.stack([ix, iy, iz], 1) + 0.5) / NV * span_b
+        halfdiag = 0.5 * np.linalg.norm(span_b / NV)
+        SC = 8
+        for s_idx, scan in enumerate(scans):
+            v = views[s_idx]
+            if not v.registered:
+                continue
+            uvb, zb = v.project(vc)
+            okz = zb > 1e-6
+            r_px = np.zeros(len(zb))
+            r_px[okz] = v.f * halfdiag / zb[okz] * 1.3
+            mimg = np.zeros((CAM_H // SC, CAM_W // SC), np.uint8)
+            for (ux, uy), rr, oz in zip(uvb, r_px, okz):
+                if not oz:
+                    continue
+                cv2.circle(mimg, (int(ux / SC), int(uy / SC)),
+                           max(1, int(rr / SC)), 255, -1)
+            mask_full = cv2.resize(mimg, (CAM_W, CAM_H),
+                                   interpolation=cv2.INTER_NEAREST) > 0
+            code = np.load(os.path.join(ROOT, scan, 'camCodeV2.npy'))
+            cconf = np.load(os.path.join(ROOT, scan, 'camConfV2.npy'))
+            n_masked_cam = int((mask_full & (cconf > CONF_THRESH)).sum())
+            cconf = np.where(mask_full, 0.0, cconf).astype(np.float32)
+            pro_cam, pro_conf = build_promap(
+                code[..., 0], code[..., 1], cconf, vw, vh)
+            del code
+            cam_x = pro_cam[..., 0].astype(np.float64)
+            cam_y = pro_cam[..., 1].astype(np.float64)
+            scan_data[scan] = (cam_x, cam_y, pro_conf)
+            duv[s_idx, :, 0] = cam_x[dyf, dxf]
+            duv[s_idx, :, 1] = cam_y[dyf, dxf]
+            dok[s_idx] = pro_conf[dyf, dxf] > CONF_THRESH
+            dcf[s_idx] = pro_conf[dyf, dxf]
+            full_xy[s_idx] = (cam_x, cam_y, pro_conf > CONF_THRESH)
+            print(f"  auto-mask {scan}: {n_masked_cam} confident cam "
+                  f"px zeroed", flush=True)
+        dense_xyz, dense_err, nviews_px = densify(views)
+        solved = np.isfinite(dense_err)
+        print(f"re-fused with auto-masks: {solved.sum()}/{npix} pixels")
+        # residual glints (unregistered-scan pairs, mask edge leaks):
+        # one more re-decide pass against the same ball volume
+        cand = densify.cand
+        cand_err = densify.cand_err
+        cand_conf = densify.cand_conf
+        rows_s = np.where(solved)[0]
+        n2 = 0
+        for chunk in np.array_split(rows_s, 8):
+            bc = cand[chunk]
+            be = cand_err[chunk]
+            flat = bc.reshape(-1, 3)
+            okf = np.isfinite(flat[:, 0])
+            inb = np.zeros(len(flat), bool)
+            inb[okf] = in_ball(flat[okf])
+            inb = inb.reshape(be.shape)
+            be2 = np.where(inb, np.inf, be)
+            bcf = np.where(np.isfinite(be2), cand_conf[chunk], -1.0)
+            newbest = np.argmax(bcf, axis=1)
+            has = np.isfinite(be2[np.arange(len(chunk)), newbest])
+            cur_in = in_ball(dense_xyz[chunk])
+            switch = cur_in & has
+            unmap = cur_in & ~has
+            dense_xyz[chunk[switch]] = bc[switch, newbest[switch]]
+            dense_err[chunk[switch]] = be2[switch, newbest[switch]]
+            dense_err[chunk[unmap]] = np.inf
+            n2 += int(cur_in.sum())
+        solved = np.isfinite(dense_err)
+        print(f"residual ball re-decide: {n2} px, "
+              f"{solved.sum()}/{npix} mapped")
+
     # --- edge-aware outlier cleanup in projector space: a solved pixel
     # far from the median of its solved neighbors is replaced (lone
     # speckle) - real depth edges survive because MAD scales locally
