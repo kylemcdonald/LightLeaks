@@ -61,3 +61,25 @@ Findings from this archive (2018, pre-python pipeline):
 3. include a few scans framing mostly walls/floor (diffuse surfaces)
 4. any number of projectors is fine, but avoid warping/blending during
    the scan if projector-as-a-view triangulation is wanted
+
+## Llum 2019 validation (`autoCalibrateLlum.py`)
+
+The Can Framis courtyard install (python-era archive layout with
+`proMap-python.png`). Much friendlier data than TodaysArt: diffuse
+courtyard walls push camera-camera epipolar consistency to 60-78%.
+
+Results: 7/10 scans registered, final bundle adjustment at 0.98 px rms,
+recovered focals matching the ground-truth fits within a few pixels
+(e.g. 3180 vs 3172, 2346 vs 2347), and the dense projector-space map
+lands at **median error 2.3% / p90 7% of the lit-scene extent** against
+the camamok ground truth. The camera zoom was again changed between
+scans, and 4 of 10 archived per-scan xyzMaps are corrupted - both
+handled automatically.
+
+## Mesh reconstruction (`buildMesh.py` / `renderMesh.py`)
+
+`buildMesh.py <result.npz> <out_stem>` turns a calibration run's dense
+cloud into a Poisson mesh (`.ply`, loadable in MeshLab/Blender):
+outlier removal -> normal estimation -> Poisson -> density trim.
+This closes the README's old wish: the 3d model is now an *output* of
+scanning instead of a hand-measured input.
