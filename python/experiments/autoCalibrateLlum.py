@@ -262,7 +262,10 @@ def main():
         # across modes would invent a point between them. cluster the
         # candidates around the lowest-error one and fuse only those.
         safe_err = np.where(np.isfinite(cand_err), cand_err, np.inf)
-        best = np.argmin(safe_err, axis=1)
+        # prefer the highest-confidence candidate (brightness proxy =
+        # primary landing); error is a gate, not a preference
+        conf_m = np.where(np.isfinite(safe_err), cand_conf, -1.0)
+        best = np.argmax(conf_m, axis=1)
         rows = np.arange(npix)
         bxyz = cand[rows, best]
         finite_b = np.isfinite(bxyz[:, 0])
@@ -546,7 +549,8 @@ def main():
             inb[okf] = in_ball(flat[okf])
             inb = inb.reshape(be.shape)
             be2 = np.where(inb, np.inf, be)
-            newbest = np.argmin(be2, axis=1)
+            bcf = np.where(np.isfinite(be2), cand_conf[chunk], -1.0)
+            newbest = np.argmax(bcf, axis=1)
             has = np.isfinite(be2[np.arange(len(chunk)), newbest])
             cur_in = in_ball(dense_xyz[chunk])
             switch = cur_in & has
@@ -683,10 +687,30 @@ def main():
 
     # anchor the GT alignment on verified triangulations only -
     # mesh-filled and loose pixels would bias the similarity fit
-    anchor = both & (source == 2) & (dense_err < 1.0)
-    if anchor.sum() < 500:
-        anchor = both & (source == 2)
-    M = umeyama_alignment(dense_xyz[anchor], gt_pts[anchor])
+    # gauge the GT alignment on camera centers when GT poses exist -
+    # pixel matches carry landing-choice ambiguity that biases the fit
+    M = None
+    try:
+        gtp = np.load(os.path.join(HERE, 'llum_gt_poses.npy'),
+                      allow_pickle=True).item()
+        Cs, Gs = [], []
+        for v in views:
+            if not getattr(v, 'registered', False) or v.name not in gtp:
+                continue
+            if gtp[v.name][3] > 100:
+                continue
+            Cs.append(v.camera_center())
+            Gs.append(gtp[v.name][2])
+        if len(Cs) >= 4:
+            M = umeyama_alignment(np.array(Cs), np.array(Gs))
+            print(f"alignment gauged on {len(Cs)} camera centers")
+    except Exception as e:
+        print("camera-center gauge unavailable:", e)
+    if M is None:
+        anchor = both & (source == 2) & (dense_err < 1.0)
+        if anchor.sum() < 500:
+            anchor = both & (source == 2)
+        M = umeyama_alignment(dense_xyz[anchor], gt_pts[anchor])
     aligned = apply_transform(M, dense_xyz[both])
     err = np.linalg.norm(aligned - gt_pts[both], axis=1)
     gt_extent = np.percentile(gt_pts[both], 98, 0) - \
