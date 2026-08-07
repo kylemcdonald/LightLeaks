@@ -29,7 +29,12 @@ FLOAT = Imath.PixelType(Imath.PixelType.FLOAT)
 
 CAM_W, CAM_H = 5184, 3456
 GRID_STEP = 12
-CONF_THRESH = 0.05
+CONF_THRESH = float(os.environ.get('ABL_CONF', '0.05'))
+# decode products to consume: margin-only maps, or coherence-weighted
+PMAP = ('proMapCoh.npy' if os.environ.get('ABL_PMAP') == 'coh'
+        else 'proMapC.npy')
+PCONF = ('proConfCoh.npy' if os.environ.get('ABL_PMAP') == 'coh'
+         else 'proConfC.npy')
 # v2 codes are quantized to 4-projector-px bins (drop_finest=2); the
 # resulting camera-space jitter measured ~3.6px median against the 2019
 # sub-pixel decode, so every geometric gate is opened up accordingly
@@ -69,14 +74,14 @@ def main():
 
     scans = sorted(d for d in os.listdir(ROOT)
                    if os.path.exists(
-                       os.path.join(ROOT, d, 'proMapC.npy')))
+                       os.path.join(ROOT, d, PMAP)))
     n_scans = len(scans)
     print(f"{n_scans} scans, virtual projector {vw}x{vh}")
 
     scan_data = {}
     for scan in scans:
-        pm = np.load(os.path.join(ROOT, scan, 'proMapC.npy'))
-        conf = np.load(os.path.join(ROOT, scan, 'proConfC.npy'))
+        pm = np.load(os.path.join(ROOT, scan, PMAP))
+        conf = np.load(os.path.join(ROOT, scan, PCONF))
         scan_data[scan] = (pm[..., 0].astype(np.float64),
                            pm[..., 1].astype(np.float64), conf)
 
