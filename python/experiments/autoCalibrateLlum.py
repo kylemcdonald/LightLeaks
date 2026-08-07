@@ -29,7 +29,7 @@ FLOAT = Imath.PixelType(Imath.PixelType.FLOAT)
 
 CAM_W, CAM_H = 5184, 3456
 GRID_STEP = 12
-CONF_THRESH = 0.2
+CONF_THRESH = 0.05
 SAMPSON_THRESH = 3.0
 
 
@@ -237,7 +237,7 @@ def main():
     pair_list.sort(key=lambda ij: -baselines[ij])
     for i, j in pair_list:
         F, flipped = pair_F(i, j)
-        sel = dok[i] & dok[j] & ~np.isfinite(dense_err)
+        sel = dok[i] & dok[j]
         if not sel.any():
             continue
         a, b = (j, i) if flipped else (i, j)
@@ -249,11 +249,67 @@ def main():
             views[i], views[j], duv[i][good], duv[j][good])
         keep = err < 3.0
         gidx = good[keep]
-        dense_xyz[gidx] = X[keep]
-        dense_err[gidx] = err[keep]
+        better = err[keep] < dense_err[gidx]
+        gidx = gidx[better]
+        dense_xyz[gidx] = X[keep][better]
+        dense_err[gidx] = err[keep][better]
     solved = np.isfinite(dense_err)
     print(f"dense: {solved.sum()}/{npix} projector pixels solved "
           f"({time.time()-t0:.0f}s)")
+
+    # --- mesh-fill: single-camera pixels get xyz by casting their
+    # camera ray against a mesh built from the verified pixels - the
+    # same trick camamok used, but the model is measured, not manual
+    source = np.zeros(npix, np.int8)  # 0=unsolved 2=triangulated 1=fill
+    source[solved] = 2
+    try:
+        import open3d as o3d
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(dense_xyz[solved])
+        pcd, _ = pcd.remove_statistical_outlier(nb_neighbors=16,
+                                                std_ratio=2.0)
+        ext = np.linalg.norm(
+            pcd.get_axis_aligned_bounding_box().get_extent())
+        pcd.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(
+            radius=ext * 0.02, max_nn=30))
+        pcd.orient_normals_consistent_tangent_plane(30)
+        mesh, dens = \
+            o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
+                pcd, depth=8)
+        mesh.remove_vertices_by_mask(
+            np.asarray(dens) < np.quantile(np.asarray(dens), 0.05))
+        scene = o3d.t.geometry.RaycastingScene()
+        scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(mesh))
+
+        filled = 0
+        for s_idx in range(n_scans):
+            v = views[s_idx]
+            if not v.registered:
+                continue
+            todo = np.where(dok[s_idx] & (source == 0))[0]
+            if not len(todo):
+                continue
+            xn = v.undistort_normalize(duv[s_idx][todo])
+            dirs_cam = np.hstack([xn, np.ones((len(xn), 1))])
+            dirs = dirs_cam @ v.R  # R.T @ d batched
+            dirs /= np.linalg.norm(dirs, axis=1, keepdims=True)
+            origin = v.camera_center()
+            rays = np.hstack([np.tile(origin, (len(dirs), 1)),
+                              dirs]).astype(np.float32)
+            hits = scene.cast_rays(o3d.core.Tensor(rays))
+            t_hit = hits['t_hit'].numpy()
+            ok_hit = np.isfinite(t_hit)
+            pts = origin + dirs[ok_hit] * t_hit[ok_hit][:, None]
+            idx = todo[ok_hit]
+            dense_xyz[idx] = pts
+            dense_err[idx] = 2.9  # nominal: mesh-derived, unverified
+            source[idx] = 1
+            filled += ok_hit.sum()
+        solved = source > 0
+        print(f"mesh-fill: +{filled} single-view pixels -> "
+              f"{solved.sum()}/{npix} total")
+    except Exception as e:
+        print("mesh-fill failed:", e)
 
     # --- ground truth comparison ---
     gt = read_exr(os.path.join(ROOT, 'xyzMap-0.exr'), ['R', 'G', 'B'])
@@ -264,7 +320,12 @@ def main():
     print(f"comparison pixels: ours {solved.sum()}, gt {gt_ok.sum()}, "
           f"both {both.sum()}")
 
-    M = umeyama_alignment(dense_xyz[both], gt_pts[both])
+    # anchor the GT alignment on verified triangulations only -
+    # mesh-filled and loose pixels would bias the similarity fit
+    anchor = both & (source == 2) & (dense_err < 1.0)
+    if anchor.sum() < 500:
+        anchor = both & (source == 2)
+    M = umeyama_alignment(dense_xyz[anchor], gt_pts[anchor])
     aligned = apply_transform(M, dense_xyz[both])
     err = np.linalg.norm(aligned - gt_pts[both], axis=1)
     gt_extent = np.percentile(gt_pts[both], 98, 0) - \
@@ -286,6 +347,7 @@ def main():
         M=M, step=step,
         view_params=np.array([[*v.rvec, *v.tvec, v.f, v.cx, v.cy, v.k1,
                                v.registered] for v in views]),
+        source=source.reshape(dh, dw_),
         view_names=np.array([v.name for v in views]))
     print("saved result.npz")
 

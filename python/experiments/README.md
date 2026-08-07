@@ -68,13 +68,25 @@ The Can Framis courtyard install (python-era archive layout with
 `proMap-python.png`). Much friendlier data than TodaysArt: diffuse
 courtyard walls push camera-camera epipolar consistency to 60-78%.
 
-Results: 7/10 scans registered, final bundle adjustment at 0.98 px rms,
+Results: 7/10 scans registered, final bundle adjustment at ~1 px rms,
 recovered focals matching the ground-truth fits within a few pixels
-(e.g. 3180 vs 3172, 2346 vs 2347), and the dense projector-space map
-lands at **median error 2.3% / p90 7% of the lit-scene extent** against
-the camamok ground truth. The camera zoom was again changed between
-scans, and 4 of 10 archived per-scan xyzMaps are corrupted - both
-handled automatically.
+(e.g. 3180 vs 3172, 2346 vs 2347). The camera zoom was again changed
+between scans, and 4 of 10 archived per-scan xyzMaps are corrupted -
+both handled automatically.
+
+In full-coverage mode the output *surpasses* the old system's map:
+**130,561 mapped projector pixels vs camamok's 55,040 (237%)**, while
+also covering 81% of camamok's own pixels. Three mechanisms stack:
+the pipeline's native 0.05 confidence threshold (geometric
+verification replaces raw confidence as the quality gate), best-pair
+fusion across all camera pairs, and *mesh-fill* - single-camera pixels
+are raycast against the Poisson mesh built from the verified pixels,
+which is camamok's model-painting trick with a measured model instead
+of a hand-built one. Quality tiers against ground truth: triangulated
+pixels median 2.4%, mesh-filled 3.3% of scene diagonal (walls agree
+far tighter; the tail is ball-edge pixels where the "truth" is itself
+ambiguous). The saved `source` channel distinguishes the tiers so the
+confidence map can reflect them.
 
 ## LightsAllNight 2019 validation (`autoCalibrateLightsAllNight.py`)
 
