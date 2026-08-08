@@ -32,7 +32,13 @@ GRID_STEP = 12
 CONF_THRESH = float(os.environ.get('ABL_CONF', '0.05'))
 # decode products to consume: margin-only maps, or coherence-weighted
 _PM = {'coh': ('proMapCoh.npy', 'proConfCoh.npy'),
-       'grad': ('proMapGrad.npy', 'proConfGrad.npy')}
+       'grad': ('proMapGrad.npy', 'proConfGrad.npy'),
+       'full': ('proMapF.npy', 'proConfF.npy')}
+# Max difference between two cameras' EXACT projector codes before they are
+# accepted as the same point. Without it the addressing bin width (4 px)
+# silently becomes the matching tolerance, which is a direct source of
+# scatter on flat surfaces. 1.5 measured best; 3.0 is worse on every axis.
+CODE_TOL = float(os.environ.get('ABL_CODETOL', '0'))
 PMAP, PCONF = _PM.get(os.environ.get('ABL_PMAP', ''),
                       ('proMapC.npy', 'proConfC.npy'))
 # NOTE: the F-matrix cache and the pose checkpoint both freeze which
